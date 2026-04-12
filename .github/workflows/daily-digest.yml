@@ -23,7 +23,7 @@ permissions:
 
 jobs:
   build_digest:
-    runs-on: self-hosted
+    runs-on: ${{ vars.ACTIONS_RUNNER || 'ubuntu-latest' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -32,6 +32,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
 
       - name: Run digest pipeline
         env:
