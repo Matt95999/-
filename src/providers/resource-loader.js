@@ -11,7 +11,12 @@ export async function loadResourceText(resource, headers = {}) {
     return readText(fileUrlToPath(resource));
   }
 
-  if (resource.startsWith("/") || resource.startsWith("./") || resource.startsWith("../")) {
+  if (
+    resource.startsWith("/") ||
+    resource.startsWith("./") ||
+    resource.startsWith("../") ||
+    !resource.includes("://")
+  ) {
     return readText(path.resolve(resource));
   }
 
