@@ -1,0 +1,11 @@
+{
+  "sources": [
+    {
+      "name": "示例来源",
+      "source_type": "公众号",
+      "priority_weight": 1.5,
+      "seed_urls": [],
+      "notes": "后续可持续补充白名单来源。"
+    }
+  ]
+}

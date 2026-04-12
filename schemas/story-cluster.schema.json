@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "StoryCluster",
+  "type": "object",
+  "required": ["story_id", "theme", "articles", "score", "confidence", "cross_links"],
+  "properties": {
+    "story_id": { "type": "string" },
+    "theme": { "type": "string" },
+    "articles": { "type": "array", "items": { "type": "object" } },
+    "score": { "type": "number" },
+    "confidence": { "type": "number" },
+    "cross_links": { "type": "array", "items": { "type": "string" } }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DailyDigest",
+  "type": "object",
+  "required": ["daily_brief_title", "topline_summary", "theme_sections", "story_items", "connections", "watchlist", "generated_at"],
+  "properties": {
+    "daily_brief_title": { "type": "string" },
+    "topline_summary": { "type": "string" },
+    "theme_sections": { "type": "array", "items": { "type": "object" } },
+    "story_items": { "type": "array", "items": { "type": "object" } },
+    "connections": { "type": "array", "items": { "type": "string" } },
+    "watchlist": { "type": "array", "items": { "type": "string" } },
+    "generated_at": { "type": "string" }
+  }
+}

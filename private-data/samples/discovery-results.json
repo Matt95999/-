@@ -1,0 +1,29 @@
+[
+  {
+    "query": "大模型 最新",
+    "source_name": "样例公众号A",
+    "source_type": "公众号",
+    "url": "file:///Users/chrome/Desktop/AI热点/Projects/ai-wechat-digest/tests/fixtures/article-model-release.html",
+    "title": "某开源推理模型更新，主打长上下文与低成本部署",
+    "excerpt": "新模型强调推理效率和企业可落地性。",
+    "published_at": "2026-04-12T07:10:00+08:00"
+  },
+  {
+    "query": "AI Agent 最新",
+    "source_name": "样例公众号B",
+    "source_type": "公众号",
+    "url": "file:///Users/chrome/Desktop/AI热点/Projects/ai-wechat-digest/tests/fixtures/article-agent-platform.html",
+    "title": "Agent 平台开始支持多智能体协作与审计",
+    "excerpt": "团队更关注多步骤任务自动化与流程审计。",
+    "published_at": "2026-04-12T06:35:00+08:00"
+  },
+  {
+    "query": "AI 芯片 最新",
+    "source_name": "样例公众号C",
+    "source_type": "公众号",
+    "url": "file:///Users/chrome/Desktop/AI热点/Projects/ai-wechat-digest/tests/fixtures/article-chip-supply.html",
+    "title": "AI 芯片供应链进入扩产期，推理侧成本继续下探",
+    "excerpt": "更多云厂商开始转向更细分的推理优化路线。",
+    "published_at": "2026-04-12T05:50:00+08:00"
+  }
+]

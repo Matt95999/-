@@ -1,0 +1,15 @@
+{
+  "weights": {
+    "recency": 0.25,
+    "source_priority": 0.15,
+    "keyword_relevance": 0.2,
+    "cross_source_repetition": 0.15,
+    "story_type": 0.15,
+    "interaction_signal": 0.1
+  },
+  "minimum_story_score": 40,
+  "maximum_story_items": 8,
+  "maximum_watchlist_items": 3,
+  "maximum_attempts": 5,
+  "minimum_digest_story_count": 3
+}

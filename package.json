@@ -1,0 +1,16 @@
+{
+  "name": "ai-wechat-digest",
+  "version": "0.1.0",
+  "description": "Daily AI intelligence digest from WeChat public accounts with DeepSeek summarization, GitHub publishing, Feishu delivery, and remediation.",
+  "type": "module",
+  "scripts": {
+    "daily_run": "node ./src/cli/run-daily.js",
+    "retry_failed_run": "node ./src/cli/retry-failed-run.js",
+    "publish_only": "node ./src/cli/publish-only.js",
+    "manual_review": "node ./src/cli/manual-review.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

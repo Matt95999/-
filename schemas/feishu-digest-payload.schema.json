@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FeishuDigestPayload",
+  "type": "object",
+  "required": ["headline", "topline", "sections", "connections", "watchlist", "report_url"],
+  "properties": {
+    "headline": { "type": "string" },
+    "topline": { "type": "string" },
+    "sections": { "type": "array", "items": { "type": "object" } },
+    "connections": { "type": "array", "items": { "type": "string" } },
+    "watchlist": { "type": "array", "items": { "type": "string" } },
+    "report_url": { "type": "string" }
+  }
+}

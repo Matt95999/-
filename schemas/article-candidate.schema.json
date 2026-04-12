@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ArticleCandidate",
+  "type": "object",
+  "required": ["source_name", "source_type", "url", "title", "discovered_at", "signals", "confidence", "content_hash"],
+  "properties": {
+    "source_name": { "type": "string" },
+    "source_type": { "type": "string" },
+    "url": { "type": "string" },
+    "title": { "type": "string" },
+    "published_at": { "type": ["string", "null"] },
+    "discovered_at": { "type": "string" },
+    "full_text": { "type": ["string", "null"] },
+    "excerpt": { "type": ["string", "null"] },
+    "signals": { "type": "object" },
+    "confidence": { "type": "number" },
+    "content_hash": { "type": "string" }
+  }
+}

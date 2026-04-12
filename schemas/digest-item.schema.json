@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DigestItem",
+  "type": "object",
+  "required": ["story_id", "headline", "narrative", "conclusion", "impact", "source_links", "theme"],
+  "properties": {
+    "story_id": { "type": "string" },
+    "headline": { "type": "string" },
+    "theme": { "type": "string" },
+    "narrative": { "type": "array", "items": { "type": "string" } },
+    "conclusion": { "type": "string" },
+    "impact": { "type": "string" },
+    "source_links": { "type": "array", "items": { "type": "string" } }
+  }
+}

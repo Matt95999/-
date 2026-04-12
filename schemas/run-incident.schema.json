@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RunIncident",
+  "type": "object",
+  "required": ["run_id", "stage", "error_type", "root_cause_guess", "attempt_no", "actions_taken", "status", "created_at"],
+  "properties": {
+    "run_id": { "type": "string" },
+    "stage": { "type": "string" },
+    "error_type": { "type": "string" },
+    "root_cause_guess": { "type": "string" },
+    "attempt_no": { "type": "number" },
+    "actions_taken": { "type": "array", "items": { "type": "string" } },
+    "status": { "type": "string" },
+    "created_at": { "type": "string" }
+  }
+}
