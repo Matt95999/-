@@ -1,5 +1,6 @@
 import path from "node:path";
 import { writeJson, writeText } from "../utils/fs.js";
+import { createTimeoutSignal } from "../utils/http.js";
 
 export async function deliverDigestToFeishu({ digest, reportUrl, envConfig, runContext, logger }) {
   const payload = buildFeishuPayload(digest, reportUrl);
@@ -13,6 +14,7 @@ export async function deliverDigestToFeishu({ digest, reportUrl, envConfig, runC
 
   const response = await fetch(envConfig.feishuWebhookUrl, {
     method: "POST",
+    signal: createTimeoutSignal(15000),
     headers: { "content-type": "application/json" },
     body: JSON.stringify(payload)
   });
@@ -106,6 +108,7 @@ export async function deliverFailureIncident({ incident, recommendation, envConf
 
   const response = await fetch(envConfig.feishuWebhookUrl, {
     method: "POST",
+    signal: createTimeoutSignal(15000),
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
       msg_type: "text",

@@ -1,6 +1,6 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { loadConfig, loadEnvConfig } from "./config.js";
+import { loadConfig, loadDotEnv, loadEnvConfig } from "./config.js";
 import { createRunContext } from "./context.js";
 import { StageError } from "./errors.js";
 import { discoverCandidates } from "../providers/discovery.js";
@@ -15,6 +15,7 @@ import { syncPrivateArtifacts } from "./private-sync.js";
 import { createLogger } from "../utils/logger.js";
 
 export async function runDailyPipeline({ rootDir, mode = "daily_run" }) {
+  await loadDotEnv(rootDir);
   const config = await loadConfig(rootDir);
   const envConfig = loadEnvConfig();
   const runContext = createRunContext(rootDir);

@@ -5,6 +5,7 @@ coverage
 private-data/runs/*.html
 private-data/runs/*.md
 private-data/runs/*.json
+private-data/incidents/*.json
 !private-data/samples/
 site/latest.json
 site/history.json

@@ -1,6 +1,7 @@
 import { StageError } from "./errors.js";
 import { extractSentences, parseJsonFromModelText, truncate, unique } from "../utils/text.js";
 import { nowIso } from "../utils/time.js";
+import { createTimeoutSignal } from "../utils/http.js";
 
 export async function summarizeDailyDigest({ clusters, config, envConfig, remediation, logger }) {
   if (!clusters.length) {
@@ -87,6 +88,7 @@ async function summarizeWithDeepSeek({ clusters, config, envConfig }) {
 
   const response = await fetch("https://api.deepseek.com/chat/completions", {
     method: "POST",
+    signal: createTimeoutSignal(20000),
     headers: {
       "content-type": "application/json",
       authorization: `Bearer ${envConfig.deepseekApiKey}`

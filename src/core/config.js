@@ -17,6 +17,30 @@ export async function loadConfig(rootDir) {
   return { keywords, whitelist, scoring };
 }
 
+export async function loadDotEnv(rootDir) {
+  const envPath = path.join(rootDir, ".env");
+  try {
+    const raw = await readText(envPath);
+    for (const line of raw.split(/\r?\n/)) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith("#")) {
+        continue;
+      }
+      const separatorIndex = trimmed.indexOf("=");
+      if (separatorIndex === -1) {
+        continue;
+      }
+      const key = trimmed.slice(0, separatorIndex).trim();
+      const value = trimmed.slice(separatorIndex + 1).trim();
+      if (!(key in process.env)) {
+        process.env[key] = stripQuotes(value);
+      }
+    }
+  } catch {
+    return;
+  }
+}
+
 export function loadEnvConfig(env = process.env) {
   return {
     deepseekApiKey: env.DEEPSEEK_API_KEY || "",
@@ -40,4 +64,14 @@ function safeJsonParse(text, fallback) {
   } catch {
     return fallback;
   }
+}
+
+function stripQuotes(value) {
+  if (
+    (value.startsWith('"') && value.endsWith('"')) ||
+    (value.startsWith("'") && value.endsWith("'"))
+  ) {
+    return value.slice(1, -1);
+  }
+  return value;
 }

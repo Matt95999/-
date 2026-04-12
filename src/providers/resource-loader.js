@@ -1,5 +1,6 @@
 import path from "node:path";
 import { readText } from "../utils/fs.js";
+import { createTimeoutSignal } from "../utils/http.js";
 
 export async function loadResourceText(resource, headers = {}) {
   if (!resource) {
@@ -15,6 +16,7 @@ export async function loadResourceText(resource, headers = {}) {
   }
 
   const response = await fetch(resource, {
+    signal: createTimeoutSignal(15000),
     headers: {
       "user-agent": "ai-wechat-digest/0.1 (+https://github.com/)",
       ...headers
