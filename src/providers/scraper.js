@@ -1,8 +1,60 @@
 import { loadResourceText } from "./resource-loader.js";
 import { StageError } from "../core/errors.js";
 import { sha256 } from "../utils/hash.js";
-import { extractSentences, stripHtml, truncate } from "../utils/text.js";
+import { extractSentences, stripHtml, truncate, unique } from "../utils/text.js";
 import { nowIso } from "../utils/time.js";
+
+const CONTENT_CONTAINER_PATTERN = /<(article|main|section|div)\b([^>]*)>([\s\S]*?)<\/\1>/gi;
+const CONTENT_HINT_PATTERN = /(article|content|main|post|detail|正文|entry|rich_media|news|story|text|body)/i;
+const BOILERPLATE_MARKERS = [
+  "登录",
+  "注册",
+  "收藏",
+  "扫一扫",
+  "返回顶部",
+  "意见反馈",
+  "app下载",
+  "版权",
+  "隐私",
+  "关于我们",
+  "上一篇",
+  "下一篇"
+];
+const DOMAIN_CONTENT_PATTERNS = [
+  {
+    hostPattern: /(^|\.)36kr\.com$/i,
+    patterns: [/<(div|section)\b[^>]*class=["'][^"']*articleDetailContent[^"']*["'][^>]*>/i]
+  },
+  {
+    hostPattern: /(^|\.)iheima\.com$/i,
+    patterns: [/<(div)\b[^>]*class=["'][^"']*main-content[^"']*["'][^>]*>/i],
+    transformHtml: (innerHtml) => {
+      const contentStart = innerHtml.search(/<p\b/i);
+      const cropped = contentStart >= 0 ? innerHtml.slice(contentStart) : innerHtml;
+      const contentEndMarkers = [
+        /<div\b[^>]*class=["'][^"']*copyright[^"']*["'][^>]*>/i,
+        /<div\b[^>]*class=["'][^"']*common-title[^"']*["'][^>]*>/i,
+        /<div\b[^>]*class=["'][^"']*block-title[^"']*["'][^>]*>/i
+      ];
+      let endIndex = cropped.length;
+      for (const marker of contentEndMarkers) {
+        const match = marker.exec(cropped);
+        if (match) {
+          endIndex = Math.min(endIndex, match.index);
+        }
+      }
+      return cropped.slice(0, endIndex);
+    }
+  },
+  {
+    hostPattern: /(^|\.)sina\.com\.cn$/i,
+    patterns: [/<(div)\b[^>]*id=["']artibody["'][^>]*>/i]
+  },
+  {
+    hostPattern: /(^|\.)sohu\.com$/i,
+    patterns: [/<(article)\b[^>]*id=["']mp-editor["'][^>]*>/i]
+  }
+];
 
 export async function scrapeCandidates(candidates, { envConfig, logger, remediation }) {
   const results = [];
@@ -11,7 +63,7 @@ export async function scrapeCandidates(candidates, { envConfig, logger, remediat
   for (const candidate of candidates) {
     try {
       const html = await loadResourceText(candidate.url, envConfig.discoveryProviderRequestHeaders);
-      const parsed = parseArticlePage(html);
+      const parsed = parseArticlePage(html, candidate.url);
       const fullText = parsed.fullText || candidate.full_text || "";
       const excerpt = candidate.excerpt || parsed.excerpt || truncate(fullText, 180);
       const confidence = computeConfidence(candidate.confidence, parsed, remediation);
@@ -59,8 +111,8 @@ export async function scrapeCandidates(candidates, { envConfig, logger, remediat
   return { scrapedCandidates: results, failures };
 }
 
-export function parseArticlePage(html) {
-  const fullText = stripHtml(html);
+export function parseArticlePage(html, sourceUrl = "") {
+  const fullText = extractReadableText(html, sourceUrl);
   const title =
     extractMeta(html, "property", "og:title") ||
     extractMeta(html, "name", "twitter:title") ||
@@ -89,6 +141,144 @@ export function parseArticlePage(html) {
   };
 }
 
+function extractReadableText(html, sourceUrl = "") {
+  const domainSpecificText = extractDomainSpecificReadableText(html, sourceUrl);
+  if (domainSpecificText) {
+    return domainSpecificText;
+  }
+
+  const candidates = [];
+  let match;
+
+  while ((match = CONTENT_CONTAINER_PATTERN.exec(html)) !== null) {
+    if (!CONTENT_HINT_PATTERN.test(match[2])) {
+      continue;
+    }
+    const candidateText = stripHtml(match[3]);
+    if (candidateText.length >= 80) {
+      candidates.push(candidateText);
+    }
+  }
+
+  const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+  if (bodyMatch?.[1]) {
+    candidates.push(stripHtml(bodyMatch[1]));
+  }
+  candidates.push(stripHtml(html));
+
+  const ranked = unique(candidates)
+    .map((text) => ({ text, score: scoreReadableText(text) }))
+    .sort((left, right) => right.score - left.score);
+
+  return cleanReadableText(ranked[0]?.text || "");
+}
+
+function extractDomainSpecificReadableText(html, sourceUrl) {
+  const rule = DOMAIN_CONTENT_PATTERNS.find((entry) => entry.hostPattern.test(safeHostname(sourceUrl)));
+  if (!rule) {
+    return "";
+  }
+
+  for (const pattern of rule.patterns) {
+    const match = pattern.exec(html);
+    if (!match) {
+      continue;
+    }
+
+    const tagName = match[1]?.toLowerCase();
+    const innerHtml = extractBalancedElementInnerHtml(html, match.index, tagName);
+    if (!innerHtml) {
+      continue;
+    }
+
+    const transformedHtml = rule.transformHtml ? rule.transformHtml(innerHtml) : innerHtml;
+    const cleanedHtml = applyCleanupPatterns(transformedHtml, rule.cleanupPatterns || []);
+    const text = cleanReadableText(stripHtml(cleanedHtml));
+    if (text) {
+      return text;
+    }
+  }
+
+  return "";
+}
+
+function extractBalancedElementInnerHtml(html, startIndex, tagName) {
+  if (!tagName) {
+    return "";
+  }
+
+  const openTagPattern = new RegExp(`<\\/?${escapeRegex(tagName)}\\b[^>]*>`, "gi");
+  openTagPattern.lastIndex = startIndex;
+
+  let depth = 0;
+  let contentStart = -1;
+  let match;
+  while ((match = openTagPattern.exec(html)) !== null) {
+    const tag = match[0];
+    const isClosingTag = tag.startsWith("</");
+    if (depth === 0 && !isClosingTag) {
+      depth = 1;
+      contentStart = match.index + tag.length;
+      continue;
+    }
+
+    if (isClosingTag) {
+      depth -= 1;
+      if (depth === 0) {
+        return html.slice(contentStart, match.index);
+      }
+      continue;
+    }
+
+    if (!tag.endsWith("/>")) {
+      depth += 1;
+    }
+  }
+
+  return "";
+}
+
+function applyCleanupPatterns(html, patterns) {
+  return patterns.reduce((output, pattern) => output.replace(pattern, " "), html);
+}
+
+function scoreReadableText(text) {
+  let score = text.length;
+  for (const marker of BOILERPLATE_MARKERS) {
+    if (text.includes(marker)) {
+      score -= 80;
+    }
+  }
+
+  if (text.includes("正文")) {
+    score += 40;
+  }
+  if (text.includes("作者") || text.includes("记者")) {
+    score += 20;
+  }
+  return score;
+}
+
+function cleanReadableText(text) {
+  let cleaned = text || "";
+  for (const marker of BOILERPLATE_MARKERS) {
+    cleaned = cleaned.replace(new RegExp(escapeRegex(marker), "g"), " ");
+  }
+  return cleaned.replace(/\s+/g, " ").trim();
+}
+
+function safeHostname(url) {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return "";
+  }
+}
+
+function escapeRegex(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 function extractMeta(html, attrName, attrValue) {
   const pattern = new RegExp(`<meta[^>]*${attrName}=["']${escapeRegex(attrValue)}["'][^>]*content=["']([^"']+)["'][^>]*>`, "i");
   return html.match(pattern)?.[1] || null;
@@ -97,10 +287,6 @@ function extractMeta(html, attrName, attrValue) {
 function extractFirstTag(html, tag) {
   const pattern = new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, "i");
   return stripHtml(html.match(pattern)?.[1] || "");
-}
-
-function escapeRegex(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function computeConfidence(baseConfidence, parsed, remediation) {

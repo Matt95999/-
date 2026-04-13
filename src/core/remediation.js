@@ -1,4 +1,5 @@
 import path from "node:path";
+import { getAttemptArtifactId } from "./context.js";
 import { writeJson } from "../utils/fs.js";
 import { nowIso } from "../utils/time.js";
 import { StageError } from "./errors.js";
@@ -6,12 +7,25 @@ import { StageError } from "./errors.js";
 export async function executeWithRemediation({ runContext, scoringConfig, executor, logger, envConfig }) {
   let latestIncident = null;
   let lastError = null;
+  const startingAttemptNo = Math.max(1, runContext.attemptNo || 1);
 
-  for (let attemptNo = 1; attemptNo <= scoringConfig.maximum_attempts; attemptNo += 1) {
+  if (startingAttemptNo > scoringConfig.maximum_attempts) {
+    throw new StageError(
+      "unknown",
+      "retry_exhausted",
+      `maximum remediation attempts exhausted at attempt ${startingAttemptNo - 1}`
+    );
+  }
+
+  for (let attemptNo = startingAttemptNo; attemptNo <= scoringConfig.maximum_attempts; attemptNo += 1) {
     const remediation = remediationPlanForAttempt(attemptNo);
-    logger.info("starting attempt", { attemptNo, remediation });
+    logger.info("starting attempt", {
+      attemptNo,
+      attemptRunId: `${runContext.runId}-a${attemptNo}`,
+      remediation
+    });
     try {
-      const result = await executor({ attemptNo, remediation });
+      const result = await executor({ attemptNo, remediation, previousIncident: latestIncident });
       return { success: true, result, latestIncident };
     } catch (error) {
       lastError = error;
@@ -68,6 +82,7 @@ function createIncident(runContext, attemptNo, error, remediation) {
 
   return {
     run_id: runContext.runId,
+    attempt_run_id: `${runContext.runId}-a${attemptNo}`,
     stage: stageError.stage,
     error_type: stageError.errorType,
     root_cause_guess: stageError.message,
@@ -83,7 +98,11 @@ async function persistIncident(runContext, incident) {
   const filePath = path.join(
     runContext.privateDataDir,
     "incidents",
-    `${runContext.runId}-attempt-${incident.attempt_no}.json`
+    `${getAttemptArtifactId({
+      ...runContext,
+      attemptNo: incident.attempt_no,
+      attemptRunId: `${runContext.runId}-a${incident.attempt_no}`
+    })}-incident.json`
   );
   await writeJson(filePath, incident);
 }

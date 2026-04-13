@@ -7,7 +7,9 @@
     "daily_run": "node ./src/cli/run-daily.js",
     "retry_failed_run": "node ./src/cli/retry-failed-run.js",
     "publish_only": "node ./src/cli/publish-only.js",
+    "feishu_only": "node ./src/cli/feishu-only.js",
     "manual_review": "node ./src/cli/manual-review.js",
+    "preflight_check": "node ./src/cli/preflight-check.js",
     "test": "node --test"
   },
   "engines": {

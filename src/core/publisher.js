@@ -1,4 +1,5 @@
 import path from "node:path";
+import { getAttemptArtifactId } from "./context.js";
 import { ensureDir, listJsonFiles, readJson, writeJson, writeText } from "../utils/fs.js";
 import { renderDigestMarkdown } from "../renderers/markdown.js";
 import { renderDigestHtml } from "../renderers/html.js";
@@ -19,9 +20,7 @@ export async function publishDigest({ digest, runContext, logger, publicBaseUrl 
   await writeText(siteDailyPath, html);
   await writeText(siteIndexPath, html);
 
-  const reportUrl = publicBaseUrl
-    ? `${publicBaseUrl.replace(/\/$/, "")}/daily/${runContext.dateKey}/`
-    : `./daily/${runContext.dateKey}/`;
+  const reportUrl = buildReportUrl({ publicBaseUrl, dateKey: runContext.dateKey });
 
   const publicDigest = sanitizePublicDigest(digest, reportUrl);
   await writeJson(latestJsonPath, publicDigest);
@@ -52,18 +51,35 @@ async function updateHistory(historyJsonPath, publicDigest) {
     history = [];
   }
 
-  const filtered = history.filter((item) => item.generated_at !== publicDigest.generated_at);
+  const filtered = history.filter(
+    (item) =>
+      item.report_url !== publicDigest.report_url &&
+      item.daily_brief_title !== publicDigest.daily_brief_title,
+  );
   filtered.unshift(publicDigest);
   await writeJson(historyJsonPath, filtered.slice(0, 30));
 }
 
 export async function saveRunArtifacts({ runContext, artifacts }) {
-  const runFile = path.join(runContext.privateDataDir, "runs", `${runContext.runId}.json`);
+  const runFile = path.join(runContext.privateDataDir, "runs", `${getAttemptArtifactId(runContext)}.json`);
   await writeJson(runFile, artifacts);
   return runFile;
 }
 
 export async function findLatestRunFile(runContext) {
   const files = await listJsonFiles(path.join(runContext.rootDir, "private-data", "runs"));
-  return files[0]?.fullPath || null;
+  return files.find((file) => isRunArtifactFile(file.fullPath))?.fullPath || null;
+}
+
+export function buildReportUrl({ publicBaseUrl, dateKey }) {
+  if (publicBaseUrl) {
+    return `${publicBaseUrl.replace(/\/$/, "")}/daily/${dateKey}/`;
+  }
+
+  return `./daily/${dateKey}/`;
+}
+
+function isRunArtifactFile(filePath) {
+  const fileName = path.basename(filePath);
+  return fileName.endsWith(".json") && !fileName.endsWith("-feishu-preview.json");
 }

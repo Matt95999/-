@@ -38,8 +38,8 @@ export function buildStoryClusters(scrapedCandidates, keywordConfig) {
 function isSameStory(left, right) {
   const titleSimilarity = jaccardSimilarity(left.title || "", right.title || "");
   const textSimilarity = jaccardSimilarity(
-    `${left.title || ""} ${truncate(left.full_text || left.excerpt || "", 200)}`,
-    `${right.title || ""} ${truncate(right.full_text || right.excerpt || "", 200)}`
+    `${left.title || ""} ${truncate(left.excerpt || left.full_text || "", 200)}`,
+    `${right.title || ""} ${truncate(right.excerpt || right.full_text || "", 200)}`
   );
   return titleSimilarity >= 0.38 || textSimilarity >= 0.42;
 }

@@ -14,6 +14,7 @@ on:
           - daily_run
           - retry_failed_run
           - publish_only
+          - feishu_only
           - manual_review
 
 permissions:
@@ -21,9 +22,19 @@ permissions:
   pages: write
   id-token: write
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+concurrency:
+  group: daily-digest-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   build_digest:
     runs-on: ${{ vars.ACTIONS_RUNNER || 'ubuntu-latest' }}
+    outputs:
+      should_deploy: ${{ steps.prepare.outputs.should_deploy }}
+      mode: ${{ steps.prepare.outputs.mode }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -31,10 +42,33 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Determine run mode
+        id: prepare
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            MODE="${{ github.event.inputs.mode }}"
+          else
+            MODE="daily_run"
+          fi
+          echo "mode=$MODE" >> "$GITHUB_OUTPUT"
+          if [ "$MODE" = "manual_review" ]; then
+            echo "should_deploy=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_deploy=true" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Configure Pages
+        if: ${{ steps.prepare.outputs.should_deploy == 'true' }}
         uses: actions/configure-pages@v5
+
+      - name: Run preflight checks
+        run: npm run preflight_check -- --mode "${{ steps.prepare.outputs.mode }}"
 
       - name: Run digest pipeline
         env:
@@ -42,15 +76,28 @@ jobs:
           FEISHU_WEBHOOK_URL: ${{ secrets.FEISHU_WEBHOOK_URL }}
           PRIVATE_DATA_REPO_PAT: ${{ secrets.PRIVATE_DATA_REPO_PAT }}
           PRIVATE_DATA_REPO: ${{ secrets.PRIVATE_DATA_REPO }}
+          PRIVATE_DATA_REPO_BRANCH: ${{ vars.PRIVATE_DATA_REPO_BRANCH }}
+          PRIVATE_DATA_REPO_BASE_PATH: ${{ vars.PRIVATE_DATA_REPO_BASE_PATH }}
           PUBLIC_BASE_URL: ${{ vars.PUBLIC_BASE_URL }}
           DISCOVERY_PROVIDER_SAMPLE_FILE: ${{ vars.DISCOVERY_PROVIDER_SAMPLE_FILE }}
           DISCOVERY_PROVIDER_SEARCH_TEMPLATES: ${{ vars.DISCOVERY_PROVIDER_SEARCH_TEMPLATES }}
           DISCOVERY_PROVIDER_REQUEST_HEADERS: ${{ vars.DISCOVERY_PROVIDER_REQUEST_HEADERS }}
         run: |
-          MODE="${{ github.event.inputs.mode || 'daily_run' }}"
+          MODE="${{ steps.prepare.outputs.mode }}"
           npm run "$MODE"
 
+      - name: Upload runtime artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: runtime-artifacts-${{ github.run_id }}
+          if-no-files-found: ignore
+          path: |
+            private-data/runs
+            private-data/incidents
+
       - name: Commit generated artifacts
+        if: ${{ success() && steps.prepare.outputs.should_deploy == 'true' }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -59,12 +106,14 @@ jobs:
           git push
 
       - name: Upload Pages artifact
+        if: ${{ success() && steps.prepare.outputs.should_deploy == 'true' }}
         uses: actions/upload-pages-artifact@v3
         with:
           path: site
 
   deploy_pages:
     needs: build_digest
+    if: ${{ needs.build_digest.outputs.should_deploy == 'true' }}
     runs-on: ubuntu-latest
     environment:
       name: github-pages

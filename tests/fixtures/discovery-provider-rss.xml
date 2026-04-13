@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>AI Daily Feed</title>
+    <item>
+      <title>国产推理芯片进入扩产阶段</title>
+      <link>https://mp.weixin.qq.com/s?__biz=MzAwMDAwMDE=&amp;mid=2650000002&amp;idx=1</link>
+      <description>多家厂商同步推进推理成本优化与供应链扩产。</description>
+      <pubDate>Sat, 12 Apr 2026 09:30:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>企业工作流开始落地多智能体编排</title>
+      <link>https://news.example.com/ai/multi-agent-orchestration</link>
+      <description>企业侧开始把协作编排、审计与权限控制一起纳入 Agent 方案。</description>
+      <pubDate>Sat, 12 Apr 2026 08:00:00 GMT</pubDate>
+    </item>
+  </channel>
+</rss>

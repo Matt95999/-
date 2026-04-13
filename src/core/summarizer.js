@@ -10,7 +10,7 @@ export async function summarizeDailyDigest({ clusters, config, envConfig, remedi
 
   if (envConfig.deepseekApiKey && !remediation.forceLocalSummary) {
     try {
-      const digest = await summarizeWithDeepSeek({ clusters, config, envConfig });
+      const digest = normalizeDigest(await summarizeWithDeepSeek({ clusters, config, envConfig }), clusters, config);
       validateDigest(digest);
       return digest;
     } catch (error) {
@@ -21,7 +21,7 @@ export async function summarizeDailyDigest({ clusters, config, envConfig, remedi
     }
   }
 
-  const fallbackDigest = summarizeLocally(clusters, config);
+  const fallbackDigest = normalizeDigest(summarizeLocally(clusters, config), clusters, config);
   validateDigest(fallbackDigest);
   return fallbackDigest;
 }
@@ -107,40 +107,156 @@ async function summarizeWithDeepSeek({ clusters, config, envConfig }) {
 
 function summarizeLocally(clusters, config) {
   const selected = clusters.slice(0, config.scoring.maximum_story_items);
-  const grouped = groupBy(selected, (cluster) => cluster.theme || "其他");
-  const storyItems = selected.map((cluster) => {
-    const lead = cluster.articles[0];
-    const narrative = buildNarrative(cluster);
-    return {
-      story_id: cluster.story_id,
-      headline: cluster.headline,
-      theme: cluster.theme,
-      narrative,
-      conclusion: buildConclusion(cluster),
-      impact: buildImpact(cluster),
-      source_links: cluster.cross_links
-    };
-  });
-
-  const themeSections = Object.entries(grouped).map(([title, themeClusters]) => ({
-    title,
-    summary: `${title}相关动态在今天共出现${themeClusters.length}条重点线索，主线集中在${themeClusters.map((item) => item.headline).slice(0, 2).join("、")}。`,
-    story_ids: themeClusters.map((item) => item.story_id)
-  }));
-
-  const connections = buildConnections(selected);
-  const watchlist = selected
-    .slice(0, config.scoring.maximum_watchlist_items)
-    .map((cluster) => `${cluster.headline}后续值得继续跟踪，因为它会影响${cluster.theme}的下一阶段节奏。`);
+  const storyItems = selected.map((cluster) => makeFallbackStoryItem(cluster));
 
   return {
     daily_brief_title: `AI 情报日报 ${new Date().toISOString().slice(0, 10)}`,
     topline_summary: buildTopline(selected),
-    theme_sections: themeSections,
+    theme_sections: buildThemeSectionsFromStories(storyItems),
     story_items: storyItems,
-    connections,
-    watchlist,
+    connections: buildConnections(selected),
+    watchlist: buildWatchlist(selected, config),
     generated_at: nowIso()
+  };
+}
+
+function normalizeDigest(rawDigest, clusters, config) {
+  const selected = clusters.slice(0, config.scoring.maximum_story_items);
+  const clusterById = new Map(selected.map((cluster) => [cluster.story_id, cluster]));
+  const normalizedStoryItems = [];
+  const seenStoryIds = new Set();
+
+  for (const item of Array.isArray(rawDigest?.story_items) ? rawDigest.story_items : []) {
+    const storyId = typeof item?.story_id === "string" ? item.story_id : null;
+    const cluster = storyId ? clusterById.get(storyId) : null;
+    if (!cluster || seenStoryIds.has(storyId)) {
+      continue;
+    }
+    normalizedStoryItems.push(normalizeStoryItem(item, cluster));
+    seenStoryIds.add(storyId);
+  }
+
+  for (const cluster of selected) {
+    if (seenStoryIds.has(cluster.story_id)) {
+      continue;
+    }
+    normalizedStoryItems.push(makeFallbackStoryItem(cluster));
+  }
+
+  return {
+    daily_brief_title:
+      typeof rawDigest?.daily_brief_title === "string" && rawDigest.daily_brief_title.trim()
+        ? rawDigest.daily_brief_title.trim()
+        : `AI 情报日报 ${new Date().toISOString().slice(0, 10)}`,
+    topline_summary:
+      typeof rawDigest?.topline_summary === "string" && rawDigest.topline_summary.trim()
+        ? rawDigest.topline_summary.trim()
+        : buildTopline(selected),
+    theme_sections: normalizeThemeSections(rawDigest?.theme_sections, normalizedStoryItems),
+    story_items: normalizedStoryItems,
+    connections: normalizeStringList(rawDigest?.connections, buildConnections(selected)),
+    watchlist: normalizeStringList(rawDigest?.watchlist, buildWatchlist(selected, config)),
+    generated_at:
+      typeof rawDigest?.generated_at === "string" && rawDigest.generated_at.trim()
+        ? rawDigest.generated_at.trim()
+        : nowIso()
+  };
+}
+
+function normalizeStoryItem(item, cluster) {
+  return {
+    story_id: cluster.story_id,
+    headline:
+      typeof item?.headline === "string" && item.headline.trim() ? item.headline.trim() : cluster.headline,
+    theme: typeof item?.theme === "string" && item.theme.trim() ? item.theme.trim() : cluster.theme,
+    narrative: normalizeNarrative(item?.narrative, cluster),
+    conclusion:
+      typeof item?.conclusion === "string" && item.conclusion.trim()
+        ? item.conclusion.trim()
+        : buildConclusion(cluster),
+    impact: typeof item?.impact === "string" && item.impact.trim() ? item.impact.trim() : buildImpact(cluster),
+    source_links: normalizeSourceLinks(item?.source_links, cluster)
+  };
+}
+
+function normalizeNarrative(narrative, cluster) {
+  const lines = Array.isArray(narrative)
+    ? narrative
+        .filter((line) => typeof line === "string")
+        .map((line) => line.trim())
+        .filter(Boolean)
+    : [];
+
+  return lines.length >= 2 ? lines.slice(0, 4) : buildNarrative(cluster);
+}
+
+function normalizeSourceLinks(sourceLinks, cluster) {
+  const links = Array.isArray(sourceLinks)
+    ? sourceLinks
+        .filter((link) => typeof link === "string")
+        .map((link) => link.trim())
+        .filter(Boolean)
+    : [];
+
+  if (links.length) {
+    return unique(links);
+  }
+
+  if (Array.isArray(cluster.cross_links) && cluster.cross_links.length) {
+    return unique(cluster.cross_links);
+  }
+
+  return cluster.articles.map((article) => article.url).filter(Boolean);
+}
+
+function normalizeThemeSections(themeSections, storyItems) {
+  const storyMap = new Map(storyItems.map((item) => [item.story_id, item]));
+  const normalized = [];
+
+  for (const section of Array.isArray(themeSections) ? themeSections : []) {
+    const title =
+      typeof section?.title === "string" && section.title.trim() ? section.title.trim() : null;
+    const storyIds = Array.isArray(section?.story_ids)
+      ? section.story_ids.filter((storyId) => storyMap.has(storyId))
+      : [];
+
+    if (!title || !storyIds.length) {
+      continue;
+    }
+
+    normalized.push({
+      title,
+      summary:
+        typeof section.summary === "string" && section.summary.trim()
+          ? section.summary.trim()
+          : buildThemeSectionSummary(title, storyIds.map((storyId) => storyMap.get(storyId))),
+      story_ids: unique(storyIds)
+    });
+  }
+
+  return normalized.length ? normalized : buildThemeSectionsFromStories(storyItems);
+}
+
+function normalizeStringList(value, fallback) {
+  const items = Array.isArray(value)
+    ? value
+        .filter((item) => typeof item === "string")
+        .map((item) => item.trim())
+        .filter(Boolean)
+    : [];
+
+  return items.length ? items : fallback;
+}
+
+function makeFallbackStoryItem(cluster) {
+  return {
+    story_id: cluster.story_id,
+    headline: cluster.headline,
+    theme: cluster.theme,
+    narrative: buildNarrative(cluster),
+    conclusion: buildConclusion(cluster),
+    impact: buildImpact(cluster),
+    source_links: normalizeSourceLinks(cluster.cross_links, cluster)
   };
 }
 
@@ -193,6 +309,28 @@ function buildConnections(clusters) {
   return connections.slice(0, 4);
 }
 
+function buildWatchlist(clusters, config) {
+  return clusters
+    .slice(0, config.scoring.maximum_watchlist_items)
+    .map((cluster) => `${cluster.headline}后续值得继续跟踪，因为它会影响${cluster.theme}的下一阶段节奏。`);
+}
+
+function buildThemeSectionsFromStories(storyItems) {
+  const grouped = groupBy(storyItems, (story) => story.theme || "其他");
+  return Object.entries(grouped).map(([title, stories]) => ({
+    title,
+    summary: buildThemeSectionSummary(title, stories),
+    story_ids: stories.map((story) => story.story_id)
+  }));
+}
+
+function buildThemeSectionSummary(title, stories) {
+  return `${title}相关动态在今天共出现${stories.length}条重点线索，主线集中在${stories
+    .map((item) => item.headline)
+    .slice(0, 2)
+    .join("、")}。`;
+}
+
 function validateDigest(digest) {
   if (!digest?.daily_brief_title || !digest?.topline_summary) {
     throw new Error("digest missing required top-level fields");
@@ -200,8 +338,22 @@ function validateDigest(digest) {
   if (!Array.isArray(digest.story_items) || !digest.story_items.length) {
     throw new Error("digest contains no story_items");
   }
-  if (!Array.isArray(digest.connections)) {
+  if (!Array.isArray(digest.theme_sections) || !digest.theme_sections.length) {
+    throw new Error("digest missing theme_sections");
+  }
+  if (!Array.isArray(digest.connections) || !digest.connections.length) {
     throw new Error("digest missing connections");
+  }
+  for (const item of digest.story_items) {
+    if (!item.story_id || !item.headline) {
+      throw new Error("digest contains incomplete story_items");
+    }
+    if (!Array.isArray(item.narrative) || item.narrative.length < 2) {
+      throw new Error("digest contains invalid story narrative");
+    }
+    if (!Array.isArray(item.source_links) || !item.source_links.length) {
+      throw new Error("digest contains story without source_links");
+    }
   }
 }
 

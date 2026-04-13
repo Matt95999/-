@@ -1,4 +1,5 @@
 import path from "node:path";
+import { getAttemptArtifactId } from "./context.js";
 import { writeJson, writeText } from "../utils/fs.js";
 import { createTimeoutSignal } from "../utils/http.js";
 
@@ -6,7 +7,11 @@ export async function deliverDigestToFeishu({ digest, reportUrl, envConfig, runC
   const payload = buildFeishuPayload(digest, reportUrl);
 
   if (!envConfig.feishuWebhookUrl) {
-    const previewPath = path.join(runContext.privateDataDir, "runs", `${runContext.runId}-feishu-preview.json`);
+    const previewPath = path.join(
+      runContext.privateDataDir,
+      "runs",
+      `${getAttemptArtifactId(runContext)}-feishu-preview.json`,
+    );
     await writeJson(previewPath, payload);
     logger.warn("feishu webhook missing, wrote preview instead", { previewPath });
     return { delivered: false, previewPath, payload };
@@ -100,7 +105,11 @@ export async function deliverFailureIncident({ incident, recommendation, envConf
   ].join("\n");
 
   if (!envConfig.feishuWebhookUrl) {
-    const previewPath = path.join(runContext.privateDataDir, "runs", `${runContext.runId}-incident-preview.md`);
+    const previewPath = path.join(
+      runContext.privateDataDir,
+      "runs",
+      `${getAttemptArtifactId(runContext)}-incident-preview.md`,
+    );
     await writeText(previewPath, text);
     logger.warn("feishu incident preview written", { previewPath });
     return { delivered: false, previewPath };
@@ -116,10 +125,28 @@ export async function deliverFailureIncident({ incident, recommendation, envConf
         text
       }
     })
+  }).catch(async (error) => {
+    const previewPath = path.join(runContext.privateDataDir, "runs", `${runContext.runId}-incident-preview.md`);
+    await writeText(previewPath, text);
+    logger.warn("feishu incident delivery failed, wrote preview instead", {
+      previewPath,
+      error: error.message
+    });
+    return null;
   });
 
+  if (response === null) {
+    return { delivered: false };
+  }
+
   if (!response.ok) {
-    throw new Error(`feishu incident delivery failed with status ${response.status}`);
+    const previewPath = path.join(runContext.privateDataDir, "runs", `${runContext.runId}-incident-preview.md`);
+    await writeText(previewPath, text);
+    logger.warn("feishu incident delivery returned non-ok, wrote preview instead", {
+      previewPath,
+      status: response.status
+    });
+    return { delivered: false, previewPath };
   }
 
   return { delivered: true };

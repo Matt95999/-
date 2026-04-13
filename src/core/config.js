@@ -47,10 +47,13 @@ export function loadEnvConfig(env = process.env) {
     feishuWebhookUrl: env.FEISHU_WEBHOOK_URL || "",
     privateDataRepoPat: env.PRIVATE_DATA_REPO_PAT || "",
     privateDataRepo: env.PRIVATE_DATA_REPO || "",
+    privateDataRepoBranch: env.PRIVATE_DATA_REPO_BRANCH || "main",
+    privateDataRepoBasePath: normalizeRepoPath(env.PRIVATE_DATA_REPO_BASE_PATH || ""),
     publicBaseUrl: env.PUBLIC_BASE_URL || "",
     discoveryProviderSampleFile: env.DISCOVERY_PROVIDER_SAMPLE_FILE || "",
     discoveryProviderSearchTemplates: safeJsonParse(env.DISCOVERY_PROVIDER_SEARCH_TEMPLATES, []),
-    discoveryProviderRequestHeaders: safeJsonParse(env.DISCOVERY_PROVIDER_REQUEST_HEADERS, {})
+    discoveryProviderRequestHeaders: safeJsonParse(env.DISCOVERY_PROVIDER_REQUEST_HEADERS, {}),
+    discoveryProviderMaxQueries: safePositiveInteger(env.DISCOVERY_PROVIDER_MAX_QUERIES, 0)
   };
 }
 
@@ -74,4 +77,16 @@ function stripQuotes(value) {
     return value.slice(1, -1);
   }
   return value;
+}
+
+function safePositiveInteger(text, fallback) {
+  const value = Number.parseInt(text || "", 10);
+  if (!Number.isFinite(value) || value <= 0) {
+    return fallback;
+  }
+  return value;
+}
+
+function normalizeRepoPath(value) {
+  return value.trim().replace(/^\/+|\/+$/g, "");
 }

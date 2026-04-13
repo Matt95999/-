@@ -1,7 +1,13 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  findLatestResumeTarget,
+  markIncidentResolved,
+  saveStageCheckpoint,
+  shouldReuseCheckpoint
+} from "./checkpoints.js";
 import { loadConfig, loadDotEnv, loadEnvConfig } from "./config.js";
-import { createRunContext } from "./context.js";
+import { createAttemptRunContext, createRunContext, getAttemptArtifactId } from "./context.js";
 import { StageError } from "./errors.js";
 import { discoverCandidates } from "../providers/discovery.js";
 import { scrapeCandidates } from "../providers/scraper.js";
@@ -18,32 +24,75 @@ export async function runDailyPipeline({ rootDir, mode = "daily_run" }) {
   await loadDotEnv(rootDir);
   const config = await loadConfig(rootDir);
   const envConfig = loadEnvConfig();
-  const runContext = createRunContext(rootDir);
-  const logger = createLogger(runContext.runId);
+  const resumeState =
+    mode === "retry_failed_run"
+      ? await findLatestResumeTarget({
+          rootDir,
+          maximumAttempts: config.scoring.maximum_attempts
+        })
+      : null;
+
+  if (mode === "retry_failed_run" && !resumeState) {
+    throw new StageError("retry", "no_resumable_run", "no resumable failed run found");
+  }
+  const runContext = resumeState?.runContext || createRunContext(rootDir);
+  const logger = createLogger(getAttemptArtifactId(runContext));
+  const checkpoints = resumeState?.checkpoints || {};
 
   const execution = await executeWithRemediation({
     runContext,
     scoringConfig: config.scoring,
     envConfig,
     logger,
-    executor: async ({ attemptNo, remediation }) => {
-      const attemptContext = { ...runContext, attemptNo };
-      const discovered = await discoverCandidates({ rootDir, config, envConfig, logger });
+    executor: async ({ attemptNo, remediation, previousIncident }) => {
+      const attemptContext = createAttemptRunContext(runContext, attemptNo);
+      const attemptLogger = createLogger(getAttemptArtifactId(attemptContext));
+      const effectivePreviousIncident = previousIncident || resumeState?.incident || null;
+
+      const { discovered } = await resolveStage({
+        stage: "discover",
+        previousIncident: effectivePreviousIncident,
+        checkpoints,
+        attemptContext,
+        logger: attemptLogger,
+        compute: async () => ({
+          discovered: await discoverCandidates({ rootDir, config, envConfig, logger: attemptLogger })
+        })
+      });
       if (!discovered.length) {
         throw new StageError("discover", "no_candidates", "no article candidates discovered");
       }
 
-      const { scrapedCandidates, failures } = await scrapeCandidates(discovered, {
-        envConfig,
-        logger,
-        remediation
+      const { scrapedCandidates, failures } = await resolveStage({
+        stage: "scrape",
+        previousIncident: effectivePreviousIncident,
+        checkpoints,
+        attemptContext,
+        logger: attemptLogger,
+        compute: async () =>
+          scrapeCandidates(discovered, {
+            envConfig,
+            logger: attemptLogger,
+            remediation
+          })
       });
 
-      const clusters = buildStoryClusters(scrapedCandidates, config.keywords);
-      const scored = scoreStoryClusters(clusters, {
-        scoringConfig: config.scoring,
-        whitelistConfig: config.whitelist,
-        keywordConfig: config.keywords
+      const { scored } = await resolveStage({
+        stage: "score",
+        previousIncident: effectivePreviousIncident,
+        checkpoints,
+        attemptContext,
+        logger: attemptLogger,
+        compute: async () => {
+          const clusters = buildStoryClusters(scrapedCandidates, config.keywords);
+          return {
+            scored: scoreStoryClusters(clusters, {
+              scoringConfig: config.scoring,
+              whitelistConfig: config.whitelist,
+              keywordConfig: config.keywords
+            })
+          };
+        }
       });
 
       const filtered = scored.filter(
@@ -52,25 +101,43 @@ export async function runDailyPipeline({ rootDir, mode = "daily_run" }) {
 
       if (filtered.length < config.scoring.minimum_digest_story_count && !remediation.partialPublish) {
         throw new StageError(
-          "discover",
+          "score",
           "insufficient_story_count",
           `only ${filtered.length} scored stories available, below minimum`
         );
       }
 
-      const digest = await summarizeDailyDigest({
-        clusters: filtered.length ? filtered : scored.slice(0, config.scoring.minimum_digest_story_count),
-        config,
-        envConfig,
-        remediation,
-        logger
+      const { digest } = await resolveStage({
+        stage: "summarize",
+        previousIncident: effectivePreviousIncident,
+        checkpoints,
+        attemptContext,
+        logger: attemptLogger,
+        compute: async () => ({
+          digest: await summarizeDailyDigest({
+            clusters: filtered.length ? filtered : scored.slice(0, config.scoring.minimum_digest_story_count),
+            config,
+            envConfig,
+            remediation,
+            logger: attemptLogger
+          })
+        })
       });
 
-      const publishResult = await publishDigest({
-        digest,
-        runContext: attemptContext,
-        logger,
-        publicBaseUrl: envConfig.publicBaseUrl
+      const { publishResult } = await resolveStage({
+        stage: "publish",
+        previousIncident: effectivePreviousIncident,
+        checkpoints,
+        attemptContext,
+        logger: attemptLogger,
+        compute: async () => ({
+          publishResult: await publishDigest({
+            digest,
+            runContext: attemptContext,
+            logger: attemptLogger,
+            publicBaseUrl: envConfig.publicBaseUrl
+          })
+        })
       });
 
       const feishuResult = await deliverDigestToFeishu({
@@ -78,12 +145,20 @@ export async function runDailyPipeline({ rootDir, mode = "daily_run" }) {
         reportUrl: publishResult.reportUrl,
         envConfig,
         runContext: attemptContext,
-        logger
+        logger: attemptLogger
       });
 
       const artifacts = {
         mode,
         run: attemptContext,
+        resumedFrom: resumeState
+          ? {
+              runId: resumeState.incident.run_id,
+              attemptNo: resumeState.incident.attempt_no,
+              failedStage: resumeState.incident.stage
+            }
+          : null,
+        remediation,
         discoveredCount: discovered.length,
         scrapedCount: scrapedCandidates.length,
         scrapeFailures: failures,
@@ -93,19 +168,28 @@ export async function runDailyPipeline({ rootDir, mode = "daily_run" }) {
         feishuResult
       };
       const runFile = await saveRunArtifacts({ runContext: attemptContext, artifacts });
-      await syncPrivateArtifacts({ envConfig, logger });
-      return { runFile, digest, publishResult, feishuResult };
+      await syncPrivateArtifacts({ envConfig, logger: attemptLogger, runContext: attemptContext });
+      return { runFile, digest, publishResult, feishuResult, attemptContext };
     }
   });
+
+  if (execution.success && execution.latestIncident) {
+    await markIncidentResolved({
+      rootDir,
+      incident: execution.latestIncident,
+      resolvedByAttemptNo: execution.result.attemptContext.attemptNo
+    });
+  }
 
   if (!execution.success) {
     await deliverFailureIncident({
       incident: execution.latestIncident,
       recommendation: execution.recommendation,
       envConfig,
-      runContext,
+      runContext: createAttemptRunContext(runContext, execution.latestIncident.attempt_no),
       logger
     });
+    await syncPrivateArtifacts({ envConfig, logger, runContext });
     throw new StageError(
       execution.latestIncident.stage,
       execution.latestIncident.error_type,
@@ -119,4 +203,22 @@ export async function runDailyPipeline({ rootDir, mode = "daily_run" }) {
 
 export function resolveRootDir(importMetaUrl) {
   return path.resolve(path.dirname(fileURLToPath(importMetaUrl)), "..", "..");
+}
+
+async function resolveStage({ stage, previousIncident, checkpoints, attemptContext, logger, compute }) {
+  if (shouldReuseCheckpoint({ stage, previousIncident, checkpoints })) {
+    logger.info("reusing checkpoint", {
+      stage,
+      sourceAttemptRunId: checkpoints[stage].run?.attemptRunId || null
+    });
+    return checkpoints[stage].payload;
+  }
+
+  const payload = await compute();
+  checkpoints[stage] = await saveStageCheckpoint({
+    runContext: attemptContext,
+    stage,
+    payload
+  });
+  return payload;
 }

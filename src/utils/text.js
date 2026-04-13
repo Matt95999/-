@@ -1,12 +1,44 @@
 export function stripHtml(html) {
-  return html
+  return decodeHtmlEntities(
+    html
     .replace(/<script[\s\S]*?<\/script>/gi, " ")
     .replace(/<style[\s\S]*?<\/style>/gi, " ")
     .replace(/<[^>]+>/g, " ")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&amp;/g, "&")
     .replace(/\s+/g, " ")
-    .trim();
+    .trim()
+  );
+}
+
+export function decodeHtmlEntities(text) {
+  if (!text) {
+    return "";
+  }
+
+  const namedEntities = {
+    nbsp: " ",
+    amp: "&",
+    lt: "<",
+    gt: ">",
+    quot: "\"",
+    apos: "'",
+    mdash: "-",
+    ndash: "-",
+    hellip: "...",
+    middot: "·"
+  };
+
+  return text.replace(/&(#x?[0-9a-f]+|[a-z]+);/gi, (match, entity) => {
+    const normalized = entity.toLowerCase();
+    if (normalized.startsWith("#x")) {
+      const value = Number.parseInt(normalized.slice(2), 16);
+      return Number.isNaN(value) ? match : String.fromCodePoint(value);
+    }
+    if (normalized.startsWith("#")) {
+      const value = Number.parseInt(normalized.slice(1), 10);
+      return Number.isNaN(value) ? match : String.fromCodePoint(value);
+    }
+    return namedEntities[normalized] || match;
+  });
 }
 
 export function tokenize(text) {
