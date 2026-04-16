@@ -44,6 +44,9 @@ export async function loadDotEnv(rootDir) {
 export function loadEnvConfig(env = process.env) {
   return {
     deepseekApiKey: env.DEEPSEEK_API_KEY || "",
+    deepseekTimeoutMs: safePositiveInteger(env.DEEPSEEK_TIMEOUT_MS, 45000),
+    deepseekMaxRetries: safePositiveInteger(env.DEEPSEEK_MAX_RETRIES, 2),
+    deepseekRetryDelayMs: safePositiveInteger(env.DEEPSEEK_RETRY_DELAY_MS, 1500),
     feishuWebhookUrl: env.FEISHU_WEBHOOK_URL || "",
     privateDataRepoPat: env.PRIVATE_DATA_REPO_PAT || "",
     privateDataRepo: env.PRIVATE_DATA_REPO || "",

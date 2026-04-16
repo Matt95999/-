@@ -350,3 +350,101 @@ test("summarizer backfills malformed model output before publishing", async () =
     globalThis.fetch = originalFetch;
   }
 });
+
+test("summarizer retries transient deepseek timeout before failing over", async () => {
+  const config = await loadConfig(rootDir);
+  const envConfig = {
+    discoveryProviderSampleFile: path.join(rootDir, "private-data", "samples", "discovery-results.json"),
+    discoveryProviderSearchTemplates: [],
+    discoveryProviderRequestHeaders: {},
+    deepseekApiKey: "test-key",
+    deepseekTimeoutMs: 45000,
+    deepseekMaxRetries: 2,
+    deepseekRetryDelayMs: 1,
+    feishuWebhookUrl: "",
+    publicBaseUrl: "https://example.com/report"
+  };
+
+  const discovered = await discoverCandidates({ rootDir, config, envConfig, logger });
+  const { scrapedCandidates } = await scrapeCandidates(discovered, {
+    envConfig,
+    logger,
+    remediation: {
+      allowExcerptOnly: false
+    }
+  });
+  const clusters = scoreStoryClusters(buildStoryClusters(scrapedCandidates, config.keywords), {
+    scoringConfig: config.scoring,
+    whitelistConfig: config.whitelist,
+    keywordConfig: config.keywords
+  });
+
+  let fetchCalls = 0;
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => {
+    fetchCalls += 1;
+    if (fetchCalls === 1) {
+      const error = new Error("The operation was aborted due to timeout");
+      error.name = "TimeoutError";
+      throw error;
+    }
+
+    return new Response(
+      JSON.stringify({
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({
+                daily_brief_title: "重试后的模型输出",
+                topline_summary: "模型在重试后完成了整体化摘要。",
+                theme_sections: [
+                  {
+                    title: clusters[0].theme,
+                    summary: "本轮重点围绕同一主线展开。",
+                    story_ids: [clusters[0].story_id]
+                  }
+                ],
+                story_items: [
+                  {
+                    story_id: clusters[0].story_id,
+                    headline: clusters[0].headline,
+                    theme: clusters[0].theme,
+                    narrative: ["第一句事实。", "第二句事实。"],
+                    conclusion: "结论：重试后模型成功返回。",
+                    impact: "影响：摘要链路不再因为一次超时直接中断。",
+                    source_links: [clusters[0].articles[0].url]
+                  }
+                ],
+                connections: ["同一主线在重试后仍能保持结构完整。"],
+                watchlist: ["继续关注模型接口稳定性。"]
+              })
+            }
+          }
+        ]
+      }),
+      {
+        status: 200,
+        headers: { "content-type": "application/json" }
+      }
+    );
+  };
+
+  try {
+    const digest = await summarizeDailyDigest({
+      clusters,
+      config,
+      envConfig,
+      remediation: {
+        forceLocalSummary: false,
+        allowLocalSummaryFallback: false
+      },
+      logger
+    });
+
+    assert.equal(fetchCalls, 2);
+    assert.equal(digest.daily_brief_title, "重试后的模型输出");
+    assert.ok(digest.story_items.length >= 1);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});

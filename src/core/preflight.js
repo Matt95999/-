@@ -60,6 +60,13 @@ export async function runPreflightChecks({ rootDir, mode = "daily_run", env = pr
 
   pushCheck(
     checks,
+    "deepseek_runtime",
+    "pass",
+    `timeout=${envConfig.deepseekTimeoutMs}ms retries=${envConfig.deepseekMaxRetries} retryDelay=${envConfig.deepseekRetryDelayMs}ms`
+  );
+
+  pushCheck(
+    checks,
     "private_sync_config",
     hasConsistentPrivateSyncConfig(envConfig) ? "pass" : "fail",
     describePrivateSyncConfig(envConfig)

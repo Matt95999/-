@@ -27,8 +27,55 @@ export async function summarizeDailyDigest({ clusters, config, envConfig, remedi
 }
 
 async function summarizeWithDeepSeek({ clusters, config, envConfig }) {
-  const topClusters = clusters.slice(0, config.scoring.maximum_story_items);
-  const payload = {
+  const maxRetries = Math.max(1, envConfig.deepseekMaxRetries || 1);
+  const retryDelayMs = Math.max(0, envConfig.deepseekRetryDelayMs || 0);
+  let lastError = null;
+
+  for (let attemptNo = 1; attemptNo <= maxRetries; attemptNo += 1) {
+    const payload = buildDeepSeekPayload({
+      clusters,
+      config,
+      attemptNo
+    });
+
+    try {
+      const response = await fetch("https://api.deepseek.com/chat/completions", {
+        method: "POST",
+        signal: createTimeoutSignal(envConfig.deepseekTimeoutMs || 45000),
+        headers: {
+          "content-type": "application/json",
+          authorization: `Bearer ${envConfig.deepseekApiKey}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const error = new Error(`DeepSeek API failed with status ${response.status}`);
+        error.retriable = response.status === 408 || response.status === 429 || response.status >= 500;
+        throw error;
+      }
+
+      const data = await response.json();
+      const text = data?.choices?.[0]?.message?.content;
+      return parseJsonFromModelText(text);
+    } catch (error) {
+      lastError = error;
+      if (attemptNo >= maxRetries || !isRetryableDeepSeekError(error)) {
+        throw error;
+      }
+      await delay(retryDelayMs * attemptNo);
+    }
+  }
+
+  throw lastError || new Error("DeepSeek summarization failed");
+}
+
+function buildDeepSeekPayload({ clusters, config, attemptNo }) {
+  const storyLimit = Math.max(2, config.scoring.maximum_story_items - (attemptNo - 1) * 2);
+  const excerptLimit = Math.max(140, 260 - (attemptNo - 1) * 60);
+  const topClusters = clusters.slice(0, storyLimit);
+
+  return {
     model: "deepseek-chat",
     temperature: 0.2,
     response_format: { type: "json_object" },
@@ -76,7 +123,7 @@ async function summarizeWithDeepSeek({ clusters, config, envConfig }) {
             cross_links: cluster.cross_links,
             articles: cluster.articles.map((article) => ({
               title: article.title,
-              excerpt: truncate(article.excerpt || article.full_text || "", 260),
+              excerpt: truncate(article.excerpt || article.full_text || "", excerptLimit),
               published_at: article.published_at,
               url: article.url
             }))
@@ -85,24 +132,22 @@ async function summarizeWithDeepSeek({ clusters, config, envConfig }) {
       }
     ]
   };
+}
 
-  const response = await fetch("https://api.deepseek.com/chat/completions", {
-    method: "POST",
-    signal: createTimeoutSignal(20000),
-    headers: {
-      "content-type": "application/json",
-      authorization: `Bearer ${envConfig.deepseekApiKey}`
-    },
-    body: JSON.stringify(payload)
-  });
+function isRetryableDeepSeekError(error) {
+  return (
+    error?.retriable === true ||
+    error?.name === "AbortError" ||
+    error?.name === "TimeoutError" ||
+    /timeout/i.test(error?.message || "")
+  );
+}
 
-  if (!response.ok) {
-    throw new Error(`DeepSeek API failed with status ${response.status}`);
+function delay(ms) {
+  if (!ms) {
+    return Promise.resolve();
   }
-
-  const data = await response.json();
-  const text = data?.choices?.[0]?.message?.content;
-  return parseJsonFromModelText(text);
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function summarizeLocally(clusters, config) {

@@ -70,6 +70,9 @@ jobs:
       - name: Run preflight checks
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          DEEPSEEK_TIMEOUT_MS: ${{ vars.DEEPSEEK_TIMEOUT_MS }}
+          DEEPSEEK_MAX_RETRIES: ${{ vars.DEEPSEEK_MAX_RETRIES }}
+          DEEPSEEK_RETRY_DELAY_MS: ${{ vars.DEEPSEEK_RETRY_DELAY_MS }}
           FEISHU_WEBHOOK_URL: ${{ secrets.FEISHU_WEBHOOK_URL }}
           PRIVATE_DATA_REPO_PAT: ${{ secrets.PRIVATE_DATA_REPO_PAT }}
           PRIVATE_DATA_REPO: ${{ secrets.PRIVATE_DATA_REPO }}
@@ -85,6 +88,9 @@ jobs:
       - name: Run digest pipeline
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          DEEPSEEK_TIMEOUT_MS: ${{ vars.DEEPSEEK_TIMEOUT_MS }}
+          DEEPSEEK_MAX_RETRIES: ${{ vars.DEEPSEEK_MAX_RETRIES }}
+          DEEPSEEK_RETRY_DELAY_MS: ${{ vars.DEEPSEEK_RETRY_DELAY_MS }}
           FEISHU_WEBHOOK_URL: ${{ secrets.FEISHU_WEBHOOK_URL }}
           PRIVATE_DATA_REPO_PAT: ${{ secrets.PRIVATE_DATA_REPO_PAT }}
           PRIVATE_DATA_REPO: ${{ secrets.PRIVATE_DATA_REPO }}
