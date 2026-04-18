@@ -37,9 +37,9 @@
       "priority_weight": 1,
       "allowed_hosts": ["qwenlm.github.io"],
       "include_url_patterns": ["/blog/(?!page/)[^?#]+"],
-      "exclude_url_patterns": ["/zh/blog/?$", "/blog/?$", "/blog/page/"],
+      "exclude_url_patterns": ["/zh/blog/?$", "/blog/?$", "/blog/page/", "\\.xml$", "%3Clink"],
       "max_entries": 8,
-      "seed_urls": ["https://qwenlm.github.io/blog/"],
+      "seed_urls": ["https://qwenlm.github.io/blog/index.xml"],
       "notes": "Qwen 模型与技术报告的一手发布。"
     },
     {

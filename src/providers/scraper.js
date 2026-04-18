@@ -21,16 +21,18 @@ const BOILERPLATE_MARKERS = [
   "下一篇"
 ];
 const LOW_QUALITY_TEXT_MARKERS = [
-  "Navigation Menu",
-  "Toggle navigation",
-  "Skip to content",
-  "Search code, repositories, users",
-  "Provide feedback",
-  "Explore our next generation AI systems",
-  "Your browser does not support the video tag",
-  "Latest updates from",
-  "Subscribe About Archive",
-  "Research Economic Futures Commitments Learn News Try Claude"
+  "navigation menu",
+  "toggle navigation",
+  "skip to content",
+  "skip to main content",
+  "skip to footer",
+  "search code, repositories, users",
+  "provide feedback",
+  "explore our next generation ai systems",
+  "your browser does not support the video tag",
+  "latest updates from",
+  "subscribe about archive",
+  "research economic futures commitments learn news try claude"
 ];
 const DOMAIN_CONTENT_PATTERNS = [
   {
@@ -134,10 +136,11 @@ export function parseArticlePage(html, sourceUrl = "") {
     extractFirstTag(html, "h1") ||
     extractFirstTag(html, "title") ||
     "";
-  const excerpt =
+  const excerpt = sanitizeExcerpt(
     extractMeta(html, "name", "description") ||
-    extractMeta(html, "property", "og:description") ||
-    extractSentences(fullText, 2).join(" ");
+      extractMeta(html, "property", "og:description") ||
+      extractSentences(fullText, 2).join(" ")
+  );
   const publishedAt =
     extractMeta(html, "property", "article:published_time") ||
     extractMeta(html, "name", "publishdate") ||
@@ -276,7 +279,10 @@ function scoreReadableText(text) {
 function cleanReadableText(text) {
   let cleaned = text || "";
   for (const marker of BOILERPLATE_MARKERS) {
-    cleaned = cleaned.replace(new RegExp(escapeRegex(marker), "g"), " ");
+    cleaned = cleaned.replace(new RegExp(escapeRegex(marker), "gi"), " ");
+  }
+  for (const marker of LOW_QUALITY_TEXT_MARKERS) {
+    cleaned = cleaned.replace(new RegExp(escapeRegex(marker), "gi"), " ");
   }
   return cleaned.replace(/\s+/g, " ").trim();
 }
@@ -287,22 +293,41 @@ function shouldKeepParsedFullText(text) {
     return false;
   }
 
-  const lower = normalized.toLowerCase();
-  if (lower.startsWith("skip to main content")) {
-    return false;
+  return !isLowQualityText(normalized);
+}
+
+function sanitizeExcerpt(text) {
+  const normalized = cleanReadableText(text);
+  if (!normalized || normalized.length < 24) {
+    return null;
   }
-  if (lower.includes("skip to main content") && lower.includes("skip to footer")) {
-    return false;
-  }
-  if (lower.includes("navigation menu") && lower.includes("toggle navigation")) {
-    return false;
-  }
-  if (lower.includes("your browser does not support the video tag")) {
-    return false;
+  return isLowQualityText(normalized) ? null : normalized;
+}
+
+function isLowQualityText(text) {
+  const lower = String(text || "").trim().toLowerCase();
+  if (!lower) {
+    return true;
   }
 
-  const markerHits = LOW_QUALITY_TEXT_MARKERS.reduce((count, marker) => count + Number(normalized.includes(marker)), 0);
-  return markerHits < 2;
+  if (lower.startsWith("skip to main content")) {
+    return true;
+  }
+  if (lower.includes("skip to main content")) {
+    return true;
+  }
+  if (lower.includes("navigation menu")) {
+    return true;
+  }
+  if (lower.includes("toggle navigation")) {
+    return true;
+  }
+  if (lower.includes("your browser does not support the video tag")) {
+    return true;
+  }
+
+  const markerHits = LOW_QUALITY_TEXT_MARKERS.reduce((count, marker) => count + Number(lower.includes(marker)), 0);
+  return markerHits >= 1;
 }
 
 function pickBestTitle(parsedTitle, candidateTitle) {

@@ -203,6 +203,23 @@ test("discovery ignores image assets even when urls contain query strings", () =
   assert.deepEqual(entries.map((entry) => entry.url), ["https://example.com/news/model-launch"]);
 });
 
+test("discovery ignores feed documents and encoded placeholder links", () => {
+  const html = `
+    <html><body>
+      <a href="https://qwenlm.github.io/blog/index.xml">Feed</a>
+      <a href="https://qwenlm.github.io/%3Clink%20or%20path%20of%20image%20for%20opengraph%3E">Placeholder image</a>
+      <a href="https://qwenlm.github.io/blog/qwen3guard/">Qwen3Guard</a>
+    </body></html>`;
+
+  const entries = extractDiscoveryEntries({
+    resourceUrl: "https://qwenlm.github.io/blog/",
+    text: html,
+    discoverySource: "whitelist"
+  });
+
+  assert.deepEqual(entries.map((entry) => entry.url), ["https://qwenlm.github.io/blog/qwen3guard/"]);
+});
+
 test("discovery infers published_at from human-readable dates in titles", () => {
   const html = `
     <html><body>
@@ -462,6 +479,27 @@ test("scraper rejects skip-to-content page chrome and keeps cleaner excerpt", as
   } finally {
     globalThis.fetch = originalFetch;
   }
+});
+
+test("parseArticlePage prefers meta description when body is page chrome", () => {
+  const html = `
+    <html>
+      <head>
+        <title>Evaluating agents for scientific discovery | Ai2</title>
+        <meta name="description" content="Ai2 发布了一套评估 AI 科研代理是否真正推动科学发现的基准与方法。">
+      </head>
+      <body>
+        Skip to main content
+        Ai2 Open models Research Latest Papers News Institute About Careers Media center
+        Navigation Menu
+        Evaluating agents for scientific discovery April 13, 2026 Ai2 Share
+        Everyone's building AI science agents. But how do you know if they actually work?
+      </body>
+    </html>`;
+
+  const parsed = parseArticlePage(html, "https://allenai.org/blog/evaluating-scientific-discovery-agents");
+
+  assert.equal(parsed.excerpt, "Ai2 发布了一套评估 AI 科研代理是否真正推动科学发现的基准与方法。");
 });
 
 test("scraper uses domain-specific containers for common production sources", () => {
