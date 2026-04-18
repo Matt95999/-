@@ -12,6 +12,7 @@ const XML_ITEM_PATTERN = /<(item|entry)\b[\s\S]*?<\/\1>/gi;
 const REDIRECT_PARAM_NAMES = ["url", "target", "targetUrl", "dest", "destination", "u", "to", "redirect"];
 const BLOCKED_URL_PROTOCOLS = ["javascript:", "mailto:", "tel:", "data:"];
 const BLOCKED_EXTENSIONS = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg", ".css", ".js", ".ico", ".woff", ".woff2", ".ttf", ".pdf", ".zip"];
+const LISTING_SEGMENTS = new Set(["blog", "news", "archive", "archives", "about", "category", "categories", "tag", "tags", "topics", "topic", "page"]);
 
 export async function discoverCandidates({ rootDir, config, envConfig, logger, mode = "daily_run" }) {
   const discovered = [];
@@ -543,22 +544,53 @@ function isLikelyArticleUrl(url, baseUrl) {
     }
 
     const pathSegments = parsed.pathname.split("/").filter(Boolean);
+    if (!pathSegments.length || isLikelyListingPath(pathSegments, parsed)) {
+      return false;
+    }
+
+    const lastSegment = pathSegments.at(-1)?.toLowerCase() || "";
     const articleLikeSegments = new Set(["article", "articles", "post", "posts", "news", "story", "entry", "blog", "archive", "archives"]);
-    if (pathSegments.some((segment) => articleLikeSegments.has(segment.toLowerCase()))) {
+    if (pathSegments.some((segment) => articleLikeSegments.has(segment.toLowerCase())) && lastSegment.length >= 4) {
       return true;
     }
     if (pathSegments.some((segment) => /^\d{4}([_-]?\d{2}){0,2}$/.test(segment))) {
       return true;
     }
-    if (pathSegments.length >= 2 && pathSegments.at(-1)?.length >= 8) {
+    if (pathSegments.length >= 2 && lastSegment.length >= 8) {
       return true;
     }
 
     const baseHost = safeHostname(baseUrl);
-    return parsed.hostname !== baseHost && pathSegments.length >= 1 && pathSegments.at(-1)?.length >= 8;
+    return parsed.hostname !== baseHost && pathSegments.length >= 1 && lastSegment.length >= 8;
   } catch {
     return false;
   }
+}
+
+function isLikelyListingPath(pathSegments, parsedUrl) {
+  const lowerSegments = pathSegments.map((segment) => segment.toLowerCase());
+  const lastSegment = lowerSegments.at(-1) || "";
+
+  if (LISTING_SEGMENTS.has(lastSegment) && lowerSegments.length <= 2) {
+    return true;
+  }
+
+  if (lowerSegments.includes("page")) {
+    const pageIndex = lowerSegments.indexOf("page");
+    if (/^\d+$/.test(lowerSegments[pageIndex + 1] || "")) {
+      return true;
+    }
+  }
+
+  if (["archive", "archives", "about"].includes(lastSegment)) {
+    return true;
+  }
+
+  if (parsedUrl.searchParams.has("page") || parsedUrl.searchParams.has("category") || parsedUrl.searchParams.has("tag")) {
+    return true;
+  }
+
+  return false;
 }
 
 function safeHostname(url) {

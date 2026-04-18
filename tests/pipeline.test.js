@@ -165,6 +165,28 @@ test("discovery ignores provider self links in live rss payloads", () => {
   );
 });
 
+test("discovery filters listing pages and keeps article detail urls", () => {
+  const html = `
+    <html><body>
+      <a href="https://example.com/news">News</a>
+      <a href="https://example.com/news/model-launch">Model launch</a>
+      <a href="https://example.com/blog/archive">Archive</a>
+      <a href="https://example.com/blog/2026/04/platform-update">Platform update</a>
+      <a href="https://example.com/blog/page/2">Page 2</a>
+    </body></html>`;
+
+  const entries = extractDiscoveryEntries({
+    resourceUrl: "https://example.com/blog/",
+    text: html,
+    discoverySource: "whitelist"
+  });
+
+  assert.deepEqual(
+    entries.map((entry) => entry.url),
+    ["https://example.com/news/model-launch", "https://example.com/blog/2026/04/platform-update"]
+  );
+});
+
 test("daily discovery uses whitelist-first sources and skips provider search noise", async () => {
   const whitelistLogger = createLogger("test-discovery-whitelist");
   const config = {
@@ -263,6 +285,98 @@ test("scraper prefers article-like content blocks over page chrome", () => {
   assert.match(parsed.fullText, /GLM-5\.1/);
   assert.doesNotMatch(parsed.fullText, /返回顶部/);
   assert.doesNotMatch(parsed.fullText, /意见反馈/);
+});
+
+test("scraper keeps whitelist excerpt when article fetch fails on first attempt", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () =>
+    new Response("forbidden", {
+      status: 403,
+      headers: { "content-type": "text/plain" }
+    });
+
+  try {
+    const { scrapedCandidates } = await scrapeCandidates(
+      [
+        {
+          source_name: "OpenAI Newsroom",
+          source_type: "官方博客",
+          url: "https://openai.com/news/example",
+          title: "OpenAI ships example release",
+          excerpt: "官方 feed 摘要：发布了新的模型能力与开发者接口。",
+          confidence: 0.72,
+          signals: {
+            discovery_source: "whitelist"
+          }
+        }
+      ],
+      {
+        envConfig: { discoveryProviderRequestHeaders: {} },
+        logger,
+        remediation: { allowExcerptOnly: false }
+      }
+    );
+
+    assert.equal(scrapedCandidates.length, 1);
+    assert.equal(scrapedCandidates[0].full_text, null);
+    assert.equal(scrapedCandidates[0].excerpt, "官方 feed 摘要：发布了新的模型能力与开发者接口。");
+    assert.equal(scrapedCandidates[0].signals.parse_quality, "excerpt_only");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("scraper drops low-quality chrome text and prefers feed excerpt", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () =>
+    new Response(
+      `
+        <html>
+          <head><title>Release b8833 · ggml-org/llama.cpp</title></head>
+          <body>
+            Skip to content Navigation Menu Toggle navigation
+            Search code, repositories, users, issues, pull requests
+            Provide feedback Explore our next generation AI systems
+            Latest updates from GitHub
+          </body>
+        </html>
+      `,
+      {
+        status: 200,
+        headers: { "content-type": "text/html" }
+      }
+    );
+
+  try {
+    const { scrapedCandidates } = await scrapeCandidates(
+      [
+        {
+          source_name: "llama.cpp Releases",
+          source_type: "GitHub Release",
+          url: "https://github.com/ggml-org/llama.cpp/releases/tag/b8833",
+          title: "Release b8833 · ggml-org/llama.cpp",
+          excerpt: "发布说明显示，这次更新提升了推理性能并补充了模型支持。",
+          confidence: 0.72,
+          signals: {
+            discovery_source: "whitelist"
+          }
+        }
+      ],
+      {
+        envConfig: { discoveryProviderRequestHeaders: {} },
+        logger,
+        remediation: { allowExcerptOnly: false }
+      }
+    );
+
+    assert.equal(scrapedCandidates.length, 1);
+    assert.equal(scrapedCandidates[0].full_text, "");
+    assert.equal(scrapedCandidates[0].excerpt, "发布说明显示，这次更新提升了推理性能并补充了模型支持。");
+    assert.equal(scrapedCandidates[0].signals.has_full_text, false);
+    assert.equal(scrapedCandidates[0].signals.parse_quality, "excerpt_only");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
 });
 
 test("scraper uses domain-specific containers for common production sources", () => {

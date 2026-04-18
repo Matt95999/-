@@ -15,6 +15,7 @@
       "source_type": "官方博客",
       "priority_weight": 1,
       "allowed_hosts": ["www.anthropic.com", "anthropic.com"],
+      "include_url_patterns": ["/news/[^/?#]+"],
       "exclude_url_patterns": ["press-kit"],
       "max_entries": 8,
       "seed_urls": ["https://www.anthropic.com/news"],
@@ -25,6 +26,7 @@
       "source_type": "官方博客",
       "priority_weight": 1,
       "allowed_hosts": ["deepmind.google"],
+      "include_url_patterns": ["/discover/blog/[^/?#]+"],
       "max_entries": 8,
       "seed_urls": ["https://deepmind.google/discover/blog/"],
       "notes": "Gemini、机器人与世界模型更新。"
@@ -34,6 +36,8 @@
       "source_type": "官方博客",
       "priority_weight": 1,
       "allowed_hosts": ["qwenlm.github.io"],
+      "include_url_patterns": ["/blog/(?!page/)[^?#]+"],
+      "exclude_url_patterns": ["/zh/blog/?$", "/blog/?$", "/blog/page/"],
       "max_entries": 8,
       "seed_urls": ["https://qwenlm.github.io/blog/"],
       "notes": "Qwen 模型与技术报告的一手发布。"
@@ -43,6 +47,8 @@
       "source_type": "官方博客",
       "priority_weight": 0.98,
       "allowed_hosts": ["mistral.ai"],
+      "include_url_patterns": ["/news/[^/?#]+"],
+      "exclude_url_patterns": ["/news/?$", "\\?category="],
       "max_entries": 8,
       "seed_urls": ["https://mistral.ai/news"],
       "notes": "模型、API 与平台更新。"
@@ -61,6 +67,8 @@
       "source_type": "研究机构",
       "priority_weight": 0.95,
       "allowed_hosts": ["allenai.org"],
+      "include_url_patterns": ["/blog/[^/?#]+"],
+      "exclude_url_patterns": ["/blog/?$", "/news/?$"],
       "max_entries": 6,
       "seed_urls": ["https://allenai.org/blog"],
       "notes": "开放模型与研究解读质量高。"
@@ -70,6 +78,8 @@
       "source_type": "研究机构",
       "priority_weight": 0.95,
       "allowed_hosts": ["bair.berkeley.edu"],
+      "include_url_patterns": ["/blog/[^/?#]+"],
+      "exclude_url_patterns": ["/blog/archive/?$", "/blog/about/?$"],
       "max_entries": 6,
       "seed_urls": ["https://bair.berkeley.edu/blog/"],
       "notes": "Berkeley AI Research 一线研究写作。"
@@ -79,6 +89,8 @@
       "source_type": "研究机构",
       "priority_weight": 0.85,
       "allowed_hosts": ["hai.stanford.edu"],
+      "include_url_patterns": ["/news/[^/?#]+"],
+      "exclude_url_patterns": ["/news/?$"],
       "max_entries": 5,
       "seed_urls": ["https://hai.stanford.edu/news"],
       "notes": "补足政策、治理与产业影响。"

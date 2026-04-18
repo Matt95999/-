@@ -20,6 +20,18 @@ const BOILERPLATE_MARKERS = [
   "上一篇",
   "下一篇"
 ];
+const LOW_QUALITY_TEXT_MARKERS = [
+  "Navigation Menu",
+  "Toggle navigation",
+  "Skip to content",
+  "Search code, repositories, users",
+  "Provide feedback",
+  "Explore our next generation AI systems",
+  "Your browser does not support the video tag",
+  "Latest updates from",
+  "Subscribe About Archive",
+  "Research Economic Futures Commitments Learn News Try Claude"
+];
 const DOMAIN_CONTENT_PATTERNS = [
   {
     hostPattern: /(^|\.)36kr\.com$/i,
@@ -64,13 +76,13 @@ export async function scrapeCandidates(candidates, { envConfig, logger, remediat
     try {
       const html = await loadResourceText(candidate.url, envConfig.discoveryProviderRequestHeaders);
       const parsed = parseArticlePage(html, candidate.url);
-      const fullText = parsed.fullText || candidate.full_text || "";
+      const fullText = shouldKeepParsedFullText(parsed.fullText) ? parsed.fullText : candidate.full_text || "";
       const excerpt = candidate.excerpt || parsed.excerpt || truncate(fullText, 180);
       const confidence = computeConfidence(candidate.confidence, parsed, remediation);
 
       results.push({
         ...candidate,
-        title: parsed.title || candidate.title,
+        title: pickBestTitle(parsed.title, candidate.title),
         published_at: parsed.publishedAt || candidate.published_at,
         discovered_at: candidate.discovered_at || nowIso(),
         excerpt,
@@ -79,7 +91,8 @@ export async function scrapeCandidates(candidates, { envConfig, logger, remediat
           ...candidate.signals,
           has_full_text: Boolean(fullText),
           byline: parsed.byline,
-          interaction_signal: parsed.interactionSignal
+          interaction_signal: parsed.interactionSignal,
+          parse_quality: fullText ? "full_text" : "excerpt_only"
         },
         confidence,
         content_hash: sha256(`${candidate.url}|${parsed.title || candidate.title}|${fullText || excerpt}`)
@@ -87,7 +100,7 @@ export async function scrapeCandidates(candidates, { envConfig, logger, remediat
     } catch (error) {
       logger.warn("scrape failed", { url: candidate.url, error: error.message });
       failures.push({ candidate, reason: error.message });
-      if (remediation.allowExcerptOnly && candidate.excerpt) {
+      if ((candidate.signals?.discovery_source === "whitelist" || remediation.allowExcerptOnly) && candidate.excerpt) {
         results.push({
           ...candidate,
           full_text: null,
@@ -95,7 +108,8 @@ export async function scrapeCandidates(candidates, { envConfig, logger, remediat
           signals: {
             ...candidate.signals,
             has_full_text: false,
-            scrape_failed: true
+            scrape_failed: true,
+            parse_quality: "excerpt_only"
           }
         });
       }
@@ -267,6 +281,43 @@ function cleanReadableText(text) {
   return cleaned.replace(/\s+/g, " ").trim();
 }
 
+function shouldKeepParsedFullText(text) {
+  const normalized = cleanReadableText(text);
+  if (!normalized || normalized.length < 180) {
+    return false;
+  }
+
+  const markerHits = LOW_QUALITY_TEXT_MARKERS.reduce((count, marker) => count + Number(normalized.includes(marker)), 0);
+  return markerHits < 2;
+}
+
+function pickBestTitle(parsedTitle, candidateTitle) {
+  const parsed = (parsedTitle || "").trim();
+  const candidate = (candidateTitle || "").trim();
+  if (!parsed) {
+    return candidate;
+  }
+  if (!candidate) {
+    return parsed;
+  }
+
+  if (isLowInformationTitle(parsed) && !isLowInformationTitle(candidate)) {
+    return candidate;
+  }
+
+  return parsed.length >= candidate.length ? parsed : candidate;
+}
+
+function isLowInformationTitle(title) {
+  const normalized = title.trim().toLowerCase();
+  if (!normalized) {
+    return true;
+  }
+
+  const stripped = normalized.replace(/[|:·\-]/g, " ").replace(/\s+/g, " ").trim();
+  return ["news", "blog", "archive", "latest news", "latest news mistral ai"].includes(stripped);
+}
+
 function safeHostname(url) {
   try {
     return new URL(url).hostname;
@@ -291,7 +342,7 @@ function extractFirstTag(html, tag) {
 
 function computeConfidence(baseConfidence, parsed, remediation) {
   let confidence = baseConfidence;
-  if (parsed.fullText && parsed.fullText.length > 180) {
+  if (shouldKeepParsedFullText(parsed.fullText)) {
     confidence += 0.15;
   }
   if (parsed.publishedAt) {
