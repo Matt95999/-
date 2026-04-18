@@ -73,19 +73,31 @@ export async function runPreflightChecks({ rootDir, mode = "daily_run", env = pr
   );
 
   if (config) {
+    const whitelistSeedCount = countWhitelistSeeds(config.whitelist);
     pushCheck(
       checks,
       "whitelist_sources",
-      Array.isArray(config.whitelist?.sources) && config.whitelist.sources.length ? "pass" : "warn",
-      `count=${Array.isArray(config.whitelist?.sources) ? config.whitelist.sources.length : 0}`
+      whitelistSeedCount > 0 ? "pass" : "warn",
+      `sources=${Array.isArray(config.whitelist?.sources) ? config.whitelist.sources.length : 0} seeds=${whitelistSeedCount}`
     );
 
-    if ((mode === "daily_run" || mode === "retry_failed_run") && !hasDiscoveryInputs(envConfig)) {
+    if (mode === "daily_run" || mode === "retry_failed_run") {
+      pushCheck(
+        checks,
+        "production_source_policy",
+        whitelistSeedCount > 0 ? "pass" : "warn",
+        whitelistSeedCount > 0
+          ? "daily production uses whitelist-first discovery"
+          : "no whitelist seeds configured, production would fall back to provider discovery"
+      );
+    }
+
+    if ((mode === "daily_run" || mode === "retry_failed_run") && !hasDiscoveryInputs(envConfig, config.whitelist)) {
       pushCheck(
         checks,
         "discovery_inputs",
         "warn",
-        "no sample file or search templates configured, discovery will rely on whitelist and local defaults"
+        "no whitelist seeds, sample file, or search templates configured"
       );
     } else if (mode === "daily_run" || mode === "retry_failed_run") {
       pushCheck(checks, "discovery_inputs", "pass", "discovery inputs configured");
@@ -124,8 +136,12 @@ export async function runPreflightChecks({ rootDir, mode = "daily_run", env = pr
   };
 }
 
-function hasDiscoveryInputs(envConfig) {
-  return Boolean(envConfig.discoveryProviderSampleFile || envConfig.discoveryProviderSearchTemplates.length);
+function hasDiscoveryInputs(envConfig, whitelistConfig = {}) {
+  return Boolean(
+    countWhitelistSeeds(whitelistConfig) ||
+      envConfig.discoveryProviderSampleFile ||
+      envConfig.discoveryProviderSearchTemplates.length
+  );
 }
 
 function hasConsistentPrivateSyncConfig(envConfig) {
@@ -144,6 +160,13 @@ function describePrivateSyncConfig(envConfig) {
   }
 
   return `${envConfig.privateDataRepo}@${envConfig.privateDataRepoBranch}`;
+}
+
+function countWhitelistSeeds(whitelistConfig) {
+  return (whitelistConfig?.sources || []).reduce(
+    (count, source) => count + (Array.isArray(source.seed_urls) ? source.seed_urls.length : 0),
+    0
+  );
 }
 
 function summarizeChecks(checks) {

@@ -1,11 +1,132 @@
 {
   "sources": [
     {
-      "name": "示例来源",
-      "source_type": "公众号",
-      "priority_weight": 1.5,
-      "seed_urls": [],
-      "notes": "后续可持续补充白名单来源。"
+      "name": "OpenAI Newsroom",
+      "source_type": "官方博客",
+      "priority_weight": 1,
+      "allowed_hosts": ["openai.com"],
+      "exclude_url_patterns": ["/academy/", "contest", "terms"],
+      "max_entries": 8,
+      "seed_urls": ["https://openai.com/news/rss.xml"],
+      "notes": "模型、产品与安全更新的一手源。"
+    },
+    {
+      "name": "Anthropic News",
+      "source_type": "官方博客",
+      "priority_weight": 1,
+      "allowed_hosts": ["www.anthropic.com", "anthropic.com"],
+      "exclude_url_patterns": ["press-kit"],
+      "max_entries": 8,
+      "seed_urls": ["https://www.anthropic.com/news"],
+      "notes": "Claude、Agent SDK 与安全研究的一手源。"
+    },
+    {
+      "name": "Google DeepMind Blog",
+      "source_type": "官方博客",
+      "priority_weight": 1,
+      "allowed_hosts": ["deepmind.google"],
+      "max_entries": 8,
+      "seed_urls": ["https://deepmind.google/discover/blog/"],
+      "notes": "Gemini、机器人与世界模型更新。"
+    },
+    {
+      "name": "Qwen Blog",
+      "source_type": "官方博客",
+      "priority_weight": 1,
+      "allowed_hosts": ["qwenlm.github.io"],
+      "max_entries": 8,
+      "seed_urls": ["https://qwenlm.github.io/blog/"],
+      "notes": "Qwen 模型与技术报告的一手发布。"
+    },
+    {
+      "name": "Mistral News",
+      "source_type": "官方博客",
+      "priority_weight": 0.98,
+      "allowed_hosts": ["mistral.ai"],
+      "max_entries": 8,
+      "seed_urls": ["https://mistral.ai/news"],
+      "notes": "模型、API 与平台更新。"
+    },
+    {
+      "name": "Hugging Face Blog",
+      "source_type": "官方博客",
+      "priority_weight": 0.95,
+      "allowed_hosts": ["huggingface.co"],
+      "max_entries": 8,
+      "seed_urls": ["https://huggingface.co/blog/feed.xml"],
+      "notes": "官方博客 feed，仅保留官方栏目。"
+    },
+    {
+      "name": "Ai2 Blog",
+      "source_type": "研究机构",
+      "priority_weight": 0.95,
+      "allowed_hosts": ["allenai.org"],
+      "max_entries": 6,
+      "seed_urls": ["https://allenai.org/blog"],
+      "notes": "开放模型与研究解读质量高。"
+    },
+    {
+      "name": "BAIR Blog",
+      "source_type": "研究机构",
+      "priority_weight": 0.95,
+      "allowed_hosts": ["bair.berkeley.edu"],
+      "max_entries": 6,
+      "seed_urls": ["https://bair.berkeley.edu/blog/"],
+      "notes": "Berkeley AI Research 一线研究写作。"
+    },
+    {
+      "name": "Stanford HAI News",
+      "source_type": "研究机构",
+      "priority_weight": 0.85,
+      "allowed_hosts": ["hai.stanford.edu"],
+      "max_entries": 5,
+      "seed_urls": ["https://hai.stanford.edu/news"],
+      "notes": "补足政策、治理与产业影响。"
+    },
+    {
+      "name": "Transformers Releases",
+      "source_type": "GitHub Release",
+      "priority_weight": 0.95,
+      "allowed_hosts": ["github.com"],
+      "max_entries": 6,
+      "seed_urls": ["https://github.com/huggingface/transformers/releases.atom"],
+      "notes": "框架支持、迁移与 breaking changes。"
+    },
+    {
+      "name": "vLLM Releases",
+      "source_type": "GitHub Release",
+      "priority_weight": 0.95,
+      "allowed_hosts": ["github.com"],
+      "max_entries": 6,
+      "seed_urls": ["https://github.com/vllm-project/vllm/releases.atom"],
+      "notes": "推理性能、模型支持与 serving 能力变化。"
+    },
+    {
+      "name": "SGLang Releases",
+      "source_type": "GitHub Release",
+      "priority_weight": 0.92,
+      "allowed_hosts": ["github.com"],
+      "max_entries": 6,
+      "seed_urls": ["https://github.com/sgl-project/sglang/releases.atom"],
+      "notes": "高性能推理与新模型支持。"
+    },
+    {
+      "name": "llama.cpp Releases",
+      "source_type": "GitHub Release",
+      "priority_weight": 0.92,
+      "allowed_hosts": ["github.com"],
+      "max_entries": 6,
+      "seed_urls": ["https://github.com/ggml-org/llama.cpp/releases.atom"],
+      "notes": "本地推理、server API 与部署能力更新。"
+    },
+    {
+      "name": "Ollama Releases",
+      "source_type": "GitHub Release",
+      "priority_weight": 0.85,
+      "allowed_hosts": ["github.com"],
+      "max_entries": 5,
+      "seed_urls": ["https://github.com/ollama/ollama/releases.atom"],
+      "notes": "作为可用性与部署生态补充观察源。"
     }
   ]
 }

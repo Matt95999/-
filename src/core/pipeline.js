@@ -56,7 +56,7 @@ export async function runDailyPipeline({ rootDir, mode = "daily_run" }) {
         attemptContext,
         logger: attemptLogger,
         compute: async () => ({
-          discovered: await discoverCandidates({ rootDir, config, envConfig, logger: attemptLogger })
+          discovered: await discoverCandidates({ rootDir, config, envConfig, logger: attemptLogger, mode })
         })
       });
       if (!discovered.length) {

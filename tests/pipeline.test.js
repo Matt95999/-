@@ -29,7 +29,7 @@ test("pipeline builds a coherent digest from sample discovery results", async ()
     publicBaseUrl: "https://example.com/report"
   };
 
-  const discovered = await discoverCandidates({ rootDir, config, envConfig, logger });
+  const discovered = await discoverCandidates({ rootDir, config, envConfig, logger, mode: "manual_review" });
   assert.ok(discovered.length >= 3);
 
   const { scrapedCandidates } = await scrapeCandidates(discovered, {
@@ -165,6 +165,43 @@ test("discovery ignores provider self links in live rss payloads", () => {
   );
 });
 
+test("daily discovery uses whitelist-first sources and skips provider search noise", async () => {
+  const whitelistLogger = createLogger("test-discovery-whitelist");
+  const config = {
+    keywords: { themes: [], query_expansions: [] },
+    whitelist: {
+      sources: [
+        {
+          name: "Curated Source",
+          source_type: "官方博客",
+          priority_weight: 1,
+          allowed_hosts: ["news.example.com"],
+          seed_urls: [path.join(rootDir, "tests", "fixtures", "discovery-provider-search.html")]
+        }
+      ]
+    },
+    scoring: { maximum_attempts: 5 }
+  };
+  const envConfig = {
+    discoveryProviderSampleFile: path.join(rootDir, "private-data", "samples", "discovery-results.json"),
+    discoveryProviderSearchTemplates: ["https://example.com/search?q={query}"],
+    discoveryProviderRequestHeaders: {},
+    discoveryProviderMaxQueries: 2
+  };
+
+  const discovered = await discoverCandidates({
+    rootDir,
+    config,
+    envConfig,
+    logger: whitelistLogger,
+    mode: "daily_run"
+  });
+
+  assert.equal(discovered.length, 1);
+  assert.equal(discovered[0].source_name, "Curated Source");
+  assert.equal(discovered[0].url, "https://news.example.com/2026/04/12/agent-platform-audit");
+});
+
 test("attempt contexts keep retry artifacts isolated", () => {
   const runContext = createRunContext(rootDir);
   const retryContext = createAttemptRunContext(runContext, 3);
@@ -282,7 +319,7 @@ test("summarizer backfills malformed model output before publishing", async () =
     publicBaseUrl: "https://example.com/report"
   };
 
-  const discovered = await discoverCandidates({ rootDir, config, envConfig, logger });
+  const discovered = await discoverCandidates({ rootDir, config, envConfig, logger, mode: "manual_review" });
   const { scrapedCandidates } = await scrapeCandidates(discovered, {
     envConfig,
     logger,
@@ -365,7 +402,7 @@ test("summarizer retries transient deepseek timeout before failing over", async 
     publicBaseUrl: "https://example.com/report"
   };
 
-  const discovered = await discoverCandidates({ rootDir, config, envConfig, logger });
+  const discovered = await discoverCandidates({ rootDir, config, envConfig, logger, mode: "manual_review" });
   const { scrapedCandidates } = await scrapeCandidates(discovered, {
     envConfig,
     logger,

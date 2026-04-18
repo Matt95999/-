@@ -13,7 +13,7 @@ const REDIRECT_PARAM_NAMES = ["url", "target", "targetUrl", "dest", "destination
 const BLOCKED_URL_PROTOCOLS = ["javascript:", "mailto:", "tel:", "data:"];
 const BLOCKED_EXTENSIONS = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg", ".css", ".js", ".ico", ".woff", ".woff2", ".ttf", ".pdf", ".zip"];
 
-export async function discoverCandidates({ rootDir, config, envConfig, logger }) {
+export async function discoverCandidates({ rootDir, config, envConfig, logger, mode = "daily_run" }) {
   const discovered = [];
 
   const whitelistCandidates = await discoverFromWhitelist({
@@ -23,12 +23,14 @@ export async function discoverCandidates({ rootDir, config, envConfig, logger })
   });
   discovered.push(...whitelistCandidates);
 
-  const searchCandidates = await discoverFromProviders({
-    rootDir,
-    config,
-    envConfig,
-    logger
-  });
+  const searchCandidates = shouldUseProviderSources({ mode, whitelistConfig: config.whitelist, whitelistCandidates })
+    ? await discoverFromProviders({
+        rootDir,
+        config,
+        envConfig,
+        logger
+      })
+    : [];
   discovered.push(...searchCandidates);
 
   const deduped = dedupeCandidates(discovered);
@@ -53,10 +55,13 @@ async function discoverFromWhitelist({ config, envConfig, logger }) {
           sourceName: source.name,
           sourceType: source.source_type || "公众号",
           discoverySource: "whitelist",
-          sourcePriority: source.priority_weight || 1
-        });
+          sourcePriority: source.priority_weight || 1,
+          allowedHosts: source.allowed_hosts || [],
+          includeUrlPatterns: source.include_url_patterns || [],
+          excludeUrlPatterns: source.exclude_url_patterns || []
+        }).slice(0, source.max_entries || 12);
         if (!entries.length) {
-          results.push(baseCandidateFromSource(source, seedUrl, null));
+          logger.warn("whitelist source yielded no article entries", { source: source.name, seedUrl });
           continue;
         }
         for (const entry of entries) {
@@ -69,6 +74,19 @@ async function discoverFromWhitelist({ config, envConfig, logger }) {
   }
 
   return results;
+}
+
+function shouldUseProviderSources({ mode, whitelistConfig, whitelistCandidates }) {
+  if (mode === "manual_review") {
+    return true;
+  }
+
+  const hasConfiguredWhitelist = (whitelistConfig?.sources || []).some((source) => Array.isArray(source.seed_urls) && source.seed_urls.length);
+  if (hasConfiguredWhitelist) {
+    return false;
+  }
+
+  return whitelistCandidates.length === 0;
 }
 
 async function discoverFromProviders({ rootDir, config, envConfig, logger }) {
@@ -162,6 +180,9 @@ export function extractDiscoveryEntries({
   sourceType = "公众号",
   discoverySource = "search-template",
   sourcePriority = 0.6,
+  allowedHosts = [],
+  includeUrlPatterns = [],
+  excludeUrlPatterns = [],
   query = "",
   fallbackTitle = ""
 }) {
@@ -173,36 +194,20 @@ export function extractDiscoveryEntries({
     ...extractFallbackUrlEntries(text, baseUrl)
   ]);
 
-  return rawEntries.map((entry) =>
-    toCandidate(entry, {
-      resourceUrl,
-      sourceName,
-      sourceType,
-      discoverySource,
-      sourcePriority,
-      query,
-      fallbackTitle
-    })
-  );
-}
-
-function baseCandidateFromSource(source, url, seedText) {
-  return {
-    source_name: source.name,
-    source_type: source.source_type || "公众号",
-    url,
-    title: source.name,
-    discovered_at: nowIso(),
-    published_at: null,
-    excerpt: seedText ? truncate(stripHtml(seedText), 140) : null,
-    full_text: null,
-    signals: {
-      discovery_source: "whitelist",
-      source_priority: source.priority_weight || 1
-    },
-    confidence: 0.6,
-    content_hash: sha256(`${source.name}|${url}`)
-  };
+  return rawEntries
+    .filter((entry) => matchesAllowedHosts(entry.url, allowedHosts))
+    .filter((entry) => matchesUrlPatterns(entry.url, includeUrlPatterns, excludeUrlPatterns))
+    .map((entry) =>
+      toCandidate(entry, {
+        resourceUrl,
+        sourceName,
+        sourceType,
+        discoverySource,
+        sourcePriority,
+        query,
+        fallbackTitle
+      })
+    );
 }
 
 function toCandidate(entry, options) {
@@ -561,6 +566,46 @@ function safeHostname(url) {
     return new URL(url).hostname;
   } catch {
     return "";
+  }
+}
+
+function matchesAllowedHosts(url, allowedHosts) {
+  if (!Array.isArray(allowedHosts) || !allowedHosts.length) {
+    return true;
+  }
+
+  try {
+    const hostname = new URL(url).hostname.toLowerCase();
+    return allowedHosts.some((allowedHost) => {
+      const normalized = String(allowedHost || "").trim().toLowerCase();
+      return normalized && (hostname === normalized || hostname.endsWith(`.${normalized}`));
+    });
+  } catch {
+    return false;
+  }
+}
+
+function matchesUrlPatterns(url, includePatterns, excludePatterns) {
+  if (Array.isArray(excludePatterns) && excludePatterns.some((pattern) => testPattern(url, pattern))) {
+    return false;
+  }
+
+  if (!Array.isArray(includePatterns) || !includePatterns.length) {
+    return true;
+  }
+
+  return includePatterns.some((pattern) => testPattern(url, pattern));
+}
+
+function testPattern(value, pattern) {
+  if (!pattern) {
+    return false;
+  }
+
+  try {
+    return new RegExp(pattern, "i").test(value);
+  } catch {
+    return String(value).includes(String(pattern));
   }
 }
 
