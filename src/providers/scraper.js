@@ -287,6 +287,20 @@ function shouldKeepParsedFullText(text) {
     return false;
   }
 
+  const lower = normalized.toLowerCase();
+  if (lower.startsWith("skip to main content")) {
+    return false;
+  }
+  if (lower.includes("skip to main content") && lower.includes("skip to footer")) {
+    return false;
+  }
+  if (lower.includes("navigation menu") && lower.includes("toggle navigation")) {
+    return false;
+  }
+  if (lower.includes("your browser does not support the video tag")) {
+    return false;
+  }
+
   const markerHits = LOW_QUALITY_TEXT_MARKERS.reduce((count, marker) => count + Number(normalized.includes(marker)), 0);
   return markerHits < 2;
 }

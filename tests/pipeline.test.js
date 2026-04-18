@@ -187,6 +187,22 @@ test("discovery filters listing pages and keeps article detail urls", () => {
   );
 });
 
+test("discovery ignores image assets even when urls contain query strings", () => {
+  const html = `
+    <html><body>
+      <a href="https://example.com/news/model-launch">Model launch</a>
+      <a href="https://example.com/news/opengraph-image.png?token=123">OpenGraph image</a>
+    </body></html>`;
+
+  const entries = extractDiscoveryEntries({
+    resourceUrl: "https://example.com/news/",
+    text: html,
+    discoverySource: "whitelist"
+  });
+
+  assert.deepEqual(entries.map((entry) => entry.url), ["https://example.com/news/model-launch"]);
+});
+
 test("daily discovery uses whitelist-first sources and skips provider search noise", async () => {
   const whitelistLogger = createLogger("test-discovery-whitelist");
   const config = {
@@ -373,6 +389,57 @@ test("scraper drops low-quality chrome text and prefers feed excerpt", async () 
     assert.equal(scrapedCandidates[0].full_text, "");
     assert.equal(scrapedCandidates[0].excerpt, "发布说明显示，这次更新提升了推理性能并补充了模型支持。");
     assert.equal(scrapedCandidates[0].signals.has_full_text, false);
+    assert.equal(scrapedCandidates[0].signals.parse_quality, "excerpt_only");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("scraper rejects skip-to-content page chrome and keeps cleaner excerpt", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () =>
+    new Response(
+      `
+        <html>
+          <head><title>Anthropic News</title></head>
+          <body>
+            Skip to main content Skip to footer Research Economic Futures Commitments Learn News Try Claude
+            Product Announcements Introducing Claude Opus 4.7 Apr 16, 2026
+            Our latest model, Claude Opus 4.7, is now generally available.
+          </body>
+        </html>
+      `,
+      {
+        status: 200,
+        headers: { "content-type": "text/html" }
+      }
+    );
+
+  try {
+    const { scrapedCandidates } = await scrapeCandidates(
+      [
+        {
+          source_name: "Anthropic News",
+          source_type: "官方博客",
+          url: "https://www.anthropic.com/news/claude-opus-4-7",
+          title: "Introducing Claude Opus 4.7",
+          excerpt: "Claude Opus 4.7 已正式发布，重点提升复杂编码、多步任务和视觉场景表现。",
+          confidence: 0.75,
+          signals: {
+            discovery_source: "whitelist"
+          }
+        }
+      ],
+      {
+        envConfig: { discoveryProviderRequestHeaders: {} },
+        logger,
+        remediation: { allowExcerptOnly: false }
+      }
+    );
+
+    assert.equal(scrapedCandidates.length, 1);
+    assert.equal(scrapedCandidates[0].full_text, "");
+    assert.equal(scrapedCandidates[0].excerpt, "Claude Opus 4.7 已正式发布，重点提升复杂编码、多步任务和视觉场景表现。");
     assert.equal(scrapedCandidates[0].signals.parse_quality, "excerpt_only");
   } finally {
     globalThis.fetch = originalFetch;

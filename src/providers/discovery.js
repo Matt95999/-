@@ -506,7 +506,13 @@ function makeBaseUrl(resourceUrl) {
 }
 
 function isBlockedResourceUrl(url) {
-  return BLOCKED_EXTENSIONS.some((extension) => url.toLowerCase().endsWith(extension));
+  try {
+    const parsed = new URL(url);
+    const pathname = parsed.pathname.toLowerCase();
+    return BLOCKED_EXTENSIONS.some((extension) => pathname.endsWith(extension));
+  } catch {
+    return BLOCKED_EXTENSIONS.some((extension) => url.toLowerCase().endsWith(extension));
+  }
 }
 
 function uniqueEntriesByUrl(entries) {

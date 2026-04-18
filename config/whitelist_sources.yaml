@@ -48,7 +48,7 @@
       "priority_weight": 0.98,
       "allowed_hosts": ["mistral.ai"],
       "include_url_patterns": ["/news/[^/?#]+"],
-      "exclude_url_patterns": ["/news/?$", "\\?category="],
+      "exclude_url_patterns": ["/news/?$", "\\?category=", "opengraph-image", "\\.png"],
       "max_entries": 8,
       "seed_urls": ["https://mistral.ai/news"],
       "notes": "模型、API 与平台更新。"
