@@ -13,6 +13,7 @@ const REDIRECT_PARAM_NAMES = ["url", "target", "targetUrl", "dest", "destination
 const BLOCKED_URL_PROTOCOLS = ["javascript:", "mailto:", "tel:", "data:"];
 const BLOCKED_EXTENSIONS = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg", ".css", ".js", ".ico", ".woff", ".woff2", ".ttf", ".pdf", ".zip"];
 const LISTING_SEGMENTS = new Set(["blog", "news", "archive", "archives", "about", "category", "categories", "tag", "tags", "topics", "topic", "page"]);
+const HUMAN_DATE_PATTERN = /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)[a-z]* \d{1,2}, \d{4}\b/i;
 
 export async function discoverCandidates({ rootDir, config, envConfig, logger, mode = "daily_run" }) {
   const discovered = [];
@@ -222,7 +223,7 @@ function toCandidate(entry, options) {
     url,
     title,
     discovered_at: nowIso(),
-    published_at: normalizePublishedAt(entry.publishedAt),
+    published_at: normalizePublishedAt(entry.publishedAt, `${title} ${entry.excerpt || ""}`),
     excerpt,
     full_text: null,
     signals: {
@@ -444,10 +445,15 @@ function cleanExcerpt(excerpt, title) {
   return truncate(normalized, 180);
 }
 
-function normalizePublishedAt(value) {
-  const text = cleanText(value);
+function normalizePublishedAt(value, fallbackText = "") {
+  const text = cleanText(value) || extractHumanDate(fallbackText);
   if (!text) {
     return null;
+  }
+
+  const humanDate = parseHumanDateToIso(text);
+  if (humanDate) {
+    return humanDate;
   }
 
   const parsed = new Date(text);
@@ -455,6 +461,42 @@ function normalizePublishedAt(value) {
     return text;
   }
   return parsed.toISOString();
+}
+
+function extractHumanDate(text) {
+  const normalized = cleanText(text);
+  return normalized.match(HUMAN_DATE_PATTERN)?.[0] || "";
+}
+
+function parseHumanDateToIso(text) {
+  const match = cleanText(text).match(/^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)[a-z]* (\d{1,2}), (\d{4})$/i);
+  if (!match) {
+    return null;
+  }
+
+  const monthIndex = {
+    jan: 0,
+    feb: 1,
+    mar: 2,
+    apr: 3,
+    may: 4,
+    jun: 5,
+    jul: 6,
+    aug: 7,
+    sep: 8,
+    sept: 8,
+    oct: 9,
+    nov: 10,
+    dec: 11
+  }[match[1].toLowerCase()];
+
+  if (monthIndex === undefined) {
+    return null;
+  }
+
+  const day = Number.parseInt(match[2], 10);
+  const year = Number.parseInt(match[3], 10);
+  return new Date(Date.UTC(year, monthIndex, day)).toISOString();
 }
 
 function normalizeUrl(rawUrl, baseUrl) {

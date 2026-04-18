@@ -203,6 +203,24 @@ test("discovery ignores image assets even when urls contain query strings", () =
   assert.deepEqual(entries.map((entry) => entry.url), ["https://example.com/news/model-launch"]);
 });
 
+test("discovery infers published_at from human-readable dates in titles", () => {
+  const html = `
+    <html><body>
+      <a href="https://example.com/news/opus-4-7">
+        Apr 16, 2026 Introducing Claude Opus 4.7
+      </a>
+    </body></html>`;
+
+  const entries = extractDiscoveryEntries({
+    resourceUrl: "https://example.com/news/",
+    text: html,
+    discoverySource: "whitelist"
+  });
+
+  assert.equal(entries.length, 1);
+  assert.equal(entries[0].published_at, "2026-04-16T00:00:00.000Z");
+});
+
 test("daily discovery uses whitelist-first sources and skips provider search noise", async () => {
   const whitelistLogger = createLogger("test-discovery-whitelist");
   const config = {
