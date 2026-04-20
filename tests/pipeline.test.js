@@ -172,6 +172,7 @@ test("discovery filters listing pages and keeps article detail urls", () => {
       <a href="https://example.com/news">News</a>
       <a href="https://example.com/news/model-launch">Model launch</a>
       <a href="https://example.com/blog/archive">Archive</a>
+      <a href="https://example.com/blog/subscribe">Subscribe</a>
       <a href="https://example.com/blog/2026/04/platform-update">Platform update</a>
       <a href="https://example.com/blog/page/2">Page 2</a>
     </body></html>`;

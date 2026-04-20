@@ -425,12 +425,15 @@ function buildChineseHeadline(cluster) {
   if (lower.includes("qwen3guard")) {
     return "Qwen 发布 Qwen3Guard 实时安全护栏模型";
   }
+  if (lower.includes("olmohybrid")) {
+    return "Ai2 发布 OLMoHybrid 混合推理模型研究";
+  }
 
   if (isUsableChineseText(title)) {
     return title;
   }
 
-  const source = article.source_name || inferSourceFromUrl(article.url) || "重点来源";
+  const source = displaySourceName(article.source_name || inferSourceFromUrl(article.url) || "重点来源");
   return `${source} 发布${cluster.theme}相关更新`;
 }
 
@@ -446,11 +449,11 @@ function inferChineseFocus(cluster) {
   if (combined.includes("vllm") || combined.includes("serving") || combined.includes("transformers")) {
     return "模型服务、推理吞吐和框架兼容性的变化";
   }
-  if (combined.includes("agent") || combined.includes("scientific discovery") || combined.includes("benchmark")) {
-    return "智能体能力评估、任务可靠性和真实场景泛化";
-  }
   if (combined.includes("3d") || combined.includes("robot") || combined.includes("vision")) {
     return "多模态感知、空间智能或机器人能力的推进";
+  }
+  if (combined.includes("agent") || combined.includes("scientific discovery") || combined.includes("benchmark")) {
+    return "智能体能力评估、任务可靠性和真实场景泛化";
   }
   if (combined.includes("safety") || combined.includes("guardrail") || combined.includes("moderation")) {
     return "模型安全、内容审核和风险控制能力建设";

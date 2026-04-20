@@ -12,7 +12,7 @@ const XML_ITEM_PATTERN = /<(item|entry)\b[\s\S]*?<\/\1>/gi;
 const REDIRECT_PARAM_NAMES = ["url", "target", "targetUrl", "dest", "destination", "u", "to", "redirect"];
 const BLOCKED_URL_PROTOCOLS = ["javascript:", "mailto:", "tel:", "data:"];
 const BLOCKED_EXTENSIONS = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg", ".css", ".js", ".ico", ".woff", ".woff2", ".ttf", ".pdf", ".zip", ".xml", ".atom"];
-const LISTING_SEGMENTS = new Set(["blog", "news", "archive", "archives", "about", "category", "categories", "tag", "tags", "topics", "topic", "page"]);
+const LISTING_SEGMENTS = new Set(["blog", "news", "archive", "archives", "about", "category", "categories", "tag", "tags", "topics", "topic", "page", "subscribe", "subscription"]);
 const HUMAN_DATE_PATTERN = /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)[a-z]* \d{1,2}, \d{4}\b/i;
 
 export async function discoverCandidates({ rootDir, config, envConfig, logger, mode = "daily_run" }) {

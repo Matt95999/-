@@ -79,7 +79,7 @@
       "priority_weight": 0.95,
       "allowed_hosts": ["bair.berkeley.edu"],
       "include_url_patterns": ["/blog/[^/?#]+"],
-      "exclude_url_patterns": ["/blog/archive/?$", "/blog/about/?$"],
+      "exclude_url_patterns": ["/blog/archive/?$", "/blog/about/?$", "/blog/subscribe/?$"],
       "max_entries": 6,
       "seed_urls": ["https://bair.berkeley.edu/blog/"],
       "notes": "Berkeley AI Research 一线研究写作。"
