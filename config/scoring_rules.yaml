@@ -8,7 +8,7 @@
     "interaction_signal": 0.1
   },
   "minimum_story_score": 55,
-  "maximum_story_items": 8,
+  "maximum_story_items": 6,
   "maximum_watchlist_items": 3,
   "maximum_attempts": 5,
   "minimum_digest_story_count": 2

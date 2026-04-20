@@ -71,8 +71,8 @@ async function summarizeWithDeepSeek({ clusters, config, envConfig }) {
 }
 
 function buildDeepSeekPayload({ clusters, config, attemptNo }) {
-  const storyLimit = Math.max(2, config.scoring.maximum_story_items - (attemptNo - 1) * 2);
-  const excerptLimit = Math.max(140, 260 - (attemptNo - 1) * 60);
+  const storyLimit = Math.max(2, Math.min(5, config.scoring.maximum_story_items) - (attemptNo - 1));
+  const excerptLimit = Math.max(100, 180 - (attemptNo - 1) * 40);
   const topClusters = clusters.slice(0, storyLimit);
 
   return {
@@ -129,7 +129,7 @@ function buildDeepSeekPayload({ clusters, config, attemptNo }) {
             headline: cluster.headline,
             brief: cluster.brief,
             cross_links: cluster.cross_links,
-            articles: cluster.articles.map((article) => ({
+            articles: cluster.articles.slice(0, 3).map((article) => ({
               title: article.title,
               excerpt: truncate(article.excerpt || article.full_text || "", excerptLimit),
               published_at: article.published_at,
