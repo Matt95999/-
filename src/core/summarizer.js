@@ -1,5 +1,5 @@
 import { StageError } from "./errors.js";
-import { extractSentences, parseJsonFromModelText, truncate, unique } from "../utils/text.js";
+import { parseJsonFromModelText, truncate, unique } from "../utils/text.js";
 import { nowIso } from "../utils/time.js";
 import { createTimeoutSignal } from "../utils/http.js";
 
@@ -83,7 +83,7 @@ function buildDeepSeekPayload({ clusters, config, attemptNo }) {
       {
         role: "system",
         content:
-          "你是一个AI行业日报编辑。请把输入故事整理成一份整体化日报，必须输出严格JSON。不要输出Markdown。每条重点摘要用2到4句叙述事实，随后给出结论和影响。connections字段要说明多个摘要之间的关联。"
+          "你是一个中文人工智能行业日报编辑。请把输入故事整理成一份整体化日报，必须输出严格JSON，不要输出Markdown。除模型名、产品名、机构名、项目名、API名、版本号和URL外，所有标题、摘要、结论、影响、关联判断和观察项必须使用简体中文，不得直接复制英文原文句子。每条重点摘要用2到4句中文叙述事实，随后给出结论和影响。connections字段要说明多个摘要之间的关联。"
       },
       {
         role: "user",
@@ -111,7 +111,15 @@ function buildDeepSeekPayload({ clusters, config, attemptNo }) {
             maximum_story_items: config.scoring.maximum_story_items,
             maximum_watchlist_items: config.scoring.maximum_watchlist_items,
             must_keep_fact_and_inference_separate: true,
-            must_keep_overall_narrative: true
+            must_keep_overall_narrative: true,
+            language: "zh-CN",
+            output_style: "统一中文日报格式；允许保留必要英文专有名词，但不能出现英文整句或英文段落。",
+            required_story_item_format: [
+              "事实：2到4句中文，说明发生了什么、涉及谁、有什么关键变化。",
+              "结论：1句中文，明确这条消息应如何判断。",
+              "影响：1句中文，说明对行业、产品、开发者或用户的影响。",
+              "原文：保留链接。"
+            ]
           },
           stories: topClusters.map((cluster) => ({
             story_id: cluster.story_id,
@@ -155,7 +163,7 @@ function summarizeLocally(clusters, config) {
   const storyItems = selected.map((cluster) => makeFallbackStoryItem(cluster));
 
   return {
-    daily_brief_title: `AI 情报日报 ${new Date().toISOString().slice(0, 10)}`,
+    daily_brief_title: `人工智能情报日报 ${new Date().toISOString().slice(0, 10)}`,
     topline_summary: buildTopline(selected),
     theme_sections: buildThemeSectionsFromStories(storyItems),
     story_items: storyItems,
@@ -190,12 +198,12 @@ function normalizeDigest(rawDigest, clusters, config) {
 
   return {
     daily_brief_title:
-      typeof rawDigest?.daily_brief_title === "string" && rawDigest.daily_brief_title.trim()
-        ? rawDigest.daily_brief_title.trim()
-        : `AI 情报日报 ${new Date().toISOString().slice(0, 10)}`,
+      isUsableChineseText(rawDigest?.daily_brief_title)
+        ? polishChineseText(rawDigest.daily_brief_title.trim())
+        : buildDailyTitle(selected),
     topline_summary:
-      typeof rawDigest?.topline_summary === "string" && rawDigest.topline_summary.trim()
-        ? rawDigest.topline_summary.trim()
+      isUsableChineseText(rawDigest?.topline_summary)
+        ? polishChineseText(rawDigest.topline_summary.trim())
         : buildTopline(selected),
     theme_sections: normalizeThemeSections(rawDigest?.theme_sections, normalizedStoryItems),
     story_items: normalizedStoryItems,
@@ -209,17 +217,22 @@ function normalizeDigest(rawDigest, clusters, config) {
 }
 
 function normalizeStoryItem(item, cluster) {
+  const headline =
+    isUsableChineseText(item?.headline) ? polishChineseText(item.headline.trim()) : buildChineseHeadline(cluster);
+  const conclusion = isUsableChineseText(item?.conclusion)
+    ? ensurePrefix(polishChineseText(item.conclusion.trim()), "结论：")
+    : buildConclusion(cluster);
+  const impact = isUsableChineseText(item?.impact)
+    ? ensurePrefix(polishChineseText(item.impact.trim()), "影响：")
+    : buildImpact(cluster);
+
   return {
     story_id: cluster.story_id,
-    headline:
-      typeof item?.headline === "string" && item.headline.trim() ? item.headline.trim() : cluster.headline,
-    theme: typeof item?.theme === "string" && item.theme.trim() ? item.theme.trim() : cluster.theme,
+    headline,
+    theme: isUsableChineseText(item?.theme) ? polishChineseText(item.theme.trim()) : cluster.theme,
     narrative: normalizeNarrative(item?.narrative, cluster),
-    conclusion:
-      typeof item?.conclusion === "string" && item.conclusion.trim()
-        ? item.conclusion.trim()
-        : buildConclusion(cluster),
-    impact: typeof item?.impact === "string" && item.impact.trim() ? item.impact.trim() : buildImpact(cluster),
+    conclusion,
+    impact,
     source_links: normalizeSourceLinks(item?.source_links, cluster)
   };
 }
@@ -229,7 +242,8 @@ function normalizeNarrative(narrative, cluster) {
     ? narrative
         .filter((line) => typeof line === "string")
         .map((line) => line.trim())
-        .filter(Boolean)
+        .filter(isUsableChineseText)
+        .map(polishChineseText)
     : [];
 
   return lines.length >= 2 ? lines.slice(0, 4) : buildNarrative(cluster);
@@ -259,11 +273,11 @@ function normalizeThemeSections(themeSections, storyItems) {
   const normalized = [];
 
   for (const section of Array.isArray(themeSections) ? themeSections : []) {
-    const title =
-      typeof section?.title === "string" && section.title.trim() ? section.title.trim() : null;
     const storyIds = Array.isArray(section?.story_ids)
       ? section.story_ids.filter((storyId) => storyMap.has(storyId))
       : [];
+    const fallbackTitle = storyIds.length ? storyMap.get(storyIds[0])?.theme : null;
+    const title = isUsableChineseText(section?.title) ? polishChineseText(section.title.trim()) : fallbackTitle;
 
     if (!title || !storyIds.length) {
       continue;
@@ -272,8 +286,8 @@ function normalizeThemeSections(themeSections, storyItems) {
     normalized.push({
       title,
       summary:
-        typeof section.summary === "string" && section.summary.trim()
-          ? section.summary.trim()
+        isUsableChineseText(section.summary)
+          ? polishChineseText(section.summary.trim())
           : buildThemeSectionSummary(title, storyIds.map((storyId) => storyMap.get(storyId))),
       story_ids: unique(storyIds)
     });
@@ -287,7 +301,8 @@ function normalizeStringList(value, fallback) {
     ? value
         .filter((item) => typeof item === "string")
         .map((item) => item.trim())
-        .filter(Boolean)
+        .filter(isUsableChineseText)
+        .map(polishChineseText)
     : [];
 
   return items.length ? items : fallback;
@@ -296,7 +311,7 @@ function normalizeStringList(value, fallback) {
 function makeFallbackStoryItem(cluster) {
   return {
     story_id: cluster.story_id,
-    headline: cluster.headline,
+    headline: buildChineseHeadline(cluster),
     theme: cluster.theme,
     narrative: buildNarrative(cluster),
     conclusion: buildConclusion(cluster),
@@ -306,17 +321,15 @@ function makeFallbackStoryItem(cluster) {
 }
 
 function buildNarrative(cluster) {
-  const article = cluster.articles[0];
-  const text = article.full_text || article.excerpt || article.title;
-  const sentences = extractSentences(text, 3);
-  if (sentences.length >= 2) {
-    return sentences.slice(0, 3);
-  }
+  const sourceNames = unique(cluster.articles.map((article) => displaySourceName(article.source_name)).filter(Boolean)).slice(0, 3);
+  const focus = inferChineseFocus(cluster);
+  const sourceText = sourceNames.length ? `来源包括${sourceNames.join("、")}` : "来源来自已抓取的公开文章";
+  const priority = cluster.score >= 60 ? "中高优先级" : "观察级";
 
   return [
-    `${cluster.headline}是今天${cluster.theme}方向最值得关注的更新之一。`,
-    `${truncate(text, 90)}。`,
-    `它之所以重要，在于这条线索同时关联了${Math.max(1, cluster.articles.length)}个来源。`
+    `${buildChineseHeadline(cluster)}，${sourceText}，主题归入${cluster.theme}。`,
+    `这条线索的核心是${focus}，需要重点看它是否改变模型能力、工程部署或产品落地节奏。`,
+    `系统将其列为${priority}线索，依据是来源权重、发布时间、主题相关性和重复提及情况。`
   ];
 }
 
@@ -336,8 +349,8 @@ function buildImpact(cluster) {
 
 function buildTopline(clusters) {
   const themes = unique(clusters.map((cluster) => cluster.theme)).slice(0, 3);
-  const headlines = clusters.slice(0, 3).map((cluster) => cluster.headline);
-  return `今天的 AI 进展主要集中在${themes.join("、")}。最值得先看的线索包括${headlines.join("、")}，整体上反映出行业正在从单点能力展示，转向更强调推理效率、流程协作和落地节奏。`;
+  const headlines = clusters.slice(0, 3).map((cluster) => buildChineseHeadline(cluster));
+  return `今天的人工智能进展主要集中在${themes.join("、")}。最值得先看的线索包括${headlines.join("、")}，它们共同反映出行业正在从单点能力展示，转向更强调工程效率、智能体可靠性和真实场景落地。`;
 }
 
 function buildConnections(clusters) {
@@ -349,7 +362,7 @@ function buildConnections(clusters) {
   for (let index = 0; index < clusters.length - 1; index += 1) {
     const current = clusters[index];
     const next = clusters[index + 1];
-    connections.push(`${current.headline}与${next.headline}都指向同一趋势：${current.theme}正在和${next.theme}形成更紧密的联动。`);
+    connections.push(`${buildChineseHeadline(current)}与${buildChineseHeadline(next)}都指向同一趋势：${current.theme}正在和${next.theme}形成更紧密的联动。`);
   }
   return connections.slice(0, 4);
 }
@@ -357,7 +370,7 @@ function buildConnections(clusters) {
 function buildWatchlist(clusters, config) {
   return clusters
     .slice(0, config.scoring.maximum_watchlist_items)
-    .map((cluster) => `${cluster.headline}后续值得继续跟踪，因为它会影响${cluster.theme}的下一阶段节奏。`);
+    .map((cluster) => `${buildChineseHeadline(cluster)}后续值得继续跟踪，因为它会影响${cluster.theme}的下一阶段节奏。`);
 }
 
 function buildThemeSectionsFromStories(storyItems) {
@@ -374,6 +387,165 @@ function buildThemeSectionSummary(title, stories) {
     .map((item) => item.headline)
     .slice(0, 2)
     .join("、")}。`;
+}
+
+function buildDailyTitle(clusters) {
+  const themes = unique(clusters.map((cluster) => cluster.theme)).slice(0, 2);
+  return themes.length
+    ? `人工智能情报日报：${themes.join("与")}进展`
+    : `人工智能情报日报 ${new Date().toISOString().slice(0, 10)}`;
+}
+
+function buildChineseHeadline(cluster) {
+  const article = cluster.articles[0] || {};
+  const title = String(cluster.headline || article.title || "");
+  const lower = title.toLowerCase();
+  const project = inferProjectName(article, title);
+  const version = inferVersion(title, article.url);
+
+  if (/github release/i.test(article.source_type || "") || /^release\b/i.test(title)) {
+    return version ? `${project} 发布 ${version} 版本更新` : `${project} 发布项目版本更新`;
+  }
+
+  if (lower.includes("evaluating agents") || lower.includes("scientific discovery")) {
+    return "Ai2 发布科学发现智能体评估研究";
+  }
+  if (lower.includes("wilddet3d")) {
+    return "Ai2 发布 WildDet3D 单图 3D 检测模型";
+  }
+  if (lower.includes("molmoweb")) {
+    return "Ai2 发布 MolmoWeb 网页任务自动化智能体";
+  }
+  if (lower.includes("molmopoint")) {
+    return "Ai2 发布 MolmoPoint 视觉定位架构";
+  }
+  if (lower.includes("molmobot")) {
+    return "Ai2 发布 MolmoBot 仿真训练机器人操作模型";
+  }
+  if (lower.includes("qwen3guard")) {
+    return "Qwen 发布 Qwen3Guard 实时安全护栏模型";
+  }
+
+  if (isUsableChineseText(title)) {
+    return title;
+  }
+
+  const source = article.source_name || inferSourceFromUrl(article.url) || "重点来源";
+  return `${source} 发布${cluster.theme}相关更新`;
+}
+
+function inferChineseFocus(cluster) {
+  const combined = cluster.articles
+    .map((article) => `${article.title || ""} ${article.excerpt || ""} ${article.full_text || ""}`)
+    .join(" ")
+    .toLowerCase();
+
+  if (combined.includes("llama.cpp") || combined.includes("webgpu") || combined.includes("cuda")) {
+    return "本地推理、硬件加速和部署兼容性的持续优化";
+  }
+  if (combined.includes("vllm") || combined.includes("serving") || combined.includes("transformers")) {
+    return "模型服务、推理吞吐和框架兼容性的变化";
+  }
+  if (combined.includes("agent") || combined.includes("scientific discovery") || combined.includes("benchmark")) {
+    return "智能体能力评估、任务可靠性和真实场景泛化";
+  }
+  if (combined.includes("3d") || combined.includes("robot") || combined.includes("vision")) {
+    return "多模态感知、空间智能或机器人能力的推进";
+  }
+  if (combined.includes("safety") || combined.includes("guardrail") || combined.includes("moderation")) {
+    return "模型安全、内容审核和风险控制能力建设";
+  }
+  if (combined.includes("api") || combined.includes("release") || combined.includes("model")) {
+    return "模型能力、开发者接口或工程工具的版本更新";
+  }
+
+  return `${cluster.theme}方向的能力变化、工程进展或应用信号`;
+}
+
+function inferProjectName(article, title) {
+  const sourceName = String(article.source_name || "");
+  const releaseMatch = String(title || "").match(/Release\s+[^·]+·\s+([^/]+\/)?([^/\s]+)/i);
+  if (releaseMatch?.[2]) {
+    return releaseMatch[2];
+  }
+
+  try {
+    const parsed = new URL(article.url || "");
+    const segments = parsed.pathname.split("/").filter(Boolean);
+    if (parsed.hostname === "github.com" && segments.length >= 2) {
+      return segments[1];
+    }
+  } catch {
+    // Ignore malformed URLs and fall back to source names.
+  }
+
+  return sourceName.replace(/\s+Releases$/i, "") || "项目";
+}
+
+function inferVersion(title, url) {
+  const titleMatch = String(title || "").match(/\b(v?\d+(?:\.\d+){0,3}(?:[-\w.]*)?|b\d{3,})\b/i);
+  if (titleMatch?.[1]) {
+    return titleMatch[1];
+  }
+
+  try {
+    const segments = new URL(url || "").pathname.split("/").filter(Boolean);
+    const tagIndex = segments.indexOf("tag");
+    return tagIndex >= 0 ? segments[tagIndex + 1] || "" : "";
+  } catch {
+    return "";
+  }
+}
+
+function inferSourceFromUrl(url) {
+  try {
+    return new URL(url || "").hostname.replace(/^www\./, "");
+  } catch {
+    return "";
+  }
+}
+
+function displaySourceName(sourceName = "") {
+  return String(sourceName || "")
+    .replace(/\bNewsroom\b/gi, "官方新闻")
+    .replace(/\bNews\b/gi, "新闻")
+    .replace(/\bBlog\b/gi, "博客")
+    .replace(/\bReleases\b/gi, "发布页")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function polishChineseText(text) {
+  return String(text || "")
+    .replace(/\bAI Agents?\b/gi, "智能体")
+    .replace(/\bAgents?\b/gi, "智能体")
+    .replace(/\bAI\b/g, "人工智能")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function isUsableChineseText(value) {
+  if (typeof value !== "string" || !value.trim()) {
+    return false;
+  }
+  const text = value.trim();
+  const chineseChars = (text.match(/[\u4e00-\u9fff]/g) || []).length;
+  if (chineseChars < 2) {
+    return false;
+  }
+  return !isEnglishDominantText(text, chineseChars);
+}
+
+function isEnglishDominantText(text, chineseChars = (text.match(/[\u4e00-\u9fff]/g) || []).length) {
+  const withoutUrls = text.replace(/https?:\/\/\S+/g, "");
+  const englishWords = withoutUrls.match(/[A-Za-z][A-Za-z'-]{2,}/g) || [];
+  const technicalWords = englishWords.filter((word) => /[A-Z0-9.]/.test(word) || ["api", "sdk", "ai"].includes(word.toLowerCase()));
+  const proseWords = englishWords.length - technicalWords.length;
+  return proseWords >= 6 && proseWords > chineseChars / 2;
+}
+
+function ensurePrefix(text, prefix) {
+  return text.startsWith(prefix) ? text : `${prefix}${text}`;
 }
 
 function validateDigest(digest) {

@@ -9,6 +9,7 @@ import { buildStoryClusters } from "../src/core/clustering.js";
 import { scoreStoryClusters } from "../src/core/scoring.js";
 import { summarizeDailyDigest } from "../src/core/summarizer.js";
 import { buildFeishuPayload } from "../src/core/feishu.js";
+import { renderDigestMarkdown } from "../src/renderers/markdown.js";
 import { createAttemptRunContext, createRunContext, getAttemptArtifactId } from "../src/core/context.js";
 import { loadConfig } from "../src/core/config.js";
 import { createLogger } from "../src/utils/logger.js";
@@ -60,7 +61,7 @@ test("pipeline builds a coherent digest from sample discovery results", async ()
     logger
   });
 
-  assert.ok(digest.topline_summary.includes("AI"));
+  assert.ok(digest.topline_summary.includes("人工智能"));
   assert.ok(digest.connections.length > 0);
   assert.ok(digest.story_items.every((item) => item.narrative.length >= 2));
 
@@ -721,4 +722,72 @@ test("summarizer retries transient deepseek timeout before failing over", async 
   } finally {
     globalThis.fetch = originalFetch;
   }
+});
+
+test("summarizer enforces unified Chinese format for English-heavy content", async () => {
+  const config = {
+    scoring: {
+      maximum_story_items: 3,
+      maximum_watchlist_items: 2
+    }
+  };
+  const clusters = [
+    {
+      story_id: "story-ai2-agent",
+      theme: "模型与推理",
+      score: 72,
+      confidence: 0.86,
+      headline: "Evaluating agents for scientific discovery | Ai2",
+      brief: "Everyone's building AI science agents. But how do you know if they actually work?",
+      cross_links: ["https://allenai.org/blog/evaluating-scientific-discovery-agents"],
+      articles: [
+        {
+          source_name: "Ai2 Blog",
+          source_type: "研究机构",
+          title: "Evaluating agents for scientific discovery | Ai2",
+          excerpt: "Everyone's building AI science agents. But how do you know if they actually work?",
+          url: "https://allenai.org/blog/evaluating-scientific-discovery-agents"
+        }
+      ]
+    },
+    {
+      story_id: "story-llama-release",
+      theme: "产品与智能体",
+      score: 68,
+      confidence: 0.8,
+      headline: "Release b8833 · ggml-org/llama.cpp",
+      brief: "android libcommon updates and WebGPU compiler warning fixes.",
+      cross_links: ["https://github.com/ggml-org/llama.cpp/releases/tag/b8833"],
+      articles: [
+        {
+          source_name: "llama.cpp Releases",
+          source_type: "GitHub Release",
+          title: "Release b8833 · ggml-org/llama.cpp",
+          excerpt: "android libcommon updates and WebGPU compiler warning fixes.",
+          url: "https://github.com/ggml-org/llama.cpp/releases/tag/b8833"
+        }
+      ]
+    }
+  ];
+
+  const digest = await summarizeDailyDigest({
+    clusters,
+    config,
+    envConfig: {
+      deepseekApiKey: ""
+    },
+    remediation: {
+      forceLocalSummary: true,
+      allowLocalSummaryFallback: true
+    },
+    logger
+  });
+  const markdown = renderDigestMarkdown(digest);
+
+  assert.match(digest.daily_brief_title, /人工智能/);
+  assert.equal(digest.story_items[0].headline, "Ai2 发布科学发现智能体评估研究");
+  assert.equal(digest.story_items[1].headline, "llama.cpp 发布 b8833 版本更新");
+  assert.ok(digest.story_items.every((item) => item.conclusion.startsWith("结论：")));
+  assert.ok(digest.story_items.every((item) => item.impact.startsWith("影响：")));
+  assert.doesNotMatch(markdown, /Everyone's building|Evaluating agents for scientific discovery|WebGPU compiler warning fixes|AI Agent|Ai2 Blog|Releases/);
 });
