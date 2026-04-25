@@ -48,69 +48,69 @@
   </head>
   <body>
     <main>
-      <p class="meta">生成时间：2026-04-24T12:00:00Z</p>
+      <p class="meta">生成时间：2026-04-25T00:00:00Z</p>
       <h1>人工智能行业日报</h1>
-      <p class="topline">多个主流人工智能框架发布重要版本更新，包括llama.cpp、Hugging Face Transformers、vLLM和Ollama，同时Ai2推出OlmoEarth嵌入导出功能，推动地球观测领域的人工智能应用。</p>
+      <p class="topline">今日人工智能领域多项进展：llama.cpp发布多个版本更新，优化WebGPU和结构化输出；Ai2推出OlmoEarth嵌入、WildDet3D、MolmoWeb等模型，并发布科学发现智能体评估基准。</p>
       
         <section class="section">
           <h2>产品与智能体</h2>
-          <p class="summary">llama.cpp、Hugging Face Transformers、vLLM和Ollama均发布新版本，带来性能优化、新模型支持和功能增强。</p>
+          <p class="summary">llama.cpp连续发布b8918至b8925版本，主要改进包括WebGPU上的FLASH_ATTN_EXT支持、Hexagon频率优化和结构化输出bug修复。</p>
           
             <article class="story">
-              <h3>llama.cpp 发布 b8911 版本，新增 Hexagon 操作性能分析支持</h3>
-              <p>llama.cpp 连续发布 b8911、b8912、b8913 三个版本，其中 b8911 新增了对 Hexagon 基本和扩展操作性能分析的支持。</p><p>b8912 移除了冗余的本地采样变量，b8913 修复了 rms fuse 中的缓冲区别名问题。</p><p>这些更新主要针对推理性能和代码优化。</p>
-              <p><strong>结论：llama.cpp 持续优化推理性能，尤其关注边缘设备（Hexagon）的支持。</strong></p>
-              <p>影响：提升在 Qualcomm Hexagon 等 DSP 上运行 LLM 的效率，有利于移动端和嵌入式部署。</p>
-              <p class="links"><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b8911" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b8911</a></p>
-            </article>
-          
-            <article class="story">
-              <h3>Hugging Face Transformers 发布 v5.6.0，新增 OpenAI Privacy Filter 等模型</h3>
-              <p>Hugging Face Transformers 发布 v5.6.0 版本，新增 OpenAI Privacy Filter 等模型。</p><p>随后发布 v5.6.1 和 v5.6.2 补丁，修复了 Flash Attention 路径错误以及 Qwen 3.5/3.6 MoE 在 FP8 下的问题。</p><p>OpenAI Privacy Filter 是一个用于个人身份信息识别的双向 token 分类模型。</p>
-              <p><strong>结论：Transformers 库快速迭代，新模型和关键 bug 修复同步进行。</strong></p>
-              <p>影响：开发者可更安全地处理隐私数据，同时 Qwen 系列模型在 FP8 下的推理稳定性得到恢复。</p>
-              <p class="links"><a href="https://github.com/huggingface/transformers/releases/tag/v5.6.0" target="_blank" rel="noreferrer">https://github.com/huggingface/transformers/releases/tag/v5.6.0</a></p>
-            </article>
-          
-            <article class="story">
-              <h3>vLLM 发布 v0.20.0，默认使用 CUDA 13.0 并包含大量贡献</h3>
-              <p>vLLM v0.20.0 包含 546 次提交，来自 257 位贡献者（其中 83 位新贡献者）。</p><p>默认 CUDA wheel 升级至 CUDA 13.0，并包含多项性能改进和新功能。</p><p>此前 v0.19.1 已升级至 Transformers v5.5.3 并修复了 Gemma4 的 bug。</p>
-              <p><strong>结论：vLLM 社区活跃度极高，版本更新带来显著的性能提升和兼容性改进。</strong></p>
-              <p>影响：用户可受益于更快的推理速度和更新的 CUDA 支持，尤其适合大规模部署。</p>
-              <p class="links"><a href="https://github.com/vllm-project/vllm/releases/tag/v0.20.0" target="_blank" rel="noreferrer">https://github.com/vllm-project/vllm/releases/tag/v0.20.0</a></p>
-            </article>
-          
-            <article class="story">
-              <h3>Ollama 发布 v0.21.1，支持 Kimi CLI 并持续优化</h3>
-              <p>Ollama v0.21.1 新增对 Kimi CLI 的支持，用户可通过 Ollama 安装和运行 Kimi 命令行工具。</p><p>后续 v0.21.2 更新了结构化输出和 Ollama Cloud 文档，并强化了 OpenClaw 的引导流程。</p><p>Ollama 持续扩展其模型生态和易用性。</p>
-              <p><strong>结论：Ollama 通过集成 Kimi CLI 扩展了其命令行工具生态。</strong></p>
-              <p>影响：用户可更方便地在本地运行 Kimi 模型，提升 Ollama 作为模型运行平台的吸引力。</p>
-              <p class="links"><a href="https://github.com/ollama/ollama/releases/tag/v0.21.1" target="_blank" rel="noreferrer">https://github.com/ollama/ollama/releases/tag/v0.21.1</a></p>
+              <h3>llama.cpp发布b8922等版本：WebGPU支持FLASH_ATTN_EXT，修复结构化输出bug</h3>
+              <p>llama.cpp项目在2026年4月24日连续发布b8918至b8925多个版本。b8922版本在ggml-webgpu中启用了FLASH_ATTN_EXT，使得不支持子群矩阵的浏览器也能使用该特性。b8924版本将Hexagon的HMX频率提升至最大角落。b8925版本修复了结构化输出中的一个bug。</p><p>这些更新表明llama.cpp正在持续优化跨平台推理性能，特别是WebGPU和移动端（Hexagon）的支持。</p>
+              <p><strong>结论：llama.cpp的频繁更新体现了其作为本地推理引擎的活跃维护，对开发者社区具有重要参考价值。</strong></p>
+              <p>影响：提升llama.cpp在浏览器和移动设备上的推理效率与兼容性，有利于边缘人工智能部署。</p>
+              <p class="links"><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b8925" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b8925</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b8924" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b8924</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b8922" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b8922</a></p>
             </article>
           
         </section>
       
         <section class="section">
           <h2>模型与推理</h2>
-          <p class="summary">Ai2推出OlmoEarth嵌入导出功能，支持用户从地球观测基础模型中导出自定义嵌入用于下游分析。</p>
+          <p class="summary">Ai2发布多项成果：OlmoEarth嵌入导出功能、WildDet3D单图3D检测、MolmoWeb视觉Web智能体，以及ScienceWorld和DiscoveryWorld科学发现智能体评估基准。</p>
           
             <article class="story">
-              <h3>Ai2 推出 OlmoEarth 嵌入导出功能，支持自定义地球观测嵌入</h3>
-              <p>Ai2 宣布 OlmoEarth Studio 新增嵌入导出功能，用户可从 OlmoEarth 基础模型中导出自定义地球观测嵌入。</p><p>这些嵌入可用于相似性搜索、少样本制图、变化检测等下游任务。</p><p>该功能旨在简化地球观测数据的 人工智能 分析流程。</p>
-              <p><strong>结论：OlmoEarth 嵌入导出功能降低了地球观测领域 人工智能 应用的门槛。</strong></p>
-              <p>影响：研究人员和开发者可更高效地利用预训练模型进行地理空间分析，推动遥感 人工智能 应用。</p>
+              <h3>Ai2推出OlmoEarth嵌入导出功能，支持自定义地球观测嵌入</h3>
+              <p>Ai2宣布OlmoEarth Studio新增嵌入导出功能，用户可以从OlmoEarth基础模型中导出自定义地球观测嵌入，用于相似性搜索、少样本制图、变化检测等下游分析任务。</p><p>该功能降低了遥感领域应用人工智能的门槛，使研究人员能够直接利用预训练嵌入进行定制化分析。</p>
+              <p><strong>结论：OlmoEarth嵌入导出是遥感人工智能实用化的重要一步，有助于推动地球观测领域的人工智能应用。</strong></p>
+              <p>影响：为地理空间分析提供即用型嵌入，加速遥感数据在农业、城市规划等领域的人工智能落地。</p>
               <p class="links"><a href="https://allenai.org/blog/olmoearth-embeddings" target="_blank" rel="noreferrer">https://allenai.org/blog/olmoearth-embeddings</a></p>
+            </article>
+          
+            <article class="story">
+              <h3>Ai2发布科学发现智能体评估基准：ScienceWorld和DiscoveryWorld</h3>
+              <p>Ai2开发了两个基准ScienceWorld和DiscoveryWorld，用于评估人工智能科学智能体的能力。结果显示，即使是当前最强的人工智能科学智能体，在解决人类科学家日常解决的问题时仍存在困难。</p><p>该基准揭示了当前人工智能在科学推理和实验设计方面的局限性，为未来研究提供了明确方向。</p>
+              <p><strong>结论：科学发现智能体仍处于早期阶段，现有模型在复杂科学任务上表现不足。</strong></p>
+              <p>影响：为人工智能科学智能体研究设立评估标准，推动模型在科学推理和实验规划方面的改进。</p>
+              <p class="links"><a href="https://allenai.org/blog/evaluating-scientific-discovery-agents" target="_blank" rel="noreferrer">https://allenai.org/blog/evaluating-scientific-discovery-agents</a></p>
+            </article>
+          
+            <article class="story">
+              <h3>Ai2发布WildDet3D：单张图像实现开放世界3D检测</h3>
+              <p>Ai2推出WildDet3D，一个开放模型，能够从单张图像预测3D边界框。该模型跨相机和物体类别泛化，并在可用时融合深度信号，同时支持文本提示。</p><p>WildDet3D在开放世界3D检测方面取得了进展，减少了多视图或深度传感器的依赖。</p>
+              <p><strong>结论：WildDet3D代表了单图像3D检测的开放世界能力提升，具有广泛的应用前景。</strong></p>
+              <p>影响：降低3D检测对多视角或深度数据的依赖，有利于机器人、自动驾驶等领域的单目感知。</p>
+              <p class="links"><a href="https://allenai.org/blog/wilddet3d" target="_blank" rel="noreferrer">https://allenai.org/blog/wilddet3d</a></p>
+            </article>
+          
+            <article class="story">
+              <h3>Ai2发布MolmoWeb：开源视觉Web智能体，仅凭截图自动完成浏览器任务</h3>
+              <p>Ai2推出MolmoWeb，一个开源的视觉Web智能体，仅通过截图即可在浏览器中导航并完成任务。同时发布了MolmoWebMix，这是目前最大的用于训练Web智能体的公开数据集。</p><p>MolmoWeb的发布为Web自动化提供了开源替代方案，有助于推动智能体在浏览器交互领域的研究。</p>
+              <p><strong>结论：MolmoWeb是开源Web智能体的重要进展，其数据集将促进相关研究。</strong></p>
+              <p>影响：为Web自动化任务提供开源模型和数据集，降低开发门槛，推动智能体在网页交互中的应用。</p>
+              <p class="links"><a href="https://allenai.org/blog/molmoweb" target="_blank" rel="noreferrer">https://allenai.org/blog/molmoweb</a></p>
             </article>
           
         </section>
       
       <section class="section">
         <h2>关联判断</h2>
-        <ul><li>llama.cpp、Transformers、vLLM 和 Ollama 的版本更新均涉及性能优化和 bug 修复，反映了开源 人工智能 框架的快速迭代趋势。</li><li>Ollama 集成 Kimi CLI 与 Transformers 新增 OpenAI Privacy Filter 都体现了模型生态的扩展。</li><li>vLLM 和 Transformers 的更新均涉及对 Qwen 等模型的兼容性修复，显示模型与框架之间的紧密耦合。</li><li>OlmoEarth 嵌入导出功能与上述框架更新无直接关联，但共同展示了 人工智能 在特定领域（地球观测）的深化应用。</li></ul>
+        <ul><li>llama.cpp的WebGPU优化与Ai2的MolmoWeb智能体都涉及浏览器端人工智能能力，前者提升推理效率，后者实现浏览器自动化。</li><li>Ai2的OlmoEarth、WildDet3D和MolmoWeb均属于视觉或多模态模型，展示了Ai2在视觉人工智能领域的系统布局。</li><li>ScienceWorld/DiscoveryWorld基准与MolmoWeb智能体都关注智能体能力评估，但领域不同（科学发现 vs. Web任务）。</li></ul>
       </section>
       <section class="section">
         <h2>继续观察</h2>
-        <ul><li>llama.cpp 对 Hexagon 的支持进展</li><li>Transformers 对 OpenAI Privacy Filter 的后续集成</li><li>Ollama 对 Kimi CLI 的进一步优化</li></ul>
+        <ul><li>llama.cpp后续版本对WebGPU和移动端推理的进一步优化</li><li>Ai2的OlmoEarth嵌入在遥感社区的实际应用反馈</li><li>MolmoWeb在Web自动化任务上的性能表现与社区贡献</li></ul>
       </section>
     </main>
   </body>
