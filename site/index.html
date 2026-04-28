@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>人工智能行业日报</title>
+    <title>人工智能行业日报 | 2026-04-28</title>
     <style>
       :root {
         color-scheme: light;
@@ -48,69 +48,69 @@
   </head>
   <body>
     <main>
-      <p class="meta">生成时间：2026-04-26T23:00:00.000Z</p>
-      <h1>人工智能行业日报</h1>
-      <p class="topline">今日人工智能领域多项进展：llama.cpp发布多个版本修复性能与序列化问题；Ai2推出OlmoEarth嵌入导出、科学发现智能体评估、3D检测模型WildDet3D及网页自动化智能体MolmoWeb。</p>
+      <p class="meta">生成时间：2026-04-28T00:00:00Z</p>
+      <h1>人工智能行业日报 | 2026-04-28</h1>
+      <p class="topline">vLLM v0.20.0发布，新增DeepSeek V4支持；llama.cpp连续发布多个版本，优化推理性能；NVIDIA推出物理信息超声成像人工智能；Ai2发布OlmoEarth嵌入导出功能和科学发现智能体评估基准。</p>
       
         <section class="section">
           <h2>产品与智能体</h2>
-          <p class="summary">llama.cpp发布b8941、b8940、b8937等版本，修复循环状态序列化、启用快速gelu_quick_f16，并添加性能可移植调优。</p>
+          <p class="summary">vLLM和llama.cpp两大推理框架同日发布重要更新，分别支持DeepSeek V4和提升量化推理速度；NVIDIA将人工智能应用于医疗超声成像，拓展垂直领域。</p>
           
             <article class="story">
-              <h3>llama.cpp发布多个版本修复性能与序列化问题</h3>
-              <p>llama.cpp项目发布了b8941、b8940、b8937等多个版本。b8941添加了针对寄存器块和子组矩阵乘法的性能可移植调优；b8940修复了循环状态序列化在部分读写时的问题；b8937重新启用了CPU上的快速gelu_quick_f16实现。</p><p>这些更新主要针对推理引擎的稳定性和性能优化，特别是修复了循环状态序列化错误，可能影响长序列推理的准确性。</p>
-              <p><strong>结论：llama.cpp持续迭代，修复关键bug并提升性能，对本地部署大模型的开发者是积极信号。</strong></p>
-              <p>影响：提升llama.cpp在边缘设备上的推理稳定性和速度，降低开发者维护成本。</p>
-              <p class="links"><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b8941" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b8941</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b8940" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b8940</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b8937" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b8937</a></p>
+              <h3>vLLM v0.20.0发布，支持DeepSeek V4</h3>
+              <p>vLLM项目发布v0.20.0版本，包含752次提交，来自320位贡献者（其中123位新贡献者）。</p><p>该版本首次提供对DeepSeek V4的初始支持，并包含多项性能优化和bug修复。</p><p>此前v0.19.1为补丁版本，升级了Transformers v5.5.3并修复了Gemma4相关bug。</p>
+              <p><strong>结论：vLLM v0.20.0是一次重大更新，标志着对最新模型DeepSeek V4的快速适配。</strong></p>
+              <p>影响：vLLM用户可立即使用DeepSeek V4进行推理，提升模型部署的时效性和竞争力。</p>
+              <p class="links"><a href="https://github.com/vllm-project/vllm/releases/tag/v0.20.0" target="_blank" rel="noreferrer">https://github.com/vllm-project/vllm/releases/tag/v0.20.0</a></p>
+            </article>
+          
+            <article class="story">
+              <h3>llama.cpp连续发布b8950-b8953版本，优化推理性能</h3>
+              <p>llama.cpp在4月27日至28日连续发布b8950至b8953四个版本。</p><p>b8953新增Q1_0量化支持（ggml-webgpu），b8952修复路由转发form-data问题，b8951为i-quants添加快速矩阵向量内核。</p><p>这些更新聚焦于推理速度提升和WebGPU兼容性。</p>
+              <p><strong>结论：llama.cpp通过密集的小版本迭代，持续优化本地推理效率和跨平台支持。</strong></p>
+              <p>影响：开发者可受益于更快的量化推理和更稳定的服务器路由，尤其适合边缘部署。</p>
+              <p class="links"><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b8953" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b8953</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b8952" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b8952</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b8951" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b8951</a></p>
+            </article>
+          
+            <article class="story">
+              <h3>NVIDIA发布物理信息超声成像人工智能：NV-Raw2Insights-US</h3>
+              <p>NVIDIA在Hugging Face博客上介绍NV-Raw2Insights-US，一种结合物理信息的自适应超声成像人工智能。</p><p>该模型利用物理约束提升超声图像质量，实现从原始信号到诊断见解的端到端处理。</p>
+              <p><strong>结论：NVIDIA将人工智能与物理知识融合，拓展了人工智能在医疗影像领域的应用深度。</strong></p>
+              <p>影响：该技术有望降低超声诊断门槛，提高成像准确性，推动人工智能辅助医疗普及。</p>
+              <p class="links"><a href="https://huggingface.co/blog/nvidia/raw2insights-adaptive-ultrasound-imaging" target="_blank" rel="noreferrer">https://huggingface.co/blog/nvidia/raw2insights-adaptive-ultrasound-imaging</a></p>
             </article>
           
         </section>
       
         <section class="section">
           <h2>模型与推理</h2>
-          <p class="summary">Ai2发布多项成果：OlmoEarth嵌入导出、科学发现智能体评估、WildDet3D开放世界3D检测、MolmoWeb网页自动化智能体。</p>
+          <p class="summary">Ai2推出OlmoEarth嵌入导出功能，支持遥感下游任务；同时发布科学发现智能体评估基准，揭示当前人工智能在科学推理上的局限。</p>
           
             <article class="story">
-              <h3>Ai2推出OlmoEarth嵌入导出功能</h3>
-              <p>Ai2在OlmoEarth Studio中新增了自定义地球观测嵌入导出功能，用户可从OlmoEarth基础模型导出嵌入，用于相似性搜索、少样本制图等下游分析。</p><p>该功能降低了遥感领域人工智能应用的门槛，使研究人员无需从头训练模型即可利用预训练嵌入。</p>
-              <p><strong>结论：OlmoEarth嵌入导出是遥感人工智能实用化的重要一步，有利于加速地理空间分析。</strong></p>
-              <p>影响：简化地球观测领域的人工智能开发流程，促进环境监测、城市规划等应用。</p>
+              <h3>Ai2推出OlmoEarth嵌入导出功能，支持遥感下游任务</h3>
+              <p>Ai2宣布OlmoEarth Studio新增自定义嵌入导出功能，用户可从OlmoEarth基础模型中导出地球观测嵌入。</p><p>这些嵌入可用于相似性搜索、少样本制图、变化检测等下游分析任务。</p>
+              <p><strong>结论：OlmoEarth嵌入导出功能降低了遥感领域人工智能应用的门槛。</strong></p>
+              <p>影响：研究人员和开发者可更便捷地利用预训练模型进行地理空间分析，加速环境监测等应用。</p>
               <p class="links"><a href="https://allenai.org/blog/olmoearth-embeddings" target="_blank" rel="noreferrer">https://allenai.org/blog/olmoearth-embeddings</a></p>
             </article>
           
             <article class="story">
-              <h3>Ai2发布科学发现智能体评估基准</h3>
-              <p>Ai2开发了ScienceWorld和DiscoveryWorld两个基准，用于评估人工智能科学智能体。结果显示，即使最强的人工智能智能体在解决人类科学家日常解决的问题时仍存在困难。</p><p>这表明当前人工智能在科学推理和实验设计方面与人类水平有显著差距。</p>
-              <p><strong>结论：科学发现智能体仍处于早期阶段，现有模型在复杂科学任务上表现不足。</strong></p>
-              <p>影响：为人工智能科学智能体研究提供标准化评估，推动该领域针对性改进。</p>
+              <h3>Ai2发布科学发现智能体评估基准，揭示人工智能科学推理局限</h3>
+              <p>Ai2开发了ScienceWorld和DiscoveryWorld两个基准，用于评估人工智能智能体的科学发现能力。</p><p>测试表明，即使最强的人工智能科学智能体在解决人类科学家日常问题方面仍存在显著困难。</p>
+              <p><strong>结论：当前人工智能在科学推理和发现任务上远未达到人类水平。</strong></p>
+              <p>影响：该基准为人工智能科学智能体研究提供了标准化评估工具，推动领域进步。</p>
               <p class="links"><a href="https://allenai.org/blog/evaluating-scientific-discovery-agents" target="_blank" rel="noreferrer">https://allenai.org/blog/evaluating-scientific-discovery-agents</a></p>
-            </article>
-          
-            <article class="story">
-              <h3>Ai2推出开放世界3D检测模型WildDet3D</h3>
-              <p>Ai2发布了WildDet3D，一个从单张图像预测3D边界框的开放模型。它跨相机和物体类别泛化，并在可用时融合深度信号。</p><p>该模型适用于开放世界场景，无需预定义类别列表，增强了3D感知的灵活性。</p>
-              <p><strong>结论：WildDet3D推动了单目3D检测的开放性和泛化能力，是计算机视觉的重要进展。</strong></p>
-              <p>影响：降低3D检测对多视角或深度传感器的依赖，有利于自动驾驶、机器人等应用。</p>
-              <p class="links"><a href="https://allenai.org/blog/wilddet3d" target="_blank" rel="noreferrer">https://allenai.org/blog/wilddet3d</a></p>
-            </article>
-          
-            <article class="story">
-              <h3>Ai2发布MolmoWeb网页自动化智能体</h3>
-              <p>Ai2推出了MolmoWeb，一个开源的视觉网页智能体，仅通过截图即可在浏览器中导航和完成任务。同时发布了MolmoWebMix，用于训练此类智能体的最大公开数据集。</p><p>该智能体无需访问DOM或API，仅依赖视觉信息，提高了通用性和安全性。</p>
-              <p><strong>结论：MolmoWeb为网页自动化提供了开源、视觉驱动的解决方案，有望降低RPA门槛。</strong></p>
-              <p>影响：促进网页自动化任务的普及，尤其适用于需要跨平台或受限环境的场景。</p>
-              <p class="links"><a href="https://allenai.org/blog/molmoweb" target="_blank" rel="noreferrer">https://allenai.org/blog/molmoweb</a></p>
             </article>
           
         </section>
       
       <section class="section">
         <h2>关联判断</h2>
-        <ul><li>Ai2同日发布多项成果，涵盖遥感、科学发现、3D检测和网页自动化，显示其在多模态和智能体领域的全面布局。</li><li>llama.cpp的版本更新与Ai2的模型发布均聚焦于提升推理效率和扩展应用场景，但面向不同层级（底层引擎 vs. 应用模型）。</li></ul>
+        <ul><li>vLLM和llama.cpp同日发布更新，均聚焦于推理框架的性能优化和新模型支持，反映开源推理生态的快速迭代。</li><li>Ai2的两项发布分别涉及遥感嵌入和科学智能体评估，均属于模型应用与评估范畴，但面向不同领域。</li><li>NVIDIA的超声成像人工智能与Ai2的OlmoEarth嵌入均展示了人工智能在垂直行业（医疗、遥感）的落地趋势。</li></ul>
       </section>
       <section class="section">
         <h2>继续观察</h2>
-        <ul><li>llama.cpp后续版本对循环状态序列化的进一步修复</li><li>MolmoWeb在真实网页任务中的表现与社区采用情况</li><li>WildDet3D在自动驾驶数据集上的泛化测试</li></ul>
+        <ul><li>DeepSeek V4在vLLM中的实际推理性能表现</li><li>llama.cpp Q1_0量化在WebGPU上的兼容性反馈</li><li>OlmoEarth嵌入在遥感社区的应用案例</li></ul>
       </section>
     </main>
   </body>
