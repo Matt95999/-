@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>人工智能行业日报 | 2026-04-28</title>
+    <title>人工智能行业日报</title>
     <style>
       :root {
         color-scheme: light;
@@ -48,57 +48,57 @@
   </head>
   <body>
     <main>
-      <p class="meta">生成时间：2026-04-28T00:00:00Z</p>
-      <h1>人工智能行业日报 | 2026-04-28</h1>
-      <p class="topline">vLLM v0.20.0发布，新增DeepSeek V4支持；llama.cpp连续发布多个版本，优化推理性能；NVIDIA推出物理信息超声成像人工智能；Ai2发布OlmoEarth嵌入导出功能和科学发现智能体评估基准。</p>
+      <p class="meta">生成时间：2026-04-29T00:00:00.000Z</p>
+      <h1>人工智能行业日报</h1>
+      <p class="topline">Hugging Face Transformers 发布 v5.6.0 系列更新，新增 OpenAI Privacy Filter 模型并修复 FP8 和 Flash Attention 问题；llama.cpp 推出 b8963 等版本，优化 Vulkan 和 CUDA 性能；Ollama 发布 v0.21.3 及 v0.22.0，新增 Nemotron 3 Omni 等模型；Ai2 推出 OlmoEarth 嵌入导出功能和科学发现智能体评估基准。</p>
       
         <section class="section">
           <h2>产品与智能体</h2>
-          <p class="summary">vLLM和llama.cpp两大推理框架同日发布重要更新，分别支持DeepSeek V4和提升量化推理速度；NVIDIA将人工智能应用于医疗超声成像，拓展垂直领域。</p>
+          <p class="summary">Hugging Face Transformers、llama.cpp 和 Ollama 均发布重要版本更新，涉及新模型支持、性能优化和 bug 修复。</p>
           
             <article class="story">
-              <h3>vLLM v0.20.0发布，支持DeepSeek V4</h3>
-              <p>vLLM项目发布v0.20.0版本，包含752次提交，来自320位贡献者（其中123位新贡献者）。</p><p>该版本首次提供对DeepSeek V4的初始支持，并包含多项性能优化和bug修复。</p><p>此前v0.19.1为补丁版本，升级了Transformers v5.5.3并修复了Gemma4相关bug。</p>
-              <p><strong>结论：vLLM v0.20.0是一次重大更新，标志着对最新模型DeepSeek V4的快速适配。</strong></p>
-              <p>影响：vLLM用户可立即使用DeepSeek V4进行推理，提升模型部署的时效性和竞争力。</p>
-              <p class="links"><a href="https://github.com/vllm-project/vllm/releases/tag/v0.20.0" target="_blank" rel="noreferrer">https://github.com/vllm-project/vllm/releases/tag/v0.20.0</a></p>
+              <h3>Hugging Face Transformers 发布 v5.6.0 系列版本，新增 OpenAI Privacy Filter 模型</h3>
+              <p>Hugging Face Transformers 发布 v5.6.0 版本，新增 OpenAI Privacy Filter 模型，这是一个用于识别个人身份信息的双向 token 分类模型。</p><p>后续补丁 v5.6.1 修复了 Flash Attention 路径的 AttributeError 问题，v5.6.2 修复了 Qwen 3.5 和 3.6 MoE 模型在 FP8 下的运行问题。</p><p>此外，v5.7.0 版本新增 Laguna 模型。</p>
+              <p><strong>结论：Transformers 库持续迭代，隐私过滤和模型兼容性得到增强。</strong></p>
+              <p>影响：开发者可更安全地处理文本中的隐私信息，同时 FP8 和 Flash Attention 的修复提升了模型推理的稳定性和性能。</p>
+              <p class="links"><a href="https://github.com/huggingface/transformers/releases/tag/v5.6.0" target="_blank" rel="noreferrer">https://github.com/huggingface/transformers/releases/tag/v5.6.0</a><br><a href="https://github.com/huggingface/transformers/releases/tag/v5.6.1" target="_blank" rel="noreferrer">https://github.com/huggingface/transformers/releases/tag/v5.6.1</a><br><a href="https://github.com/huggingface/transformers/releases/tag/v5.6.2" target="_blank" rel="noreferrer">https://github.com/huggingface/transformers/releases/tag/v5.6.2</a><br><a href="https://github.com/huggingface/transformers/releases/tag/v5.7.0" target="_blank" rel="noreferrer">https://github.com/huggingface/transformers/releases/tag/v5.7.0</a></p>
             </article>
           
             <article class="story">
-              <h3>llama.cpp连续发布b8950-b8953版本，优化推理性能</h3>
-              <p>llama.cpp在4月27日至28日连续发布b8950至b8953四个版本。</p><p>b8953新增Q1_0量化支持（ggml-webgpu），b8952修复路由转发form-data问题，b8951为i-quants添加快速矩阵向量内核。</p><p>这些更新聚焦于推理速度提升和WebGPU兼容性。</p>
-              <p><strong>结论：llama.cpp通过密集的小版本迭代，持续优化本地推理效率和跨平台支持。</strong></p>
-              <p>影响：开发者可受益于更快的量化推理和更稳定的服务器路由，尤其适合边缘部署。</p>
-              <p class="links"><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b8953" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b8953</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b8952" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b8952</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b8951" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b8951</a></p>
+              <h3>llama.cpp 发布 b8963 等版本，优化 Vulkan 和 CUDA 性能</h3>
+              <p>llama.cpp 发布 b8963 版本，在 Vulkan 后端合并了 Q4_K/Q5_K 的 scale 加载操作，提升推理效率。</p><p>b8964 版本在推理完成后重新激活 reasoning budget，b8966 版本为 CUDA 后端添加了 flash-attn 支持，支持 DKQ=320/DV=256 和 ncols2=32 配置。</p>
+              <p><strong>结论：llama.cpp 在 Vulkan 和 CUDA 上的性能持续优化，推理效率提升。</strong></p>
+              <p>影响：使用 Vulkan 和 CUDA 后端的用户将获得更快的推理速度，尤其适合本地部署和边缘设备。</p>
+              <p class="links"><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b8963" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b8963</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b8964" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b8964</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b8966" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b8966</a></p>
             </article>
           
             <article class="story">
-              <h3>NVIDIA发布物理信息超声成像人工智能：NV-Raw2Insights-US</h3>
-              <p>NVIDIA在Hugging Face博客上介绍NV-Raw2Insights-US，一种结合物理信息的自适应超声成像人工智能。</p><p>该模型利用物理约束提升超声图像质量，实现从原始信号到诊断见解的端到端处理。</p>
-              <p><strong>结论：NVIDIA将人工智能与物理知识融合，拓展了人工智能在医疗影像领域的应用深度。</strong></p>
-              <p>影响：该技术有望降低超声诊断门槛，提高成像准确性，推动人工智能辅助医疗普及。</p>
-              <p class="links"><a href="https://huggingface.co/blog/nvidia/raw2insights-adaptive-ultrasound-imaging" target="_blank" rel="noreferrer">https://huggingface.co/blog/nvidia/raw2insights-adaptive-ultrasound-imaging</a></p>
+              <h3>Ollama 发布 v0.21.3 和 v0.22.0，新增 Nemotron 3 Omni 等模型</h3>
+              <p>Ollama 发布 v0.21.3 版本，API 支持将 &quot;max&quot; 作为 think 值。</p><p>v0.22.0 版本新增多个模型，包括 NVIDIA 的 Nemotron 3 Omni、Poolside 的首个开源编码模型等。</p><p>v0.22.1 版本在 MLX 后端实现了跨多个序列的批量采样。</p>
+              <p><strong>结论：Ollama 快速迭代，模型库和 API 功能持续扩展。</strong></p>
+              <p>影响：用户可便捷地运行新模型，API 改进提升了推理控制的灵活性。</p>
+              <p class="links"><a href="https://github.com/ollama/ollama/releases/tag/v0.21.3" target="_blank" rel="noreferrer">https://github.com/ollama/ollama/releases/tag/v0.21.3</a><br><a href="https://github.com/ollama/ollama/releases/tag/v0.22.0" target="_blank" rel="noreferrer">https://github.com/ollama/ollama/releases/tag/v0.22.0</a><br><a href="https://github.com/ollama/ollama/releases/tag/v0.22.1-rc0" target="_blank" rel="noreferrer">https://github.com/ollama/ollama/releases/tag/v0.22.1-rc0</a></p>
             </article>
           
         </section>
       
         <section class="section">
           <h2>模型与推理</h2>
-          <p class="summary">Ai2推出OlmoEarth嵌入导出功能，支持遥感下游任务；同时发布科学发现智能体评估基准，揭示当前人工智能在科学推理上的局限。</p>
+          <p class="summary">Ai2 推出 OlmoEarth 嵌入导出功能和科学发现智能体评估基准，推动地球观测和科学推理领域发展。</p>
           
             <article class="story">
-              <h3>Ai2推出OlmoEarth嵌入导出功能，支持遥感下游任务</h3>
-              <p>Ai2宣布OlmoEarth Studio新增自定义嵌入导出功能，用户可从OlmoEarth基础模型中导出地球观测嵌入。</p><p>这些嵌入可用于相似性搜索、少样本制图、变化检测等下游分析任务。</p>
-              <p><strong>结论：OlmoEarth嵌入导出功能降低了遥感领域人工智能应用的门槛。</strong></p>
-              <p>影响：研究人员和开发者可更便捷地利用预训练模型进行地理空间分析，加速环境监测等应用。</p>
+              <h3>Ai2 推出 OlmoEarth 嵌入导出功能，支持自定义地球观测嵌入</h3>
+              <p>Ai2 在 OlmoEarth Studio 中推出嵌入导出功能，用户可从 OlmoEarth 基础模型导出自定义地球观测嵌入。</p><p>这些嵌入可用于相似性搜索、少样本映射和变化检测等下游任务。</p>
+              <p><strong>结论：OlmoEarth 嵌入功能降低了地球观测领域 人工智能 应用的门槛。</strong></p>
+              <p>影响：研究人员和开发者可更高效地利用遥感数据进行定制化分析，推动地理空间 人工智能 应用。</p>
               <p class="links"><a href="https://allenai.org/blog/olmoearth-embeddings" target="_blank" rel="noreferrer">https://allenai.org/blog/olmoearth-embeddings</a></p>
             </article>
           
             <article class="story">
-              <h3>Ai2发布科学发现智能体评估基准，揭示人工智能科学推理局限</h3>
-              <p>Ai2开发了ScienceWorld和DiscoveryWorld两个基准，用于评估人工智能智能体的科学发现能力。</p><p>测试表明，即使最强的人工智能科学智能体在解决人类科学家日常问题方面仍存在显著困难。</p>
-              <p><strong>结论：当前人工智能在科学推理和发现任务上远未达到人类水平。</strong></p>
-              <p>影响：该基准为人工智能科学智能体研究提供了标准化评估工具，推动领域进步。</p>
+              <h3>Ai2 发布科学发现智能体评估基准，揭示当前 人工智能 的局限性</h3>
+              <p>Ai2 开发了 ScienceWorld 和 DiscoveryWorld 两个基准，用于评估 人工智能 科学智能体的能力。</p><p>评估结果显示，即使是强大的 人工智能 科学智能体，在解决人类科学家日常处理的问题时仍存在困难。</p>
+              <p><strong>结论：当前 人工智能 在科学发现任务上远未达到人类水平。</strong></p>
+              <p>影响：该基准为科学 人工智能 研究提供了标准化评估工具，有助于识别和改进智能体的推理短板。</p>
               <p class="links"><a href="https://allenai.org/blog/evaluating-scientific-discovery-agents" target="_blank" rel="noreferrer">https://allenai.org/blog/evaluating-scientific-discovery-agents</a></p>
             </article>
           
@@ -106,11 +106,11 @@
       
       <section class="section">
         <h2>关联判断</h2>
-        <ul><li>vLLM和llama.cpp同日发布更新，均聚焦于推理框架的性能优化和新模型支持，反映开源推理生态的快速迭代。</li><li>Ai2的两项发布分别涉及遥感嵌入和科学智能体评估，均属于模型应用与评估范畴，但面向不同领域。</li><li>NVIDIA的超声成像人工智能与Ai2的OlmoEarth嵌入均展示了人工智能在垂直行业（医疗、遥感）的落地趋势。</li></ul>
+        <ul><li>Hugging Face Transformers、llama.cpp 和 Ollama 的版本更新均涉及模型支持、性能优化和 bug 修复，反映了开源 人工智能 工具链的快速迭代趋势。</li><li>Ai2 的两项发布分别聚焦于地球观测嵌入和科学发现智能体评估，共同体现了 人工智能 在专业领域应用的深化和评估体系的完善。</li></ul>
       </section>
       <section class="section">
         <h2>继续观察</h2>
-        <ul><li>DeepSeek V4在vLLM中的实际推理性能表现</li><li>llama.cpp Q1_0量化在WebGPU上的兼容性反馈</li><li>OlmoEarth嵌入在遥感社区的应用案例</li></ul>
+        <ul><li>Hugging Face Transformers 后续版本对隐私过滤模型的进一步优化</li><li>llama.cpp 在更多硬件后端（如 Metal、ROCm）的性能改进</li><li>Ollama 对新增模型（如 Nemotron 3 Omni）的社区反馈和采用情况</li></ul>
       </section>
     </main>
   </body>
