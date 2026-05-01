@@ -48,27 +48,27 @@
   </head>
   <body>
     <main>
-      <p class="meta">生成时间：2026-04-30T12:00:00Z</p>
+      <p class="meta">生成时间：2026-04-30T23:59:00Z</p>
       <h1>人工智能行业日报 | 2026-04-30</h1>
-      <p class="topline">开源推理框架与模型生态持续更新：llama.cpp发布多版本优化CUDA与Hexagon后端，Ollama v0.22.1支持Gemma4渲染器并新增Nemotron 3等模型；Ai2推出OlmoEarth嵌入导出、科学发现智能体评估基准及单图3D检测模型WildDet3D。</p>
+      <p class="topline">今日多个开源项目发布重要更新：llama.cpp 推出 Vulkan 张量操作增强，Ollama 更新 Gemma 4 渲染器并新增模型支持；Ai2 发布 AstaBench 新结果、OlmoEarth 嵌入导出功能及 OlmPool 长上下文研究。</p>
       
         <section class="section">
           <h2>产品与智能体</h2>
-          <p class="summary">llama.cpp和Ollama发布新版本，分别优化推理后端和扩展模型支持。</p>
+          <p class="summary">llama.cpp 和 Ollama 分别发布新版本，带来性能优化和新模型支持。</p>
           
             <article class="story">
-              <h3>llama.cpp发布b8977至b8981版本，优化CUDA与Hexagon后端</h3>
-              <p>llama.cpp在2026年4月29日连续发布b8977、b8978、b8979、b8980、b8981五个版本。b8979版本融合了CUDA上的SSM_CONV、ADD(bias)和SILU操作；b8980版本使Hexagon后端的vmem和buffer-size可配置；b8981版本修复了推理预算采样器不传递提示词token的问题。</p><p>这些更新主要针对推理性能优化和硬件适配，特别是对Qualcomm Hexagon DSP的支持增强。</p>
-              <p><strong>结论：llama.cpp持续迭代，提升在CUDA和移动端DSP上的推理效率。</strong></p>
-              <p>影响：开发者可更灵活地配置Hexagon后端资源，CUDA融合操作将加速Mamba等状态空间模型的推理。</p>
-              <p class="links"><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b8981" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b8981</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b8980" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b8980</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b8979" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b8979</a></p>
+              <h3>llama.cpp 发布 b8990-b8992 版本，增强 Vulkan 支持并修复文件操作问题</h3>
+              <p>llama.cpp 在 2026年4月30日 连续发布 b8990、b8991、b8992 三个版本。b8990 为 Vulkan 后端新增 get/set tensor 2d 函数，提升张量操作能力；b8991 修复了 hf-cache 中 getpwuid 空指针检查；b8992 将 llama-mmap 更新为使用 ftello/fseeko 以改善大文件支持。</p><p>这些更新主要针对底层性能和兼容性，未引入新模型或重大功能变更。</p>
+              <p><strong>结论：llama.cpp 持续优化 Vulkan 后端和文件操作，对本地推理用户是积极信号。</strong></p>
+              <p>影响：提升 Vulkan 后端灵活性和稳定性，有助于在更多 GPU 上高效运行 Llama 模型。</p>
+              <p class="links"><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b8992" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b8992</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b8991" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b8991</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b8990" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b8990</a></p>
             </article>
           
             <article class="story">
-              <h3>Ollama发布v0.22.1，更新Gemma4渲染器并新增Nemotron 3等模型</h3>
-              <p>Ollama于2026年4月30日发布v0.22.1版本，主要更新包括Gemma4模型的渲染器，以及mlxrunner中跨多个序列批量采样的功能。此前v0.22.0版本已新增NVIDIA Nemotron 3 Omni、Poolside的开放权重编码模型等。</p><p>Ollama持续扩展模型库，并优化Apple Silicon上的推理性能。</p>
-              <p><strong>结论：Ollama通过版本更新增强模型兼容性和本地推理效率。</strong></p>
-              <p>影响：用户可更方便地在本地运行Gemma4等新模型，mlxrunner的批量采样提升多序列生成场景的吞吐量。</p>
+              <h3>Ollama 发布 v0.22.1，更新 Gemma 4 渲染器并优化模型推荐</h3>
+              <p>Ollama 于 2026年4月30日 发布 v0.22.1 正式版，主要更新了 Gemma 4 模型的渲染器，改进了思考过程和工具调用能力。模型推荐功能现在无需重启即可更新。</p><p>此前 v0.22.0 已新增 NVIDIA Nemotron 3 Omni 和 Poolside 首个开源编码模型等新模型支持。</p>
+              <p><strong>结论：Ollama 通过快速迭代增强对最新模型的支持和用户体验。</strong></p>
+              <p>影响：用户可更流畅地使用 Gemma 4 等新模型，工具调用改进对智能体开发有利。</p>
               <p class="links"><a href="https://github.com/ollama/ollama/releases/tag/v0.22.1" target="_blank" rel="noreferrer">https://github.com/ollama/ollama/releases/tag/v0.22.1</a><br><a href="https://github.com/ollama/ollama/releases/tag/v0.22.0" target="_blank" rel="noreferrer">https://github.com/ollama/ollama/releases/tag/v0.22.0</a></p>
             </article>
           
@@ -76,41 +76,47 @@
       
         <section class="section">
           <h2>模型与推理</h2>
-          <p class="summary">Ai2推出三项新成果：地球观测嵌入导出、科学发现智能体评估、单图3D检测模型。</p>
+          <p class="summary">Ai2 更新 AstaBench 基准测试结果，并推出 OlmoEarth 嵌入导出功能。</p>
           
             <article class="story">
-              <h3>Ai2推出OlmoEarth嵌入导出功能，支持下游地球观测分析</h3>
-              <p>Ai2在OlmoEarth Studio中新增嵌入导出功能，用户可从OlmoEarth基础模型导出自定义地球观测嵌入，用于相似性搜索、少样本制图、变化检测等任务。</p><p>该功能旨在降低遥感领域人工智能应用的门槛，使非专家也能利用预训练模型进行地理空间分析。</p>
-              <p><strong>结论：OlmoEarth嵌入导出简化了地球观测数据的人工智能分析流程。</strong></p>
-              <p>影响：遥感研究人员和开发者可快速构建基于嵌入的检索和分类系统，加速环境监测等应用。</p>
+              <h3>Ai2 更新 AstaBench 基准，纳入 GPT-5.5 结果并获行业采用</h3>
+              <p>Ai2 发布 AstaBench 春季更新，新增包括 GPT-5.5 在内的前沿模型评测结果。该基准已被英国 AISI、General Reasoning、Elicit、SciSpace 等机构采用。</p><p>AstaBench 专注于评估 人工智能 系统的科学推理能力，此次更新扩大了覆盖范围。</p>
+              <p><strong>结论：AstaBench 正成为科学推理评估的重要基准，GPT-5.5 的加入显示其权威性。</strong></p>
+              <p>影响：为开发者提供更全面的模型科学推理能力对比，推动模型在科研领域的应用。</p>
+              <p class="links"><a href="https://allenai.org/blog/astabench-update-spring-2026" target="_blank" rel="noreferrer">https://allenai.org/blog/astabench-update-spring-2026</a></p>
+            </article>
+          
+            <article class="story">
+              <h3>Ai2 推出 OlmoEarth 嵌入导出功能，支持自定义地球观测嵌入</h3>
+              <p>Ai2 在 OlmoEarth Studio 中新增嵌入导出功能，用户可从 OlmoEarth 基础模型导出自定义地球观测嵌入，用于相似性搜索、少样本制图、变化检测等下游分析。</p><p>该功能旨在降低遥感领域 人工智能 应用门槛，支持用户基于嵌入进行定制化分析。</p>
+              <p><strong>结论：OlmoEarth 嵌入导出为地球观测领域提供了灵活的 人工智能 工具。</strong></p>
+              <p>影响：促进遥感数据分析的民主化，使研究人员和开发者能更便捷地构建地理空间 人工智能 应用。</p>
               <p class="links"><a href="https://allenai.org/blog/olmoearth-embeddings" target="_blank" rel="noreferrer">https://allenai.org/blog/olmoearth-embeddings</a></p>
             </article>
           
-            <article class="story">
-              <h3>Ai2发布科学发现智能体评估基准，揭示当前人工智能智能体能力局限</h3>
-              <p>Ai2开发了ScienceWorld和DiscoveryWorld两个基准，用于评估人工智能科学发现智能体的能力。结果显示，即使最强的人工智能科学智能体在解决人类科学家日常解决的问题时仍表现挣扎。</p><p>该基准旨在推动人工智能在科学发现领域的研究，暴露当前智能体在实验设计、假设检验等方面的不足。</p>
-              <p><strong>结论：现有人工智能科学智能体在复杂科学任务上远未达到人类水平。</strong></p>
-              <p>影响：该基准为科学人工智能研究提供了标准化测试平台，促使开发者关注智能体的推理和实验能力提升。</p>
-              <p class="links"><a href="https://allenai.org/blog/evaluating-scientific-discovery-agents" target="_blank" rel="noreferrer">https://allenai.org/blog/evaluating-scientific-discovery-agents</a></p>
-            </article>
+        </section>
+      
+        <section class="section">
+          <h2>基础设施与芯片</h2>
+          <p class="summary">Ai2 发布 OlmPool 研究，揭示小架构选择对长上下文扩展的累积影响。</p>
           
             <article class="story">
-              <h3>Ai2发布WildDet3D：单张图像实现开放世界3D检测</h3>
-              <p>Ai2推出WildDet3D模型，可从单张图像预测3D边界框，跨相机和物体类别泛化，并在有深度信号时融合深度信息。</p><p>该模型为开放世界3D检测提供了新方案，无需针对特定类别或相机参数进行训练。</p>
-              <p><strong>结论：WildDet3D实现了单图3D检测的开放世界泛化。</strong></p>
-              <p>影响：该模型可应用于自动驾驶、机器人视觉等场景，降低对多视角或深度传感器的依赖。</p>
-              <p class="links"><a href="https://allenai.org/blog/wilddet3d" target="_blank" rel="noreferrer">https://allenai.org/blog/wilddet3d</a></p>
+              <h3>Ai2 发布 OlmPool 研究：小架构选择如何累积影响长上下文扩展</h3>
+              <p>Ai2 推出 OlmPool，一个包含 26 个模型的受控套件，用于研究小架构选择（如位置编码、注意力机制）如何累积使长上下文扩展变得困难。研究发现，即使训练数据和扩展方法相同，架构差异也会导致长上下文性能显著分化。</p><p>该研究为模型设计提供了重要指导，帮助开发者避免不利于长上下文的架构选择。</p>
+              <p><strong>结论：OlmPool 揭示了长上下文扩展中架构细节的关键作用，对模型设计有重要参考价值。</strong></p>
+              <p>影响：指导未来模型架构设计，推动长上下文模型的发展，减少试错成本。</p>
+              <p class="links"><a href="https://allenai.org/blog/olmpool" target="_blank" rel="noreferrer">https://allenai.org/blog/olmpool</a></p>
             </article>
           
         </section>
       
       <section class="section">
         <h2>关联判断</h2>
-        <ul><li>llama.cpp和Ollama的更新均聚焦于推理后端优化和模型支持扩展，反映开源推理框架对硬件适配和模型兼容性的持续投入。</li><li>Ai2的三项成果分别涉及地球观测、科学发现和3D视觉，展示了其在基础模型应用和智能体评估方面的多元化布局。</li><li>WildDet3D与OlmoEarth嵌入均面向视觉与地理空间领域，但前者侧重3D检测，后者侧重嵌入分析，共同拓展人工智能在物理世界感知中的应用。</li></ul>
+        <ul><li>llama.cpp 和 Ollama 的更新均聚焦于提升本地模型运行体验，前者优化底层推理，后者增强模型支持。</li><li>Ai2 的三项发布（AstaBench、OlmoEarth、OlmPool）分别覆盖模型评估、应用和架构研究，体现了其在 人工智能 全栈的布局。</li><li>OlmPool 研究对长上下文扩展的洞察，可能间接影响未来 llama.cpp 和 Ollama 对长上下文模型的支持策略。</li></ul>
       </section>
       <section class="section">
         <h2>继续观察</h2>
-        <ul><li>llama.cpp后续对Mamba-2等新架构的CUDA融合优化进展</li><li>Ollama对Nemotron 3等新模型的本地推理性能表现</li><li>Ai2科学发现智能体基准在社区中的采用情况</li></ul>
+        <ul><li>llama.cpp 后续 Vulkan 功能扩展</li><li>Ollama 对 Gemma 4 工具调用的社区反馈</li><li>Ai2 OlmoEarth 嵌入在遥感领域的实际应用案例</li></ul>
       </section>
     </main>
   </body>
