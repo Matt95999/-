@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>人工智能行业日报 - 2026-05-04</title>
+    <title>人工智能行业日报</title>
     <style>
       :root {
         color-scheme: light;
@@ -48,69 +48,69 @@
   </head>
   <body>
     <main>
-      <p class="meta">生成时间：2026-05-04T12:00:00Z</p>
-      <h1>人工智能行业日报 - 2026-05-04</h1>
-      <p class="topline">Ollama v0.23.0正式支持Claude Desktop，llama.cpp持续优化MoE与CUDA，Ai2发布多项模型与基准更新。</p>
+      <p class="meta">生成时间：2026-05-05T00:00:00Z</p>
+      <h1>人工智能行业日报</h1>
+      <p class="topline">llama.cpp 发布多个版本更新，优化模型加载与服务器功能；Ai2 发布多项研究成果，包括 AstaBench 基准更新、OlmoEarth 嵌入导出、OlmPool 长上下文研究及科学发现智能体评估。</p>
       
         <section class="section">
           <h2>产品与智能体</h2>
-          <p class="summary">Ollama v0.23.0新增对Claude Desktop的支持，llama.cpp发布多个版本优化MoE推理和CUDA稳定性。</p>
+          <p class="summary">llama.cpp 连续发布 b9019 至 b9025 版本，主要改进包括将 load_hparams 和 load_tensors 移至每个模型定义、服务器实现 /models?reload=1 接口、重构扩散生成示例等。</p>
           
             <article class="story">
-              <h3>Ollama v0.23.0发布，正式支持Claude Desktop</h3>
-              <p>Ollama发布v0.23.0版本，新增对Claude Desktop的支持，用户可通过Ollama Launch启动Claude Desktop。</p><p>该版本还支持在Claude Desktop App内使用Claude Cowork和Claude Code功能。</p><p>此前v0.22.1版本已更新Gemma 4渲染器以改进思维链和工具调用能力。</p>
-              <p><strong>结论：Ollama通过集成Claude Desktop，进一步扩展了本地人工智能助手生态。</strong></p>
-              <p>影响：开发者可在本地环境中直接使用Claude系列功能，降低云端依赖，提升隐私和响应速度。</p>
-              <p class="links"><a href="https://github.com/ollama/ollama/releases/tag/v0.23.0" target="_blank" rel="noreferrer">https://github.com/ollama/ollama/releases/tag/v0.23.0</a></p>
-            </article>
-          
-            <article class="story">
-              <h3>llama.cpp连续发布多个版本，优化MoE与CUDA</h3>
-              <p>llama.cpp发布b9012、b9010、b9009等多个版本，主要改进包括：OpenCL Adreno优化MoE的MxFP4支持。</p><p>b9010修复了CUDA设备PCI总线ID去重导致的OOM问题，b9009优化了服务器端检查点数据拷贝。</p>
-              <p><strong>结论：llama.cpp持续优化推理性能与稳定性，特别是针对混合专家模型和CUDA环境。</strong></p>
-              <p>影响：使用llama.cpp的开发者将获得更高效的MoE推理和更稳定的多GPU支持。</p>
-              <p class="links"><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9012" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9012</a></p>
+              <h3>llama.cpp 发布 b9019 至 b9025 版本更新</h3>
+              <p>llama.cpp 项目在 2026 年 5 月 4 日连续发布 b9019、b9022、b9023、b9025 等多个版本。主要更新包括：将 load_hparams 和 load_tensors 移至每个模型定义中，以提升模块化；服务器端新增 /models?reload=1 接口，支持动态重载模型；重构扩散生成示例代码。</p><p>这些更新涉及底层架构调整和服务器功能增强，表明项目正在持续优化推理性能和开发者体验。</p>
+              <p><strong>结论：llama.cpp 的系列更新表明项目正积极改进模型加载机制和服务器功能，以支持更灵活的生产部署。</strong></p>
+              <p>影响：对开发者而言，模型加载的模块化改进将简化自定义模型集成，服务器重载接口则提升了运维效率。</p>
+              <p class="links"><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9025" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9025</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9023" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9023</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9022" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9022</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9019" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9019</a></p>
             </article>
           
         </section>
       
         <section class="section">
           <h2>模型与推理</h2>
-          <p class="summary">Ai2更新AstaBench基准并加入GPT-5.5结果，推出OlmoEarth嵌入导出功能，发布OlmPool研究长上下文扩展。</p>
+          <p class="summary">Ai2 更新 AstaBench 基准，新增 GPT-5.5 等前沿模型结果，并获 UK AISI 等机构采用；推出 OlmoEarth 嵌入导出功能；发布 OlmPool 研究揭示架构选择对长上下文扩展的影响；评估科学发现智能体表现。</p>
           
             <article class="story">
-              <h3>Ai2更新AstaBench基准，加入GPT-5.5结果</h3>
-              <p>Ai2发布AstaBench春季更新，新增包括GPT-5.5在内的前沿模型评测结果。</p><p>该基准已被英国AISI、General Reasoning、Elicit、SciSpace等机构采用。</p>
-              <p><strong>结论：AstaBench成为评估前沿模型推理能力的重要基准。</strong></p>
-              <p>影响：模型开发者可通过AstaBench对比自身模型与GPT-5.5等前沿模型的差距。</p>
+              <h3>Ai2 更新 AstaBench 基准，新增 GPT-5.5 结果并获行业采用</h3>
+              <p>Ai2 发布 AstaBench 基准更新，新增 GPT-5.5 等前沿模型的结果。该基准已被 UK AISI、General Reasoning、Elicit、SciSpace 等机构采用。</p><p>AstaBench 旨在评估模型在科学推理任务上的表现，此次更新扩大了模型覆盖范围并验证了其行业价值。</p>
+              <p><strong>结论：AstaBench 正成为科学推理评估的重要基准，GPT-5.5 的加入反映了前沿模型在该领域的进展。</strong></p>
+              <p>影响：对模型开发者而言，AstaBench 提供了更全面的科学推理能力对比基准，有助于指导模型优化方向。</p>
               <p class="links"><a href="https://allenai.org/blog/astabench-update-spring-2026" target="_blank" rel="noreferrer">https://allenai.org/blog/astabench-update-spring-2026</a></p>
             </article>
           
             <article class="story">
-              <h3>Ai2推出OlmoEarth嵌入导出功能</h3>
-              <p>Ai2在OlmoEarth Studio中新增自定义嵌入导出功能，用户可导出地球观测基础模型的嵌入向量。</p><p>这些嵌入可用于相似性搜索、少样本制图、变化检测等下游分析任务。</p>
-              <p><strong>结论：OlmoEarth嵌入导出降低了地球观测人工智能应用的门槛。</strong></p>
-              <p>影响：研究人员和开发者可直接利用预训练嵌入进行定制化分析，无需从头训练模型。</p>
+              <h3>Ai2 推出 OlmoEarth 嵌入导出功能</h3>
+              <p>Ai2 在 OlmoEarth Studio 中推出自定义嵌入导出功能，用户可从 OlmoEarth 基础模型导出地球观测嵌入，用于相似性搜索、少样本映射、变化检测等下游分析。</p><p>该功能降低了地球观测领域应用 人工智能 的门槛，使研究人员能更便捷地利用预训练模型进行定制分析。</p>
+              <p><strong>结论：OlmoEarth 嵌入导出功能扩展了地球观测 人工智能 的应用场景，提升了模型的实用性和可访问性。</strong></p>
+              <p>影响：对地球科学和遥感领域用户而言，该功能简化了从模型到应用的流程，加速了 人工智能 在地理空间分析中的落地。</p>
               <p class="links"><a href="https://allenai.org/blog/olmoearth-embeddings" target="_blank" rel="noreferrer">https://allenai.org/blog/olmoearth-embeddings</a></p>
             </article>
           
             <article class="story">
-              <h3>Ai2发布OlmPool研究：小架构选择如何影响长上下文扩展</h3>
-              <p>Ai2发布OlmPool，包含26个控制变量模型，研究小架构选择如何累积影响长上下文扩展。</p><p>研究发现，即使训练数据和扩展方法相同，微小的架构差异也会显著影响长上下文性能。</p>
-              <p><strong>结论：长上下文扩展需要谨慎设计架构细节。</strong></p>
-              <p>影响：模型设计者应关注架构选择对长上下文能力的累积效应，避免盲目扩展。</p>
+              <h3>Ai2 发布 OlmPool 研究：架构选择对长上下文扩展的影响</h3>
+              <p>Ai2 发布 OlmPool，一个包含 26 个模型的受控套件，用于研究小型架构选择如何累积影响长上下文扩展的难度。研究发现，即使训练数据和扩展方法相同，架构差异也会显著影响长上下文性能。</p><p>该研究为模型设计提供了重要指导，揭示了在构建长上下文模型时需谨慎选择架构细节。</p>
+              <p><strong>结论：OlmPool 研究强调了架构选择在长上下文扩展中的关键作用，为未来模型设计提供了实证依据。</strong></p>
+              <p>影响：对模型架构师而言，该研究提示在追求长上下文能力时需关注架构细节的累积效应，避免盲目扩展。</p>
               <p class="links"><a href="https://allenai.org/blog/olmpool" target="_blank" rel="noreferrer">https://allenai.org/blog/olmpool</a></p>
+            </article>
+          
+            <article class="story">
+              <h3>Ai2 评估科学发现智能体：当前模型仍面临挑战</h3>
+              <p>Ai2 开发了 ScienceWorld 和 DiscoveryWorld 两个基准，用于评估 人工智能 科学发现智能体的能力。结果显示，即使是最强的 人工智能 科学智能体，在解决人类科学家日常解决的问题时仍存在困难。</p><p>该评估揭示了当前 人工智能 在科学推理和实验设计方面的局限性，为未来研究指明了改进方向。</p>
+              <p><strong>结论：科学发现智能体基准表明，人工智能 在科学推理任务上距离人类水平仍有较大差距。</strong></p>
+              <p>影响：对 人工智能 研究社区而言，该评估明确了科学发现智能体的短板，激励开发更强大的推理和实验规划能力。</p>
+              <p class="links"><a href="https://allenai.org/blog/evaluating-scientific-discovery-agents" target="_blank" rel="noreferrer">https://allenai.org/blog/evaluating-scientific-discovery-agents</a></p>
             </article>
           
         </section>
       
       <section class="section">
         <h2>关联判断</h2>
-        <ul><li>Ollama和llama.cpp的更新都聚焦于本地推理体验，前者通过集成Claude Desktop扩展应用场景，后者通过优化MoE和CUDA提升性能。</li><li>Ai2的三项更新分别涉及基准评测、嵌入工具和架构研究，共同推动模型评估与应用生态发展。</li></ul>
+        <ul><li>llama.cpp 的版本更新与 Ai2 的 OlmPool 研究均涉及模型架构优化，前者侧重工程实现，后者侧重学术分析。</li><li>Ai2 的 AstaBench 和科学发现智能体评估都聚焦于模型推理能力，但分别针对科学推理和实验设计。</li><li>OlmoEarth 嵌入导出功能与科学发现智能体评估均体现 Ai2 推动 人工智能 在科学领域应用的战略。</li></ul>
       </section>
       <section class="section">
         <h2>继续观察</h2>
-        <ul><li>Ollama对Claude Desktop的集成效果及用户反馈</li><li>llama.cpp的MoE优化进展</li><li>AstaBench后续是否纳入更多国产模型</li></ul>
+        <ul><li>llama.cpp 后续版本对长上下文支持的变化</li><li>GPT-5.5 在 AstaBench 上的具体表现及后续模型更新</li><li>Ai2 科学发现智能体基准的进一步应用和改进</li></ul>
       </section>
     </main>
   </body>
