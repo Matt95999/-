@@ -48,69 +48,69 @@
   </head>
   <body>
     <main>
-      <p class="meta">生成时间：2026-05-05T00:00:00Z</p>
+      <p class="meta">生成时间：2026-05-06T00:00:00.000Z</p>
       <h1>人工智能行业日报</h1>
-      <p class="topline">llama.cpp 发布多个版本更新，优化模型加载与服务器功能；Ai2 发布多项研究成果，包括 AstaBench 基准更新、OlmoEarth 嵌入导出、OlmPool 长上下文研究及科学发现智能体评估。</p>
+      <p class="topline">Hugging Face Transformers 发布 v5.6.0，新增 OpenAI Privacy Filter 等模型；SGLang 发布 v0.5.9，优化 LoRA 权重加载；llama.cpp 发布 b9031，改进后端加载；Ollama 发布 v0.23.1，支持 Gemma 4 MTP 推测解码；Ai2 发布 MolmoAct 2，开源机器人基础模型。</p>
       
         <section class="section">
           <h2>产品与智能体</h2>
-          <p class="summary">llama.cpp 连续发布 b9019 至 b9025 版本，主要改进包括将 load_hparams 和 load_tensors 移至每个模型定义、服务器实现 /models?reload=1 接口、重构扩散生成示例等。</p>
+          <p class="summary">多个主流 人工智能 框架和工具发布新版本，聚焦性能优化和新模型支持。</p>
           
             <article class="story">
-              <h3>llama.cpp 发布 b9019 至 b9025 版本更新</h3>
-              <p>llama.cpp 项目在 2026 年 5 月 4 日连续发布 b9019、b9022、b9023、b9025 等多个版本。主要更新包括：将 load_hparams 和 load_tensors 移至每个模型定义中，以提升模块化；服务器端新增 /models?reload=1 接口，支持动态重载模型；重构扩散生成示例代码。</p><p>这些更新涉及底层架构调整和服务器功能增强，表明项目正在持续优化推理性能和开发者体验。</p>
-              <p><strong>结论：llama.cpp 的系列更新表明项目正积极改进模型加载机制和服务器功能，以支持更灵活的生产部署。</strong></p>
-              <p>影响：对开发者而言，模型加载的模块化改进将简化自定义模型集成，服务器重载接口则提升了运维效率。</p>
-              <p class="links"><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9025" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9025</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9023" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9023</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9022" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9022</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9019" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9019</a></p>
+              <h3>Hugging Face Transformers 发布 v5.6.0，新增 OpenAI Privacy Filter 等模型</h3>
+              <p>Hugging Face Transformers 发布 v5.6.0 版本，新增 OpenAI Privacy Filter 模型，这是一个用于个人身份信息识别的双向 token 分类模型。</p><p>该版本还包含其他新模型和功能改进，后续补丁版本 v5.6.1 和 v5.6.2 修复了 Qwen 3.5 和 3.6 MoE 在 FP8 下的问题。</p><p>此外，v5.7.0 和 v5.8.0 版本也已发布，分别新增 Laguna 和 DeepSeek-V4 模型。</p>
+              <p><strong>结论：Hugging Face Transformers 持续快速迭代，积极整合最新模型并修复关键问题。</strong></p>
+              <p>影响：开发者可以及时获得新模型支持和性能修复，提升模型部署的稳定性和效率。</p>
+              <p class="links"><a href="https://github.com/huggingface/transformers/releases/tag/v5.6.0" target="_blank" rel="noreferrer">https://github.com/huggingface/transformers/releases/tag/v5.6.0</a></p>
+            </article>
+          
+            <article class="story">
+              <h3>SGLang 发布 v0.5.9，优化 LoRA 权重加载与计算重叠</h3>
+              <p>SGLang 发布 v0.5.9 版本，亮点包括 LoRA 权重加载与推理计算重叠，将 TTFT（首 token 生成时间）降低约 78%。</p><p>后续 v0.5.10 版本默认启用分段 CUDA 图捕获，减少内存开销；v0.5.11 版本升级至 CUDA 13 和 PyTorch 2.11。</p>
+              <p><strong>结论：SGLang 通过优化推理流水线和升级底层依赖，显著提升推理性能。</strong></p>
+              <p>影响：使用 LoRA 微调模型的用户将获得更快的推理速度，降低延迟。</p>
+              <p class="links"><a href="https://github.com/sgl-project/sglang/releases/tag/v0.5.9" target="_blank" rel="noreferrer">https://github.com/sgl-project/sglang/releases/tag/v0.5.9</a></p>
+            </article>
+          
+            <article class="story">
+              <h3>llama.cpp 发布 b9031，改进后端按需加载</h3>
+              <p>llama.cpp 发布 b9031 版本，主要改进是仅在需要时加载后端，减少不必要的资源占用。</p><p>后续版本 b9033 和 b9037 分别带来 macOS/iOS 更新和 Hexagon 处理优化。</p>
+              <p><strong>结论：llama.cpp 持续优化资源管理和多平台支持。</strong></p>
+              <p>影响：在资源受限设备上运行 llama.cpp 的用户将获得更好的内存效率和性能。</p>
+              <p class="links"><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9031" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9031</a></p>
+            </article>
+          
+            <article class="story">
+              <h3>Ollama 发布 v0.23.1，支持 Gemma 4 MTP 推测解码</h3>
+              <p>Ollama 发布 v0.23.1 版本，为 MLX runner 添加 Gemma 4 MTP（多 token 处理）推测解码支持，在 Mac 上可带来超过 2 倍的速度提升。</p><p>此前 v0.23.0 版本已支持 Claude Desktop 与 Ollama Launch 集成。</p>
+              <p><strong>结论：Ollama 通过支持 Gemma 4 MTP 显著提升 Mac 上的推理速度。</strong></p>
+              <p>影响：Mac 用户运行 Gemma 4 模型时推理速度翻倍，提升本地 人工智能 体验。</p>
+              <p class="links"><a href="https://github.com/ollama/ollama/releases/tag/v0.23.1" target="_blank" rel="noreferrer">https://github.com/ollama/ollama/releases/tag/v0.23.1</a></p>
             </article>
           
         </section>
       
         <section class="section">
           <h2>模型与推理</h2>
-          <p class="summary">Ai2 更新 AstaBench 基准，新增 GPT-5.5 等前沿模型结果，并获 UK AISI 等机构采用；推出 OlmoEarth 嵌入导出功能；发布 OlmPool 研究揭示架构选择对长上下文扩展的影响；评估科学发现智能体表现。</p>
+          <p class="summary">Ai2 发布开源机器人基础模型 MolmoAct 2，推动具身智能发展。</p>
           
             <article class="story">
-              <h3>Ai2 更新 AstaBench 基准，新增 GPT-5.5 结果并获行业采用</h3>
-              <p>Ai2 发布 AstaBench 基准更新，新增 GPT-5.5 等前沿模型的结果。该基准已被 UK AISI、General Reasoning、Elicit、SciSpace 等机构采用。</p><p>AstaBench 旨在评估模型在科学推理任务上的表现，此次更新扩大了模型覆盖范围并验证了其行业价值。</p>
-              <p><strong>结论：AstaBench 正成为科学推理评估的重要基准，GPT-5.5 的加入反映了前沿模型在该领域的进展。</strong></p>
-              <p>影响：对模型开发者而言，AstaBench 提供了更全面的科学推理能力对比基准，有助于指导模型优化方向。</p>
-              <p class="links"><a href="https://allenai.org/blog/astabench-update-spring-2026" target="_blank" rel="noreferrer">https://allenai.org/blog/astabench-update-spring-2026</a></p>
-            </article>
-          
-            <article class="story">
-              <h3>Ai2 推出 OlmoEarth 嵌入导出功能</h3>
-              <p>Ai2 在 OlmoEarth Studio 中推出自定义嵌入导出功能，用户可从 OlmoEarth 基础模型导出地球观测嵌入，用于相似性搜索、少样本映射、变化检测等下游分析。</p><p>该功能降低了地球观测领域应用 人工智能 的门槛，使研究人员能更便捷地利用预训练模型进行定制分析。</p>
-              <p><strong>结论：OlmoEarth 嵌入导出功能扩展了地球观测 人工智能 的应用场景，提升了模型的实用性和可访问性。</strong></p>
-              <p>影响：对地球科学和遥感领域用户而言，该功能简化了从模型到应用的流程，加速了 人工智能 在地理空间分析中的落地。</p>
-              <p class="links"><a href="https://allenai.org/blog/olmoearth-embeddings" target="_blank" rel="noreferrer">https://allenai.org/blog/olmoearth-embeddings</a></p>
-            </article>
-          
-            <article class="story">
-              <h3>Ai2 发布 OlmPool 研究：架构选择对长上下文扩展的影响</h3>
-              <p>Ai2 发布 OlmPool，一个包含 26 个模型的受控套件，用于研究小型架构选择如何累积影响长上下文扩展的难度。研究发现，即使训练数据和扩展方法相同，架构差异也会显著影响长上下文性能。</p><p>该研究为模型设计提供了重要指导，揭示了在构建长上下文模型时需谨慎选择架构细节。</p>
-              <p><strong>结论：OlmPool 研究强调了架构选择在长上下文扩展中的关键作用，为未来模型设计提供了实证依据。</strong></p>
-              <p>影响：对模型架构师而言，该研究提示在追求长上下文能力时需关注架构细节的累积效应，避免盲目扩展。</p>
-              <p class="links"><a href="https://allenai.org/blog/olmpool" target="_blank" rel="noreferrer">https://allenai.org/blog/olmpool</a></p>
-            </article>
-          
-            <article class="story">
-              <h3>Ai2 评估科学发现智能体：当前模型仍面临挑战</h3>
-              <p>Ai2 开发了 ScienceWorld 和 DiscoveryWorld 两个基准，用于评估 人工智能 科学发现智能体的能力。结果显示，即使是最强的 人工智能 科学智能体，在解决人类科学家日常解决的问题时仍存在困难。</p><p>该评估揭示了当前 人工智能 在科学推理和实验设计方面的局限性，为未来研究指明了改进方向。</p>
-              <p><strong>结论：科学发现智能体基准表明，人工智能 在科学推理任务上距离人类水平仍有较大差距。</strong></p>
-              <p>影响：对 人工智能 研究社区而言，该评估明确了科学发现智能体的短板，激励开发更强大的推理和实验规划能力。</p>
-              <p class="links"><a href="https://allenai.org/blog/evaluating-scientific-discovery-agents" target="_blank" rel="noreferrer">https://allenai.org/blog/evaluating-scientific-discovery-agents</a></p>
+              <h3>Ai2 发布 MolmoAct 2，开源机器人基础模型</h3>
+              <p>Ai2 发布 MolmoAct 2，这是一个完全开源的机器人基础模型，具备更快的 3D 动作推理能力，并附带一个大型双臂操作数据集。</p><p>该模型旨在为真实世界机器人任务提供基础能力，推动具身智能研究。</p>
+              <p><strong>结论：MolmoAct 2 作为开源机器人基础模型，降低了机器人研究门槛。</strong></p>
+              <p>影响：机器人研究者和开发者可以利用该模型加速机器人任务开发，促进开源机器人生态。</p>
+              <p class="links"><a href="https://allenai.org/blog/molmoact2" target="_blank" rel="noreferrer">https://allenai.org/blog/molmoact2</a></p>
             </article>
           
         </section>
       
       <section class="section">
         <h2>关联判断</h2>
-        <ul><li>llama.cpp 的版本更新与 Ai2 的 OlmPool 研究均涉及模型架构优化，前者侧重工程实现，后者侧重学术分析。</li><li>Ai2 的 AstaBench 和科学发现智能体评估都聚焦于模型推理能力，但分别针对科学推理和实验设计。</li><li>OlmoEarth 嵌入导出功能与科学发现智能体评估均体现 Ai2 推动 人工智能 在科学领域应用的战略。</li></ul>
+        <ul><li>Hugging Face Transformers、SGLang、llama.cpp 和 Ollama 均发布新版本，共同反映了 人工智能 框架和工具链在性能优化、新模型支持和资源管理方面的持续进步。</li><li>Ollama 对 Gemma 4 MTP 的支持与 Hugging Face Transformers 对 DeepSeek-V4 的支持，表明主流框架正积极适配最新模型。</li><li>Ai2 的 MolmoAct 2 作为机器人基础模型，与上述推理优化工具形成互补，前者关注具身智能，后者提升通用推理效率。</li></ul>
       </section>
       <section class="section">
         <h2>继续观察</h2>
-        <ul><li>llama.cpp 后续版本对长上下文支持的变化</li><li>GPT-5.5 在 AstaBench 上的具体表现及后续模型更新</li><li>Ai2 科学发现智能体基准的进一步应用和改进</li></ul>
+        <ul><li>Hugging Face Transformers 后续版本对更多新模型的支持</li><li>SGLang 在 CUDA 13 下的性能表现</li><li>MolmoAct 2 在真实机器人任务中的应用案例</li></ul>
       </section>
     </main>
   </body>
