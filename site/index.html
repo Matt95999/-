@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>人工智能行业日报</title>
+    <title>人工智能行业日报 | 2026-05-07</title>
     <style>
       :root {
         color-scheme: light;
@@ -48,69 +48,75 @@
   </head>
   <body>
     <main>
-      <p class="meta">生成时间：2026-05-06T00:00:00.000Z</p>
-      <h1>人工智能行业日报</h1>
-      <p class="topline">Hugging Face Transformers 发布 v5.6.0，新增 OpenAI Privacy Filter 等模型；SGLang 发布 v0.5.9，优化 LoRA 权重加载；llama.cpp 发布 b9031，改进后端加载；Ollama 发布 v0.23.1，支持 Gemma 4 MTP 推测解码；Ai2 发布 MolmoAct 2，开源机器人基础模型。</p>
+      <p class="meta">生成时间：2026-05-07T12:00:00Z</p>
+      <h1>人工智能行业日报 | 2026-05-07</h1>
+      <p class="topline">今日人工智能行业聚焦于开源基础设施的实用化进展：Hugging Face推出ASR排行榜防作弊机制并集成DeepInfra推理提供商，Ollama发布v0.23.1支持Gemma 4 MTP推测解码，Ai2发布MolmoAct 2机器人基础模型、AstaBench更新及OlmoEarth嵌入导出功能。</p>
+      
+        <section class="section">
+          <h2>基础设施与芯片</h2>
+          <p class="summary">Hugging Face在ASR排行榜中引入防作弊机制，并集成DeepInfra推理提供商，同时发布Transformers.js Chrome扩展教程。</p>
+          
+            <article class="story">
+              <h3>Hugging Face 强化开源ASR排行榜并集成DeepInfra推理提供商</h3>
+              <p>Hugging Face在Open ASR Leaderboard中增加了防作弊机制（Benchmaxxer Repellant），以保护排行榜的公正性。</p><p>Hugging Face将DeepInfra作为推理提供商集成，用户可通过Hugging Face平台直接使用DeepInfra的推理服务。</p><p>Hugging Face发布了如何使用Transformers.js构建Chrome扩展的教程，推动浏览器端人工智能应用开发。</p>
+              <p><strong>结论：Hugging Face正通过防作弊、集成推理提供商和浏览器端工具，巩固其作为开源人工智能基础设施核心平台的地位。</strong></p>
+              <p>影响：开发者将获得更可靠的模型评估环境、更便捷的推理服务以及浏览器端人工智能开发的新路径。</p>
+              <p class="links"><a href="https://huggingface.co/blog/open-asr-leaderboard-private-data" target="_blank" rel="noreferrer">https://huggingface.co/blog/open-asr-leaderboard-private-data</a><br><a href="https://huggingface.co/blog/inference-providers-deepinfra" target="_blank" rel="noreferrer">https://huggingface.co/blog/inference-providers-deepinfra</a><br><a href="https://huggingface.co/blog/transformersjs-chrome-extension" target="_blank" rel="noreferrer">https://huggingface.co/blog/transformersjs-chrome-extension</a></p>
+            </article>
+          
+        </section>
       
         <section class="section">
           <h2>产品与智能体</h2>
-          <p class="summary">多个主流 人工智能 框架和工具发布新版本，聚焦性能优化和新模型支持。</p>
+          <p class="summary">Ollama发布v0.23.1版本，支持Gemma 4 MTP推测解码，在Mac上实现超过2倍的速度提升。</p>
           
             <article class="story">
-              <h3>Hugging Face Transformers 发布 v5.6.0，新增 OpenAI Privacy Filter 等模型</h3>
-              <p>Hugging Face Transformers 发布 v5.6.0 版本，新增 OpenAI Privacy Filter 模型，这是一个用于个人身份信息识别的双向 token 分类模型。</p><p>该版本还包含其他新模型和功能改进，后续补丁版本 v5.6.1 和 v5.6.2 修复了 Qwen 3.5 和 3.6 MoE 在 FP8 下的问题。</p><p>此外，v5.7.0 和 v5.8.0 版本也已发布，分别新增 Laguna 和 DeepSeek-V4 模型。</p>
-              <p><strong>结论：Hugging Face Transformers 持续快速迭代，积极整合最新模型并修复关键问题。</strong></p>
-              <p>影响：开发者可以及时获得新模型支持和性能修复，提升模型部署的稳定性和效率。</p>
-              <p class="links"><a href="https://github.com/huggingface/transformers/releases/tag/v5.6.0" target="_blank" rel="noreferrer">https://github.com/huggingface/transformers/releases/tag/v5.6.0</a></p>
-            </article>
-          
-            <article class="story">
-              <h3>SGLang 发布 v0.5.9，优化 LoRA 权重加载与计算重叠</h3>
-              <p>SGLang 发布 v0.5.9 版本，亮点包括 LoRA 权重加载与推理计算重叠，将 TTFT（首 token 生成时间）降低约 78%。</p><p>后续 v0.5.10 版本默认启用分段 CUDA 图捕获，减少内存开销；v0.5.11 版本升级至 CUDA 13 和 PyTorch 2.11。</p>
-              <p><strong>结论：SGLang 通过优化推理流水线和升级底层依赖，显著提升推理性能。</strong></p>
-              <p>影响：使用 LoRA 微调模型的用户将获得更快的推理速度，降低延迟。</p>
-              <p class="links"><a href="https://github.com/sgl-project/sglang/releases/tag/v0.5.9" target="_blank" rel="noreferrer">https://github.com/sgl-project/sglang/releases/tag/v0.5.9</a></p>
-            </article>
-          
-            <article class="story">
-              <h3>llama.cpp 发布 b9031，改进后端按需加载</h3>
-              <p>llama.cpp 发布 b9031 版本，主要改进是仅在需要时加载后端，减少不必要的资源占用。</p><p>后续版本 b9033 和 b9037 分别带来 macOS/iOS 更新和 Hexagon 处理优化。</p>
-              <p><strong>结论：llama.cpp 持续优化资源管理和多平台支持。</strong></p>
-              <p>影响：在资源受限设备上运行 llama.cpp 的用户将获得更好的内存效率和性能。</p>
-              <p class="links"><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9031" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9031</a></p>
-            </article>
-          
-            <article class="story">
-              <h3>Ollama 发布 v0.23.1，支持 Gemma 4 MTP 推测解码</h3>
-              <p>Ollama 发布 v0.23.1 版本，为 MLX runner 添加 Gemma 4 MTP（多 token 处理）推测解码支持，在 Mac 上可带来超过 2 倍的速度提升。</p><p>此前 v0.23.0 版本已支持 Claude Desktop 与 Ollama Launch 集成。</p>
-              <p><strong>结论：Ollama 通过支持 Gemma 4 MTP 显著提升 Mac 上的推理速度。</strong></p>
-              <p>影响：Mac 用户运行 Gemma 4 模型时推理速度翻倍，提升本地 人工智能 体验。</p>
-              <p class="links"><a href="https://github.com/ollama/ollama/releases/tag/v0.23.1" target="_blank" rel="noreferrer">https://github.com/ollama/ollama/releases/tag/v0.23.1</a></p>
+              <h3>Ollama v0.23.1 发布：支持Gemma 4 MTP推测解码，Mac上速度翻倍</h3>
+              <p>Ollama发布v0.23.1版本，为MLX runner新增Gemma 4 MTP（多令牌处理）推测解码支持。</p><p>该功能在Mac上可为Gemma模型带来超过2倍的速度提升。</p><p>同时，Ollama发布了v0.30.0的多个候选版本，修复了Windows上的构建问题。</p>
+              <p><strong>结论：Ollama通过支持Gemma 4 MTP显著提升了Mac上本地推理的性能，并持续迭代优化跨平台兼容性。</strong></p>
+              <p>影响：Mac用户将获得更快的本地模型推理体验，推动Ollama在个人开发者中的采用。</p>
+              <p class="links"><a href="https://github.com/ollama/ollama/releases/tag/v0.23.1" target="_blank" rel="noreferrer">https://github.com/ollama/ollama/releases/tag/v0.23.1</a><br><a href="https://github.com/ollama/ollama/releases/tag/v0.30.0-rc3" target="_blank" rel="noreferrer">https://github.com/ollama/ollama/releases/tag/v0.30.0-rc3</a></p>
             </article>
           
         </section>
       
         <section class="section">
           <h2>模型与推理</h2>
-          <p class="summary">Ai2 发布开源机器人基础模型 MolmoAct 2，推动具身智能发展。</p>
+          <p class="summary">Ai2发布MolmoAct 2机器人基础模型、AstaBench更新（含GPT-5.5结果）及OlmoEarth嵌入导出功能。</p>
           
             <article class="story">
-              <h3>Ai2 发布 MolmoAct 2，开源机器人基础模型</h3>
-              <p>Ai2 发布 MolmoAct 2，这是一个完全开源的机器人基础模型，具备更快的 3D 动作推理能力，并附带一个大型双臂操作数据集。</p><p>该模型旨在为真实世界机器人任务提供基础能力，推动具身智能研究。</p>
-              <p><strong>结论：MolmoAct 2 作为开源机器人基础模型，降低了机器人研究门槛。</strong></p>
-              <p>影响：机器人研究者和开发者可以利用该模型加速机器人任务开发，促进开源机器人生态。</p>
+              <h3>Ai2发布MolmoAct 2：面向真实世界机器人的开源基础模型</h3>
+              <p>Ai2发布MolmoAct 2，一个完全开源的机器人基础模型，具备更快的3D动作推理能力。</p><p>该模型伴随一个大型双臂操作数据集发布，旨在提升机器人在真实世界任务中的表现。</p>
+              <p><strong>结论：MolmoAct 2通过开源和数据集贡献，降低了机器人领域的研究门槛。</strong></p>
+              <p>影响：机器人研究人员和开发者将获得更强大的基础模型和数据集，加速真实世界机器人应用的开发。</p>
               <p class="links"><a href="https://allenai.org/blog/molmoact2" target="_blank" rel="noreferrer">https://allenai.org/blog/molmoact2</a></p>
+            </article>
+          
+            <article class="story">
+              <h3>AstaBench更新：新增GPT-5.5结果，获行业广泛采用</h3>
+              <p>Ai2更新AstaBench基准测试，新增GPT-5.5等前沿模型的结果。</p><p>该基准测试已被英国AISI、General Reasoning、Elicit、SciSpace等机构采用。</p>
+              <p><strong>结论：AstaBench正成为评估人工智能推理能力的重要基准，其行业采用度持续增长。</strong></p>
+              <p>影响：模型开发者将更依赖AstaBench进行性能对比，推动推理能力的提升。</p>
+              <p class="links"><a href="https://allenai.org/blog/astabench-update-spring-2026" target="_blank" rel="noreferrer">https://allenai.org/blog/astabench-update-spring-2026</a></p>
+            </article>
+          
+            <article class="story">
+              <h3>Ai2推出OlmoEarth嵌入导出功能：支持自定义地球观测嵌入</h3>
+              <p>Ai2在OlmoEarth Studio中推出嵌入导出功能，用户可导出自定义的地球观测嵌入。</p><p>这些嵌入可用于相似性搜索、少样本映射、变化检测等下游分析任务。</p>
+              <p><strong>结论：OlmoEarth嵌入导出功能将地球观测基础模型的能力开放给更广泛的分析应用。</strong></p>
+              <p>影响：地理空间分析人员将能更灵活地利用人工智能模型进行遥感数据分析。</p>
+              <p class="links"><a href="https://allenai.org/blog/olmoearth-embeddings" target="_blank" rel="noreferrer">https://allenai.org/blog/olmoearth-embeddings</a></p>
             </article>
           
         </section>
       
       <section class="section">
         <h2>关联判断</h2>
-        <ul><li>Hugging Face Transformers、SGLang、llama.cpp 和 Ollama 均发布新版本，共同反映了 人工智能 框架和工具链在性能优化、新模型支持和资源管理方面的持续进步。</li><li>Ollama 对 Gemma 4 MTP 的支持与 Hugging Face Transformers 对 DeepSeek-V4 的支持，表明主流框架正积极适配最新模型。</li><li>Ai2 的 MolmoAct 2 作为机器人基础模型，与上述推理优化工具形成互补，前者关注具身智能，后者提升通用推理效率。</li></ul>
+        <ul><li>Hugging Face的推理提供商集成与Ollama的本地推理优化共同反映了人工智能推理部署的多样化趋势：云端与本地并行发展。</li><li>Ai2的MolmoAct 2、AstaBench和OlmoEarth嵌入均属于开源模型与基准测试生态，与Hugging Face的开源基础设施形成互补。</li><li>Ollama对Gemma 4 MTP的支持与Hugging Face的Transformers.js教程均致力于降低人工智能应用门槛，分别面向本地和浏览器端。</li></ul>
       </section>
       <section class="section">
         <h2>继续观察</h2>
-        <ul><li>Hugging Face Transformers 后续版本对更多新模型的支持</li><li>SGLang 在 CUDA 13 下的性能表现</li><li>MolmoAct 2 在真实机器人任务中的应用案例</li></ul>
+        <ul><li>Ollama v0.30.0正式版发布及Windows支持进展</li><li>Hugging Face推理提供商生态的扩展情况</li><li>Ai2 MolmoAct 2在机器人社区的采用反馈</li></ul>
       </section>
     </main>
   </body>
