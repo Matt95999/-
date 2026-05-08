@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>人工智能行业日报 | 2026-05-07</title>
+    <title>人工智能行业日报</title>
     <style>
       :root {
         color-scheme: light;
@@ -48,63 +48,57 @@
   </head>
   <body>
     <main>
-      <p class="meta">生成时间：2026-05-07T12:00:00Z</p>
-      <h1>人工智能行业日报 | 2026-05-07</h1>
-      <p class="topline">今日人工智能行业聚焦于开源基础设施的实用化进展：Hugging Face推出ASR排行榜防作弊机制并集成DeepInfra推理提供商，Ollama发布v0.23.1支持Gemma 4 MTP推测解码，Ai2发布MolmoAct 2机器人基础模型、AstaBench更新及OlmoEarth嵌入导出功能。</p>
-      
-        <section class="section">
-          <h2>基础设施与芯片</h2>
-          <p class="summary">Hugging Face在ASR排行榜中引入防作弊机制，并集成DeepInfra推理提供商，同时发布Transformers.js Chrome扩展教程。</p>
-          
-            <article class="story">
-              <h3>Hugging Face 强化开源ASR排行榜并集成DeepInfra推理提供商</h3>
-              <p>Hugging Face在Open ASR Leaderboard中增加了防作弊机制（Benchmaxxer Repellant），以保护排行榜的公正性。</p><p>Hugging Face将DeepInfra作为推理提供商集成，用户可通过Hugging Face平台直接使用DeepInfra的推理服务。</p><p>Hugging Face发布了如何使用Transformers.js构建Chrome扩展的教程，推动浏览器端人工智能应用开发。</p>
-              <p><strong>结论：Hugging Face正通过防作弊、集成推理提供商和浏览器端工具，巩固其作为开源人工智能基础设施核心平台的地位。</strong></p>
-              <p>影响：开发者将获得更可靠的模型评估环境、更便捷的推理服务以及浏览器端人工智能开发的新路径。</p>
-              <p class="links"><a href="https://huggingface.co/blog/open-asr-leaderboard-private-data" target="_blank" rel="noreferrer">https://huggingface.co/blog/open-asr-leaderboard-private-data</a><br><a href="https://huggingface.co/blog/inference-providers-deepinfra" target="_blank" rel="noreferrer">https://huggingface.co/blog/inference-providers-deepinfra</a><br><a href="https://huggingface.co/blog/transformersjs-chrome-extension" target="_blank" rel="noreferrer">https://huggingface.co/blog/transformersjs-chrome-extension</a></p>
-            </article>
-          
-        </section>
+      <p class="meta">生成时间：2026-05-08T03:00:00.000Z</p>
+      <h1>人工智能行业日报</h1>
+      <p class="topline">今日人工智能领域聚焦于开源推理框架的密集更新、机器人基础模型的开放发布以及人工智能基准测试与地球观测嵌入的新进展。llama.cpp和Ollama均发布了多个修复与优化版本，提升稳定性和性能；Ai2推出MolmoAct 2机器人基础模型和AstaBench更新，并引入OlmoEarth嵌入功能，推动人工智能在机器人、推理评估和遥感分析中的应用。</p>
       
         <section class="section">
           <h2>产品与智能体</h2>
-          <p class="summary">Ollama发布v0.23.1版本，支持Gemma 4 MTP推测解码，在Mac上实现超过2倍的速度提升。</p>
+          <p class="summary">llama.cpp和Ollama在一天内连续发布多个版本，修复关键问题并增强功能，体现了开源社区对本地推理效率的持续优化。</p>
           
             <article class="story">
-              <h3>Ollama v0.23.1 发布：支持Gemma 4 MTP推测解码，Mac上速度翻倍</h3>
-              <p>Ollama发布v0.23.1版本，为MLX runner新增Gemma 4 MTP（多令牌处理）推测解码支持。</p><p>该功能在Mac上可为Gemma模型带来超过2倍的速度提升。</p><p>同时，Ollama发布了v0.30.0的多个候选版本，修复了Windows上的构建问题。</p>
-              <p><strong>结论：Ollama通过支持Gemma 4 MTP显著提升了Mac上本地推理的性能，并持续迭代优化跨平台兼容性。</strong></p>
-              <p>影响：Mac用户将获得更快的本地模型推理体验，推动Ollama在个人开发者中的采用。</p>
-              <p class="links"><a href="https://github.com/ollama/ollama/releases/tag/v0.23.1" target="_blank" rel="noreferrer">https://github.com/ollama/ollama/releases/tag/v0.23.1</a><br><a href="https://github.com/ollama/ollama/releases/tag/v0.30.0-rc3" target="_blank" rel="noreferrer">https://github.com/ollama/ollama/releases/tag/v0.30.0-rc3</a></p>
+              <h3>llama.cpp连续发布多个版本，增强CUDA和SYCL支持</h3>
+              <p>llama.cpp在2026年5月7日发布了b9060至b9066等多个版本，主要更新包括：CUDA中通过cublasSgemmStridedBatched实现批量out_prod内循环，SYCL后端新增FILL、CUMSUM、DIAG、SOLVE_TRI、SSM_SCAN和GATED_DELTA_NET等操作，以及修复设备状态保存/加载问题。</p><p>此外，OpenCL后端添加了opfilter正则表达式用于调试，整体提升了llama.cpp在不同硬件上的推理效率和稳定性。</p>
+              <p><strong>结论：llama.cpp的密集更新表明其正在积极扩展对多种GPU后端的支持，并优化核心操作性能。</strong></p>
+              <p>影响：对开发者而言，这些更新将提升本地大模型推理的速度和兼容性，尤其利好使用CUDA或SYCL的用户。</p>
+              <p class="links"><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9066" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9066</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9064" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9064</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9063" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9063</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9060" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9060</a></p>
+            </article>
+          
+            <article class="story">
+              <h3>Ollama发布v0.30.0-rc5至rc7，修复Windows依赖问题</h3>
+              <p>Ollama在2026年5月7日至8日连续发布了v0.30.0-rc5、rc6和rc7三个候选版本，主要修复Windows平台上的依赖收集问题，并禁用了OpenMP支持。</p><p>这些更新旨在提高Ollama在Windows环境下的稳定性和安装可靠性。</p>
+              <p><strong>结论：Ollama的快速迭代反映了其正在为正式版v0.30.0做最后准备，重点解决跨平台兼容性问题。</strong></p>
+              <p>影响：Windows用户将获得更稳定的本地模型运行体验，减少依赖错误。</p>
+              <p class="links"><a href="https://github.com/ollama/ollama/releases/tag/v0.30.0-rc7" target="_blank" rel="noreferrer">https://github.com/ollama/ollama/releases/tag/v0.30.0-rc7</a><br><a href="https://github.com/ollama/ollama/releases/tag/v0.30.0-rc6" target="_blank" rel="noreferrer">https://github.com/ollama/ollama/releases/tag/v0.30.0-rc6</a><br><a href="https://github.com/ollama/ollama/releases/tag/v0.30.0-rc5" target="_blank" rel="noreferrer">https://github.com/ollama/ollama/releases/tag/v0.30.0-rc5</a></p>
             </article>
           
         </section>
       
         <section class="section">
           <h2>模型与推理</h2>
-          <p class="summary">Ai2发布MolmoAct 2机器人基础模型、AstaBench更新（含GPT-5.5结果）及OlmoEarth嵌入导出功能。</p>
+          <p class="summary">Ai2发布MolmoAct 2机器人基础模型、AstaBench基准更新及OlmoEarth嵌入功能，展示了从机器人控制到科学推理再到遥感分析的全面开放生态进展。</p>
           
             <article class="story">
-              <h3>Ai2发布MolmoAct 2：面向真实世界机器人的开源基础模型</h3>
-              <p>Ai2发布MolmoAct 2，一个完全开源的机器人基础模型，具备更快的3D动作推理能力。</p><p>该模型伴随一个大型双臂操作数据集发布，旨在提升机器人在真实世界任务中的表现。</p>
-              <p><strong>结论：MolmoAct 2通过开源和数据集贡献，降低了机器人领域的研究门槛。</strong></p>
-              <p>影响：机器人研究人员和开发者将获得更强大的基础模型和数据集，加速真实世界机器人应用的开发。</p>
+              <h3>Ai2发布MolmoAct 2：完全开放的机器人基础模型</h3>
+              <p>Ai2发布了MolmoAct 2，这是一个完全开放的机器人基础模型，具备更快的3D动作推理能力，并附带一个大型双臂操作数据集。</p><p>该模型旨在提升机器人在真实世界任务中的表现，推动开放机器人研究。</p>
+              <p><strong>结论：MolmoAct 2的发布标志着开放机器人基础模型的重要进展，有望降低机器人研发门槛。</strong></p>
+              <p>影响：对机器人领域的研究者和开发者而言，该模型提供了可自由使用的强大基线，加速双臂操作等复杂任务的开发。</p>
               <p class="links"><a href="https://allenai.org/blog/molmoact2" target="_blank" rel="noreferrer">https://allenai.org/blog/molmoact2</a></p>
             </article>
           
             <article class="story">
               <h3>AstaBench更新：新增GPT-5.5结果，获行业广泛采用</h3>
-              <p>Ai2更新AstaBench基准测试，新增GPT-5.5等前沿模型的结果。</p><p>该基准测试已被英国AISI、General Reasoning、Elicit、SciSpace等机构采用。</p>
-              <p><strong>结论：AstaBench正成为评估人工智能推理能力的重要基准，其行业采用度持续增长。</strong></p>
-              <p>影响：模型开发者将更依赖AstaBench进行性能对比，推动推理能力的提升。</p>
+              <p>Ai2的AstaBench基准测试发布最新更新，新增了包括GPT-5.5在内的前沿模型结果，并展示了来自英国AISI、General Reasoning、Elicit、SciSpace等机构的采用情况。</p><p>这表明AstaBench正成为评估人工智能推理能力的重要标准。</p>
+              <p><strong>结论：AstaBench的行业采用度提升，巩固了其作为人工智能推理基准的地位。</strong></p>
+              <p>影响：模型开发者将更关注AstaBench上的表现，推动推理能力的针对性改进。</p>
               <p class="links"><a href="https://allenai.org/blog/astabench-update-spring-2026" target="_blank" rel="noreferrer">https://allenai.org/blog/astabench-update-spring-2026</a></p>
             </article>
           
             <article class="story">
-              <h3>Ai2推出OlmoEarth嵌入导出功能：支持自定义地球观测嵌入</h3>
-              <p>Ai2在OlmoEarth Studio中推出嵌入导出功能，用户可导出自定义的地球观测嵌入。</p><p>这些嵌入可用于相似性搜索、少样本映射、变化检测等下游分析任务。</p>
-              <p><strong>结论：OlmoEarth嵌入导出功能将地球观测基础模型的能力开放给更广泛的分析应用。</strong></p>
-              <p>影响：地理空间分析人员将能更灵活地利用人工智能模型进行遥感数据分析。</p>
+              <h3>Ai2推出OlmoEarth嵌入：支持自定义地球观测嵌入导出</h3>
+              <p>Ai2在OlmoEarth Studio中新增了自定义嵌入导出功能，用户可以从OlmoEarth基础模型中导出地球观测嵌入，用于相似性搜索、少样本映射、变化检测等下游分析。</p><p>这为遥感数据分析提供了更灵活的人工智能工具。</p>
+              <p><strong>结论：OlmoEarth嵌入功能扩展了人工智能在地球观测领域的应用，降低了遥感分析的技术门槛。</strong></p>
+              <p>影响：地理空间分析师和研究人员可以利用这些嵌入快速构建定制化遥感应用，提升效率。</p>
               <p class="links"><a href="https://allenai.org/blog/olmoearth-embeddings" target="_blank" rel="noreferrer">https://allenai.org/blog/olmoearth-embeddings</a></p>
             </article>
           
@@ -112,11 +106,11 @@
       
       <section class="section">
         <h2>关联判断</h2>
-        <ul><li>Hugging Face的推理提供商集成与Ollama的本地推理优化共同反映了人工智能推理部署的多样化趋势：云端与本地并行发展。</li><li>Ai2的MolmoAct 2、AstaBench和OlmoEarth嵌入均属于开源模型与基准测试生态，与Hugging Face的开源基础设施形成互补。</li><li>Ollama对Gemma 4 MTP的支持与Hugging Face的Transformers.js教程均致力于降低人工智能应用门槛，分别面向本地和浏览器端。</li></ul>
+        <ul><li>llama.cpp和Ollama的密集版本更新均聚焦于提升本地推理的稳定性和性能，反映了开源社区对高效推理工具的持续需求。</li><li>Ai2发布的MolmoAct 2、AstaBench更新和OlmoEarth嵌入共同展示了其在开放人工智能生态中的布局，覆盖机器人、推理评估和遥感分析三个不同领域。</li></ul>
       </section>
       <section class="section">
         <h2>继续观察</h2>
-        <ul><li>Ollama v0.30.0正式版发布及Windows支持进展</li><li>Hugging Face推理提供商生态的扩展情况</li><li>Ai2 MolmoAct 2在机器人社区的采用反馈</li></ul>
+        <ul><li>llama.cpp后续版本对更多GPU后端的支持进展</li><li>Ollama v0.30.0正式版的发布及其对Windows用户的改进</li><li>MolmoAct 2在真实机器人任务中的社区反馈和性能评估</li></ul>
       </section>
     </main>
   </body>
