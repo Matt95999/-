@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>2026-05-09 人工智能行业日报</title>
+    <title>人工智能行业日报 | 2026-05-09</title>
     <style>
       :root {
         color-scheme: light;
@@ -48,57 +48,57 @@
   </head>
   <body>
     <main>
-      <p class="meta">生成时间：2026-05-09T12:00:00Z</p>
-      <h1>2026-05-09 人工智能行业日报</h1>
-      <p class="topline">今日人工智能领域多项重要进展：llama.cpp 发布多个版本更新，支持 Gemma4 等新模型；Ai2 推出 EMO 预训练方法、MolmoAct 2 机器人基础模型、AstaBench 更新及 OlmoEarth 嵌入功能。</p>
+      <p class="meta">生成时间：2026-05-09T23:59:00Z</p>
+      <h1>人工智能行业日报 | 2026-05-09</h1>
+      <p class="topline">今日人工智能行业聚焦于开源推理框架的密集更新、机器人基础模型的开放发布以及基准测试与嵌入工具的进展。llama.cpp和Ollama均发布了多个版本，修复编译问题并新增架构支持；Ai2推出了MolmoAct 2机器人基础模型、AstaBench基准测试更新以及OlmoEarth嵌入导出功能。</p>
       
         <section class="section">
           <h2>产品与智能体</h2>
-          <p class="summary">llama.cpp 发布 b9080 至 b9084 多个版本，新增对 Gemma4_26B_A4B_NVFP4 模型的支持，并引入 Hexagon HTP 内核优化 GATED_DELTA_NET 操作。</p>
+          <p class="summary">llama.cpp和Ollama在一天内发布了多个版本，主要涉及编译修复、架构支持和性能优化。</p>
           
             <article class="story">
-              <h3>llama.cpp 发布多个版本更新，支持 Gemma4 等新模型</h3>
-              <p>llama.cpp 项目在 2026年5月8日至9日连续发布 b9080、b9081、b9082、b9084 等多个版本。b9080 版本新增对 Gemma4_26B_A4B_NVFP4 模型的支持。b9084 版本为 Hexagon 架构添加了 HTP 内核，用于优化 GGML_OP_GATED_DELTA_NET 操作。b9082 版本增加了 Hexagon L2 归一化功能。b9081 版本修复了标签解析器中原始字符串的包装问题。</p><p>这些更新表明 llama.cpp 正在持续扩展对新型模型架构和硬件平台的支持，特别是针对移动端和边缘设备的 Hexagon 优化。</p>
-              <p><strong>结论：llama.cpp 通过快速迭代保持了对最新模型和硬件的兼容性，巩固了其作为开源推理引擎的地位。</strong></p>
-              <p>影响：开发者可以更高效地在不同硬件上部署 Gemma4 等新模型，边缘设备推理性能有望提升。</p>
-              <p class="links"><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9084" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9084</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9082" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9082</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9081" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9081</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9080" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9080</a></p>
+              <h3>llama.cpp发布b9088至b9093多个版本，新增Sarvam MoE架构支持并优化SYCL性能</h3>
+              <p>llama.cpp在2026年5月9日连续发布了b9088、b9089、b9090、b9093等多个版本。b9093版本新增了Sarvam MoE架构支持；b9089版本优化了SYCL后端在Flash Attention中的内存分配开销；b9090版本更新了BoringSSL到0.20260508.0。</p><p>这些更新表明llama.cpp正在积极扩展模型架构兼容性并提升异构计算性能。</p>
+              <p><strong>结论：llama.cpp的密集更新反映了开源推理框架对多架构支持和性能优化的持续投入。</strong></p>
+              <p>影响：开发者可以更高效地在Intel GPU等SYCL设备上运行大模型，同时Sarvam MoE架构的支持将吸引更多模型生态接入。</p>
+              <p class="links"><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9093" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9093</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9090" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9090</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9089" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9089</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9088" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9088</a></p>
+            </article>
+          
+            <article class="story">
+              <h3>Ollama发布v0.30.0-rc7至rc11多个候选版本，修复Windows编译路径和ARM64交叉编译问题</h3>
+              <p>Ollama在2026年5月9日发布了v0.30.0-rc7、rc9、rc10、rc11等多个候选版本。rc11修复了Windows编译路径中包含空格的问题；rc10修复了Windows ARM64交叉编译；rc9修复了Windows构建错误。</p><p>这些修复主要针对Windows平台的编译兼容性，表明Ollama正在为正式版v0.30.0做最后准备。</p>
+              <p><strong>结论：Ollama的候选版本更新聚焦于Windows平台稳定性，即将发布正式版。</strong></p>
+              <p>影响：Windows用户将获得更稳定的本地模型运行体验，ARM64设备支持将扩大Ollama的硬件覆盖范围。</p>
+              <p class="links"><a href="https://github.com/ollama/ollama/releases/tag/v0.30.0-rc11" target="_blank" rel="noreferrer">https://github.com/ollama/ollama/releases/tag/v0.30.0-rc11</a><br><a href="https://github.com/ollama/ollama/releases/tag/v0.30.0-rc10" target="_blank" rel="noreferrer">https://github.com/ollama/ollama/releases/tag/v0.30.0-rc10</a><br><a href="https://github.com/ollama/ollama/releases/tag/v0.30.0-rc9" target="_blank" rel="noreferrer">https://github.com/ollama/ollama/releases/tag/v0.30.0-rc9</a></p>
             </article>
           
         </section>
       
         <section class="section">
           <h2>模型与推理</h2>
-          <p class="summary">Ai2 发布多项成果：EMO 预训练方法实现专家混合的涌现模块化；MolmoAct 2 开源机器人基础模型；AstaBench 更新加入 GPT-5.5 等结果；OlmoEarth 推出自定义嵌入导出功能。</p>
+          <p class="summary">Ai2发布了MolmoAct 2机器人基础模型、AstaBench基准测试更新以及OlmoEarth嵌入导出功能，推动开放模型在机器人、评估和遥感领域的应用。</p>
           
             <article class="story">
-              <h3>Ai2 提出 EMO 预训练方法，实现专家混合的涌现模块化</h3>
-              <p>Ai2 在 Hugging Face 博客上发布了 EMO（Emergent Modularity via Mixture of Experts）预训练方法。该方法通过专家混合架构在预训练过程中自然涌现出模块化能力。EMO 旨在提升模型的可解释性和效率，同时保持高性能。</p><p>这一方法可能改变大规模模型的设计范式，使模型在训练后自动形成功能专化的子模块。</p>
-              <p><strong>结论：EMO 是一种创新的预训练技术，有望推动专家混合模型向更高效、更模块化的方向发展。</strong></p>
-              <p>影响：未来模型可能更易于解释和调试，同时降低推理成本，对研究社区和工业应用均有重要意义。</p>
-              <p class="links"><a href="https://huggingface.co/blog/allenai/emo" target="_blank" rel="noreferrer">https://huggingface.co/blog/allenai/emo</a></p>
-            </article>
-          
-            <article class="story">
-              <h3>Ai2 发布 MolmoAct 2：开源机器人基础模型</h3>
-              <p>Ai2 发布了 MolmoAct 2，一个完全开源的机器人基础模型，具备更快的 3D 动作推理能力，适用于真实世界机器人任务。该模型还附带了一个大型双臂操作数据集。MolmoAct 2 旨在为机器人社区提供开放的基础模型，降低研发门槛。</p><p>这是继 Molmo 系列之后的重要升级，强化了机器人在复杂环境中的操作能力。</p>
-              <p><strong>结论：MolmoAct 2 的发布将加速机器人领域的研究和应用，尤其是双臂操作任务。</strong></p>
-              <p>影响：开源机器人基础模型将促进学术界和工业界的协作，推动机器人技术民主化。</p>
+              <h3>Ai2发布MolmoAct 2：完全开放的机器人基础模型，支持3D动作推理和双臂操作数据集</h3>
+              <p>Ai2发布了MolmoAct 2，这是一个完全开放的机器人基础模型，能够进行更快速、更强的3D动作推理，并附带一个大规模双臂操作数据集。</p><p>该模型旨在为真实世界的机器人任务提供开放基础，降低机器人研发的门槛。</p>
+              <p><strong>结论：MolmoAct 2的发布标志着开放机器人基础模型的重要进展。</strong></p>
+              <p>影响：机器人研究者和开发者可以利用该模型加速双臂操作任务的开发，推动机器人从实验室走向实际应用。</p>
               <p class="links"><a href="https://allenai.org/blog/molmoact2" target="_blank" rel="noreferrer">https://allenai.org/blog/molmoact2</a></p>
             </article>
           
             <article class="story">
-              <h3>AstaBench 更新：新增 GPT-5.5 结果，获行业采用</h3>
-              <p>Ai2 的 AstaBench 基准测试发布了春季更新，新增了包括 GPT-5.5 在内的前沿模型结果。该基准测试已被英国 AISI、General Reasoning、Elicit、SciSpace 等机构采用。AstaBench 专注于评估 人工智能 系统的科学推理能力。</p><p>这一更新表明 AstaBench 正成为评估 人工智能 科学能力的重要标准。</p>
-              <p><strong>结论：AstaBench 的行业采用率上升，其评估结果对模型开发具有指导意义。</strong></p>
-              <p>影响：模型开发者将更关注科学推理能力的提升，基准测试的标准化有助于行业比较。</p>
+              <h3>AstaBench更新：新增GPT-5.5等前沿模型结果，获得英国AISI等机构采用</h3>
+              <p>Ai2的AstaBench基准测试发布了春季更新，新增了包括GPT-5.5在内的前沿模型结果，并展示了来自英国AISI、General Reasoning、Elicit、SciSpace等机构的采用情况。</p><p>这表明AstaBench正在成为评估人工智能科学推理能力的重要基准。</p>
+              <p><strong>结论：AstaBench的更新和行业采用验证了其在人工智能评估领域的价值。</strong></p>
+              <p>影响：模型开发者可以通过AstaBench更准确地评估模型的科学推理能力，推动模型在科研领域的应用。</p>
               <p class="links"><a href="https://allenai.org/blog/astabench-update-spring-2026" target="_blank" rel="noreferrer">https://allenai.org/blog/astabench-update-spring-2026</a></p>
             </article>
           
             <article class="story">
-              <h3>Ai2 推出 OlmoEarth 嵌入导出功能</h3>
-              <p>Ai2 的 OlmoEarth Studio 现在允许用户导出自定义的地球观测嵌入向量，这些嵌入来自 OlmoEarth 基础模型。用户可将嵌入用于相似性搜索、少样本映射、变化检测等下游分析任务。该功能旨在简化遥感数据的 人工智能 分析流程。</p><p>这为地理空间 人工智能 应用提供了更灵活的工具。</p>
-              <p><strong>结论：OlmoEarth 嵌入导出功能降低了遥感数据分析的门槛，拓展了基础模型的应用场景。</strong></p>
-              <p>影响：研究人员和从业者可以更便捷地利用预训练模型进行定制化地理空间分析。</p>
+              <h3>Ai2推出OlmoEarth嵌入导出功能：支持自定义地球观测嵌入用于下游分析</h3>
+              <p>Ai2在OlmoEarth Studio中推出了自定义嵌入导出功能，用户可以从OlmoEarth基础模型中导出地球观测嵌入，用于相似性搜索、少样本映射、变化检测等任务。</p><p>这为遥感数据分析提供了更灵活的人工智能工具。</p>
+              <p><strong>结论：OlmoEarth嵌入功能扩展了基础模型在遥感领域的实用性。</strong></p>
+              <p>影响：地理空间分析师和研究人员可以利用这些嵌入进行更高效的地球观测数据分析，降低人工智能应用门槛。</p>
               <p class="links"><a href="https://allenai.org/blog/olmoearth-embeddings" target="_blank" rel="noreferrer">https://allenai.org/blog/olmoearth-embeddings</a></p>
             </article>
           
@@ -106,11 +106,11 @@
       
       <section class="section">
         <h2>关联判断</h2>
-        <ul><li>llama.cpp 的 Hexagon 优化与 Ai2 的 EMO 方法均关注模型效率，但前者侧重硬件适配，后者侧重架构创新。</li><li>Ai2 同日发布多项成果（EMO、MolmoAct 2、AstaBench 更新、OlmoEarth 嵌入），显示其在基础模型和评估基准方面的全面布局。</li><li>AstaBench 的行业采用与 OlmoEarth 的嵌入功能均体现了 Ai2 推动 人工智能 工具实用化的策略。</li></ul>
+        <ul><li>llama.cpp和Ollama的密集版本更新均聚焦于提升推理框架的兼容性和稳定性，反映了开源社区对本地化部署的持续优化。</li><li>Ai2发布的MolmoAct 2、AstaBench更新和OlmoEarth嵌入功能共同展示了开放模型在机器人、评估和遥感领域的多元化应用，体现了Ai2推动开放人工智能生态的战略。</li></ul>
       </section>
       <section class="section">
         <h2>继续观察</h2>
-        <ul><li>llama.cpp 后续版本对更多模型的支持情况</li><li>EMO 方法的开源实现及社区反馈</li><li>MolmoAct 2 在真实机器人任务中的表现</li></ul>
+        <ul><li>llama.cpp对Sarvam MoE架构的支持是否会吸引更多印度人工智能模型生态接入</li><li>Ollama v0.30.0正式版发布后的Windows和ARM64用户反馈</li><li>MolmoAct 2在真实机器人任务中的性能表现和社区采用情况</li></ul>
       </section>
     </main>
   </body>
