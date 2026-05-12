@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>人工智能行业日报 | 2026-05-11</title>
+    <title>人工智能行业日报 | 2026-05-12</title>
     <style>
       :root {
         color-scheme: light;
@@ -48,69 +48,75 @@
   </head>
   <body>
     <main>
-      <p class="meta">生成时间：2026-05-11T00:00:00Z</p>
-      <h1>人工智能行业日报 | 2026-05-11</h1>
-      <p class="topline">今日人工智能行业动态集中在模型推理与产品迭代两大方向：Ai2发布MolmoAct 2机器人基础模型、更新AstaBench基准测试并推出OlmoEarth嵌入导出功能；llama.cpp与Ollama持续发布版本更新，优化CUDA内核与Windows编译支持。</p>
+      <p class="meta">生成时间：2026-05-12T06:00:00Z</p>
+      <h1>人工智能行业日报 | 2026-05-12</h1>
+      <p class="topline">Ollama发布v0.23.3及多个RC版本，改进模型推送和Windows iGPU检测；llama.cpp推出并行草稿支持及Adreno GPU优化；AWS发布基础模型训练与推理构建块；Ai2推出开源机器人基础模型MolmoAct 2，并更新AstaBench基准测试结果。</p>
       
         <section class="section">
-          <h2>模型与推理</h2>
-          <p class="summary">Ai2发布MolmoAct 2机器人基础模型，提升3D动作推理能力；AstaBench更新加入GPT-5.5等前沿模型结果；OlmoEarth Studio推出自定义嵌入导出功能。</p>
+          <h2>产品与智能体</h2>
+          <p class="summary">Ollama和llama.cpp发布多项更新，提升本地模型部署与推理效率。</p>
           
             <article class="story">
-              <h3>Ai2发布MolmoAct 2：面向真实世界机器人的开放基础模型</h3>
-              <p>Ai2发布了MolmoAct 2，这是一个完全开放的机器人基础模型，专注于提升3D动作推理能力，旨在加速真实世界机器人任务的执行。</p><p>该模型附带了一个新的双臂操作数据集，为机器人研究社区提供了重要资源。</p>
-              <p><strong>结论：MolmoAct 2的发布标志着开放机器人基础模型在3D动作推理方面取得显著进展。</strong></p>
-              <p>影响：该模型将降低机器人研究门槛，推动双臂操作等复杂任务的开发与部署。</p>
-              <p class="links"><a href="https://allenai.org/blog/molmoact2" target="_blank" rel="noreferrer">https://allenai.org/blog/molmoact2</a></p>
+              <h3>Ollama发布v0.23.3及多个RC版本，改进模型推送与GPU检测</h3>
+              <p>Ollama发布了v0.23.3-rc1版本，主要改进了mlx模型推送行为。</p><p>同时发布了v0.30.0-rc13和v0.30.0-rc15，其中RC15增加了Windows iGPU检测功能，RC13更新了llama.cpp依赖。</p>
+              <p><strong>结论：Ollama持续迭代，重点优化本地模型部署的兼容性和推送流程。</strong></p>
+              <p>影响：开发者将获得更稳定的本地模型管理体验，Windows集成显卡用户受益于iGPU检测。</p>
+              <p class="links"><a href="https://github.com/ollama/ollama/releases/tag/v0.30.0-rc15" target="_blank" rel="noreferrer">https://github.com/ollama/ollama/releases/tag/v0.30.0-rc15</a><br><a href="https://github.com/ollama/ollama/releases/tag/v0.30.0-rc13" target="_blank" rel="noreferrer">https://github.com/ollama/ollama/releases/tag/v0.30.0-rc13</a><br><a href="https://github.com/ollama/ollama/releases/tag/v0.23.3-rc1" target="_blank" rel="noreferrer">https://github.com/ollama/ollama/releases/tag/v0.23.3-rc1</a></p>
             </article>
           
             <article class="story">
-              <h3>AstaBench更新：新增GPT-5.5等前沿模型结果，行业采用率上升</h3>
-              <p>Ai2的AstaBench基准测试发布最新更新，加入了GPT-5.5等前沿模型的结果。</p><p>该基准测试已被英国AISI、General Reasoning、Elicit、SciSpace等多个机构采用，行业影响力持续扩大。</p>
-              <p><strong>结论：AstaBench正成为评估前沿模型推理能力的重要基准。</strong></p>
-              <p>影响：开发者可通过AstaBench更客观地比较模型推理性能，推动模型改进。</p>
-              <p class="links"><a href="https://allenai.org/blog/astabench-update-spring-2026" target="_blank" rel="noreferrer">https://allenai.org/blog/astabench-update-spring-2026</a></p>
-            </article>
-          
-            <article class="story">
-              <h3>Ai2推出OlmoEarth嵌入：支持自定义地球观测嵌入导出</h3>
-              <p>OlmoEarth Studio新增功能，允许用户从OlmoEarth基础模型导出自定义地球观测嵌入。</p><p>这些嵌入可用于相似性搜索、少样本映射、变化检测等下游分析任务。</p>
-              <p><strong>结论：OlmoEarth嵌入功能增强了地球观测数据的可复用性和分析灵活性。</strong></p>
-              <p>影响：地理空间研究人员和开发者将能更高效地利用预训练模型进行定制化分析。</p>
-              <p class="links"><a href="https://allenai.org/blog/olmoearth-embeddings" target="_blank" rel="noreferrer">https://allenai.org/blog/olmoearth-embeddings</a></p>
+              <h3>llama.cpp发布b9109-b9113版本，支持并行草稿与Adreno优化</h3>
+              <p>llama.cpp发布了b9109版本，引入了并行草稿支持（parallel drafting），可加速推理。</p><p>后续版本b9110-b9113修复了文档、CUDA im2col处理，并增加了Adreno GPU的q4_1 MoE支持。</p>
+              <p><strong>结论：llama.cpp通过并行草稿和GPU优化，显著提升推理效率与硬件兼容性。</strong></p>
+              <p>影响：使用llama.cpp的开发者将获得更快的推理速度，特别是Adreno GPU用户。</p>
+              <p class="links"><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9113" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9113</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9112" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9112</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9110" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9110</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9109" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9109</a></p>
             </article>
           
         </section>
       
         <section class="section">
-          <h2>产品与智能体</h2>
-          <p class="summary">llama.cpp发布b9095至b9101系列更新，引入CUDA内部AllReduce内核与后端采样概率返回；Ollama发布v0.30.0-rc10至rc12，修复Windows编译路径空格与ARM64交叉编译问题。</p>
+          <h2>基础设施与芯片</h2>
+          <p class="summary">AWS发布基础模型训练与推理构建块，为开发者提供云上人工智能基础设施指南。</p>
           
             <article class="story">
-              <h3>llama.cpp发布b9095至b9101系列更新：引入CUDA内部AllReduce内核</h3>
-              <p>llama.cpp在b9095至b9101版本中引入了CUDA提供程序的内部AllReduce内核，提升了多GPU通信效率。</p><p>b9100版本新增后端采样支持返回采样后概率，b9101版本增加了HTTP超时警告。</p>
-              <p><strong>结论：llama.cpp通过内核优化和功能增强，持续提升本地推理性能与用户体验。</strong></p>
-              <p>影响：开发者将受益于更高效的GPU推理和更丰富的采样控制能力。</p>
-              <p class="links"><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9101" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9101</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9100" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9100</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9099" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9099</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9097" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9097</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9095" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9095</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9094" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9094</a></p>
+              <h3>AWS发布基础模型训练与推理构建块指南</h3>
+              <p>Amazon在Hugging Face博客上发布了关于基础模型训练和推理的构建块指南。</p><p>该指南为开发者提供了在AWS上高效进行模型训练和推理的架构建议。</p>
+              <p><strong>结论：AWS通过提供最佳实践指南，降低在云上构建人工智能应用的门槛。</strong></p>
+              <p>影响：开发者可参考该指南优化AWS上的人工智能工作负载，提升资源利用效率。</p>
+              <p class="links"><a href="https://huggingface.co/blog/amazon/foundation-model-building-blocks" target="_blank" rel="noreferrer">https://huggingface.co/blog/amazon/foundation-model-building-blocks</a></p>
+            </article>
+          
+        </section>
+      
+        <section class="section">
+          <h2>模型与推理</h2>
+          <p class="summary">Ai2推出开源机器人基础模型MolmoAct 2，并更新AstaBench基准测试，纳入GPT-5.5等新模型结果。</p>
+          
+            <article class="story">
+              <h3>Ai2发布开源机器人基础模型MolmoAct 2</h3>
+              <p>Ai2发布了MolmoAct 2，一个完全开源的机器人基础模型，具备更快的3D动作推理能力。</p><p>该模型还附带了一个大型双臂操作数据集，用于真实世界机器人任务。</p>
+              <p><strong>结论：MolmoAct 2推动机器人领域开源模型发展，降低研究门槛。</strong></p>
+              <p>影响：机器人研究人员和开发者可利用该模型加速真实世界任务部署。</p>
+              <p class="links"><a href="https://allenai.org/blog/molmoact2" target="_blank" rel="noreferrer">https://allenai.org/blog/molmoact2</a></p>
             </article>
           
             <article class="story">
-              <h3>Ollama发布v0.30.0-rc10至rc12：修复Windows编译路径与ARM64交叉编译问题</h3>
-              <p>Ollama发布v0.30.0-rc10至rc12版本，主要修复了Windows编译路径中包含空格的问题，并改进了ARM64交叉编译支持。</p><p>这些更新旨在提升Ollama在Windows平台上的稳定性和兼容性。</p>
-              <p><strong>结论：Ollama通过快速迭代修复了关键编译问题，增强了跨平台支持。</strong></p>
-              <p>影响：Windows用户将获得更顺畅的安装和运行体验，ARM64设备支持得到改善。</p>
-              <p class="links"><a href="https://github.com/ollama/ollama/releases/tag/v0.30.0-rc12" target="_blank" rel="noreferrer">https://github.com/ollama/ollama/releases/tag/v0.30.0-rc12</a><br><a href="https://github.com/ollama/ollama/releases/tag/v0.30.0-rc11" target="_blank" rel="noreferrer">https://github.com/ollama/ollama/releases/tag/v0.30.0-rc11</a><br><a href="https://github.com/ollama/ollama/releases/tag/v0.30.0-rc10" target="_blank" rel="noreferrer">https://github.com/ollama/ollama/releases/tag/v0.30.0-rc10</a><br><a href="https://github.com/ollama/ollama/releases/tag/v0.30.0-rc9" target="_blank" rel="noreferrer">https://github.com/ollama/ollama/releases/tag/v0.30.0-rc9</a></p>
+              <h3>Ai2更新AstaBench基准测试，纳入GPT-5.5等新模型结果</h3>
+              <p>Ai2更新了AstaBench基准测试，新增了GPT-5.5等前沿模型的结果。</p><p>该基准测试已被英国AISI、General Reasoning、Elicit、SciSpace等机构采用。</p>
+              <p><strong>结论：AstaBench成为评估人工智能推理能力的重要基准，行业采用率上升。</strong></p>
+              <p>影响：开发者可通过AstaBench对比模型推理能力，指导模型选型。</p>
+              <p class="links"><a href="https://allenai.org/blog/astabench-update-spring-2026" target="_blank" rel="noreferrer">https://allenai.org/blog/astabench-update-spring-2026</a></p>
             </article>
           
         </section>
       
       <section class="section">
         <h2>关联判断</h2>
-        <ul><li>Ai2在模型与推理领域的三个更新（MolmoAct 2、AstaBench、OlmoEarth嵌入）均围绕开放基础模型和基准测试展开，共同推动机器人、推理评估和地球观测等方向的发展。</li><li>llama.cpp和Ollama的版本更新均聚焦于底层性能优化和平台兼容性，反映了本地推理工具链的持续成熟。</li></ul>
+        <ul><li>Ollama和llama.cpp的更新均聚焦于本地推理效率与硬件兼容性，反映边缘部署趋势。</li><li>AWS的构建块指南与Ai2的MolmoAct 2均强调开源和云基础设施，推动人工智能民主化。</li><li>AstaBench更新与MolmoAct 2发布均来自Ai2，体现其在模型评估和机器人领域的布局。</li></ul>
       </section>
       <section class="section">
         <h2>继续观察</h2>
-        <ul><li>MolmoAct 2在真实机器人任务中的实际表现与社区反馈</li><li>AstaBench后续是否纳入更多国产模型结果</li><li>Ollama v0.30.0正式版的发布与功能完善</li></ul>
+        <ul><li>Ollama v0.30.0正式版发布</li><li>llama.cpp并行草稿性能实测</li><li>MolmoAct 2社区应用案例</li></ul>
       </section>
     </main>
   </body>
