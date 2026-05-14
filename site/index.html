@@ -48,57 +48,57 @@
   </head>
   <body>
     <main>
-      <p class="meta">生成时间：2026-05-13T12:00:00Z</p>
+      <p class="meta">生成时间：2026-05-14T03:00:00Z</p>
       <h1>人工智能行业日报</h1>
-      <p class="topline">今日人工智能行业聚焦于多个重要版本发布：llama.cpp 连续发布多个版本优化多模态与硬件支持；Hugging Face Transformers 发布 v5.6.0 并后续推出 v5.8.0 集成 DeepSeek-V4；vLLM 发布 v0.20.0 支持 DeepSeek V4 并持续修复；Ai2 推出开源机器人基础模型 MolmoAct 2 并更新 AstaBench 基准测试结果。</p>
+      <p class="topline">今日人工智能领域聚焦开源生态与基础模型进展：llama.cpp与Ollama密集发布新版本，后者转向直接支持llama.cpp架构；Ai2推出AIMIP气候模型基准、MolmoAct 2机器人基础模型及AstaBench更新，展示开放研究在气候、机器人、推理评估等方向的前沿成果。</p>
       
         <section class="section">
           <h2>产品与智能体</h2>
-          <p class="summary">llama.cpp、Transformers 和 vLLM 均发布重要版本，聚焦多模态支持、新模型集成和性能优化。</p>
+          <p class="summary">llama.cpp和Ollama发布多个版本更新，优化GPU兼容性、修复问题并调整架构。</p>
           
             <article class="story">
-              <h3>llama.cpp 连续发布多个版本，优化多模态精度与硬件支持</h3>
-              <p>llama.cpp 项目在 2026年5月12日至13日间发布了 b9122、b9124、b9127、b9128 等多个版本。b9128 修复了 Hexagon 处理器上的 VTCM 加载问题，b9127 为 OpenCL 后端增加了 Adreno xmem F16xF32 GEMM 预填充支持，b9124 在 /v1/models 接口中暴露了多模态能力。</p><p>这些更新主要针对多模态模型的精度问题和特定硬件的性能优化，表明 llama.cpp 正在积极扩展对不同硬件平台的支持。</p>
-              <p><strong>结论：llama.cpp 通过密集的版本迭代，持续提升多模态推理的稳定性和硬件兼容性。</strong></p>
-              <p>影响：对开发者而言，这些更新降低了在移动和边缘设备上部署多模态模型的难度，提升了推理效率。</p>
-              <p class="links"><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9128" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9128</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9127" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9127</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9124" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9124</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9122" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9122</a></p>
+              <h3>llama.cpp发布b9141至b9144版本，优化WebGPU和OpenCL支持</h3>
+              <p>llama.cpp在2026年5月14日连续发布b9141至b9144四个版本。b9144优化了WebGPU的subgroup-matrix路径，仅当head维度可被sg_mat_k/sg_mat_n整除时启用；b9143修复了特定issue；b9142为Adreno GPU的OpenCL后端添加了q5_0和q5_1 MoE支持。</p><p>这些更新主要针对GPU推理性能优化和兼容性修复，特别是移动端和Web端部署场景。</p>
+              <p><strong>结论：llama.cpp持续迭代，重点提升GPU推理效率和硬件兼容性。</strong></p>
+              <p>影响：开发者可获得更高效的本地推理体验，尤其在移动设备和Web端部署大模型时性能提升明显。</p>
+              <p class="links"><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9144" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9144</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9143" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9143</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9142" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9142</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9141" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9141</a></p>
             </article>
           
             <article class="story">
-              <h3>Hugging Face Transformers 发布 v5.6.0，后续版本集成 DeepSeek-V4</h3>
-              <p>Hugging Face Transformers 于 2026年4月28日发布 v5.6.0，新增 OpenAI Privacy Filter 等模型。随后在 5月5日发布 v5.8.0，集成了 DeepSeek-V4 模型，并在 5月13日发布 v5.8.1 修复 DeepSeek V4 集成问题。</p><p>这一系列版本更新表明 Transformers 库正在快速跟进最新模型，特别是 DeepSeek-V4 的集成成为重点。</p>
-              <p><strong>结论：Transformers 库通过快速迭代保持对新模型的支持，DeepSeek-V4 的集成是近期关键更新。</strong></p>
-              <p>影响：开发者可以更便捷地在 Transformers 框架中使用 DeepSeek-V4 等前沿模型，降低了模型部署和实验的门槛。</p>
-              <p class="links"><a href="https://github.com/huggingface/transformers/releases/tag/v5.8.1" target="_blank" rel="noreferrer">https://github.com/huggingface/transformers/releases/tag/v5.8.1</a><br><a href="https://github.com/huggingface/transformers/releases/tag/v5.8.0" target="_blank" rel="noreferrer">https://github.com/huggingface/transformers/releases/tag/v5.8.0</a><br><a href="https://github.com/huggingface/transformers/releases/tag/v5.6.0" target="_blank" rel="noreferrer">https://github.com/huggingface/transformers/releases/tag/v5.6.0</a></p>
-            </article>
-          
-            <article class="story">
-              <h3>vLLM 发布 v0.20.0，支持 DeepSeek V4 并持续优化</h3>
-              <p>vLLM 于 2026年5月发布 v0.20.0，包含 752 次提交和 320 位贡献者，主要亮点是初始支持 DeepSeek V4。随后在 5月4日发布 v0.20.1 专注于 DeepSeek V4 的稳定性和性能改进，5月10日发布 v0.20.2 修复了 DeepSeek V4 和 gpt-... 的 bug。</p><p>vLLM 团队对 DeepSeek V4 的支持进行了快速迭代和修复，显示出对该模型的高度重视。</p>
-              <p><strong>结论：vLLM 通过 v0.20.0 系列版本，为 DeepSeek V4 提供了稳定的推理支持并持续优化性能。</strong></p>
-              <p>影响：使用 vLLM 进行模型推理的开发者可以更可靠地部署 DeepSeek V4，提升推理效率和稳定性。</p>
-              <p class="links"><a href="https://github.com/vllm-project/vllm/releases/tag/v0.21.0rc1" target="_blank" rel="noreferrer">https://github.com/vllm-project/vllm/releases/tag/v0.21.0rc1</a><br><a href="https://github.com/vllm-project/vllm/releases/tag/v0.20.2" target="_blank" rel="noreferrer">https://github.com/vllm-project/vllm/releases/tag/v0.20.2</a><br><a href="https://github.com/vllm-project/vllm/releases/tag/v0.20.1" target="_blank" rel="noreferrer">https://github.com/vllm-project/vllm/releases/tag/v0.20.1</a><br><a href="https://github.com/vllm-project/vllm/releases/tag/v0.20.0" target="_blank" rel="noreferrer">https://github.com/vllm-project/vllm/releases/tag/v0.20.0</a></p>
+              <h3>Ollama发布v0.30.0候选版，架构转向直接支持llama.cpp</h3>
+              <p>Ollama在2026年5月13日发布v0.30.0-rc15，该版本将架构从基于GGML改为直接支持llama.cpp，并兼容GGUF文件格式。同时，MLX后端也得到支持。</p><p>此外，v0.23.4版本新增了`ollama launch opencode`对视觉模型和图像输入的支持，并修复了Claude工具结果的格式问题。</p>
+              <p><strong>结论：Ollama的重大架构调整将更紧密地集成llama.cpp，提升模型兼容性和性能。</strong></p>
+              <p>影响：用户将获得更广泛的模型格式支持和更高效的本地推理，Ollama与llama.cpp生态的融合加速。</p>
+              <p class="links"><a href="https://github.com/ollama/ollama/releases/tag/v0.30.0-rc15" target="_blank" rel="noreferrer">https://github.com/ollama/ollama/releases/tag/v0.30.0-rc15</a><br><a href="https://github.com/ollama/ollama/releases/tag/v0.23.4" target="_blank" rel="noreferrer">https://github.com/ollama/ollama/releases/tag/v0.23.4</a></p>
             </article>
           
         </section>
       
         <section class="section">
           <h2>模型与推理</h2>
-          <p class="summary">Ai2 发布开源机器人基础模型 MolmoAct 2 并更新 AstaBench 基准测试，展示前沿模型结果和行业采用情况。</p>
+          <p class="summary">Ai2推出三项开放研究项目：AIMIP气候模型基准、MolmoAct 2机器人基础模型和AstaBench推理评估更新。</p>
           
             <article class="story">
-              <h3>Ai2 发布开源机器人基础模型 MolmoAct 2</h3>
-              <p>Ai2 发布了 MolmoAct 2，这是一个完全开源的机器人基础模型，具备更快的 3D 动作推理能力，并附带一个大型双臂操作数据集。该模型旨在提升真实世界机器人任务的执行能力。</p><p>MolmoAct 2 的开源特性有望推动机器人领域的研究和开发，降低进入门槛。</p>
-              <p><strong>结论：MolmoAct 2 是一个重要的开源机器人基础模型，专注于 3D 动作推理和双臂操作。</strong></p>
-              <p>影响：对机器人研究者和开发者而言，MolmoAct 2 提供了强大的基础模型和数据集，加速了真实世界机器人应用的开发。</p>
+              <h3>Ai2推出AIMIP：人工智能天气与气候模型比较项目</h3>
+              <p>Ai2发布了AIMIP（人工智能天气与气候模型比较项目），这是一个开放基准和数据集，用于评估人工智能气候模型。初步结果显示，人工智能模型在某些历史气候指标上可以匹配或超越传统模型，但在极端事件预测等方面仍有不足。</p><p>该项目旨在推动人工智能气候模型的标准化评估和透明度。</p>
+              <p><strong>结论：AIMIP为人工智能气候模型提供了首个开放比较基准，有助于识别优势与短板。</strong></p>
+              <p>影响：气候科学社区和人工智能开发者将获得统一评估工具，加速人工智能在气候预测领域的应用和改进。</p>
+              <p class="links"><a href="https://allenai.org/blog/aimip" target="_blank" rel="noreferrer">https://allenai.org/blog/aimip</a></p>
+            </article>
+          
+            <article class="story">
+              <h3>Ai2发布MolmoAct 2：面向真实世界机器人的开放基础模型</h3>
+              <p>Ai2推出了MolmoAct 2，一个完全开放的机器人基础模型，具备更快速、更强的3D动作推理能力，适用于真实世界机器人任务。同时发布了大规模双臂操作数据集。</p><p>该模型强调开放性和实用性，旨在降低机器人研究门槛。</p>
+              <p><strong>结论：MolmoAct 2是开放机器人基础模型的重要进展，强化了3D动作推理。</strong></p>
+              <p>影响：机器人研究者和开发者可获得开源模型和数据集，加速双臂操作等复杂任务的研发。</p>
               <p class="links"><a href="https://allenai.org/blog/molmoact2" target="_blank" rel="noreferrer">https://allenai.org/blog/molmoact2</a></p>
             </article>
           
             <article class="story">
-              <h3>AstaBench 更新：新增 GPT-5.5 结果并获行业采用</h3>
-              <p>Ai2 更新了 AstaBench 基准测试，新增了包括 GPT-5.5 在内的前沿模型结果，并展示了来自 UK AISI、General Reasoning、Elicit、SciSpace 等机构的采用情况。</p><p>AstaBench 的更新反映了行业对标准化基准测试的需求，以及前沿模型性能的持续提升。</p>
-              <p><strong>结论：AstaBench 通过更新结果和扩大采用，巩固了其作为 人工智能 模型评估基准的地位。</strong></p>
-              <p>影响：对 人工智能 研究者和开发者而言，AstaBench 提供了最新的模型性能对比，有助于模型选型和评估。</p>
+              <h3>AstaBench更新：新增GPT-5.5等结果，获行业采用</h3>
+              <p>AstaBench发布春季更新，新增包括GPT-5.5在内的前沿模型结果，并显示其被英国AISI、General Reasoning、Elicit、SciSpace等机构采用。</p><p>该基准专注于科学推理评估，更新反映了其行业影响力扩大。</p>
+              <p><strong>结论：AstaBench成为科学推理评估的重要基准，获得广泛行业认可。</strong></p>
+              <p>影响：模型开发者可参考AstaBench结果优化科学推理能力，行业采用推动标准化评估。</p>
               <p class="links"><a href="https://allenai.org/blog/astabench-update-spring-2026" target="_blank" rel="noreferrer">https://allenai.org/blog/astabench-update-spring-2026</a></p>
             </article>
           
@@ -106,11 +106,11 @@
       
       <section class="section">
         <h2>关联判断</h2>
-        <ul><li>llama.cpp、Transformers 和 vLLM 的版本更新均涉及多模态支持和模型集成，反映了行业对多模态和高效推理的持续关注。</li><li>Transformers 和 vLLM 都重点集成了 DeepSeek-V4 模型，表明 DeepSeek-V4 成为近期热门模型，受到主流推理框架的优先支持。</li><li>Ai2 同时发布了机器人基础模型 MolmoAct 2 和基准测试 AstaBench 更新，展示了其在 人工智能 研究和开源生态中的活跃角色。</li></ul>
+        <ul><li>llama.cpp的密集更新与Ollama转向直接支持llama.cpp架构，共同强化了开源本地推理生态。</li><li>Ai2同时推出气候、机器人和推理评估三个项目，展示了开放研究在多个人工智能应用领域的系统性布局。</li><li>AstaBench的行业采用与AIMIP的推出，均体现了人工智能评估基准向专业化、开放化发展的趋势。</li></ul>
       </section>
       <section class="section">
         <h2>继续观察</h2>
-        <ul><li>DeepSeek-V4 的后续版本和生态集成进展</li><li>llama.cpp 对多模态模型的进一步优化</li><li>MolmoAct 2 在机器人社区的应用反馈</li></ul>
+        <ul><li>Ollama v0.30.0正式版发布及对llama.cpp的集成效果</li><li>MolmoAct 2在真实机器人任务中的性能表现与社区反馈</li><li>AIMIP基准后续对人工智能气候模型改进的推动</li></ul>
       </section>
     </main>
   </body>
