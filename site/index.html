@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>人工智能行业日报 | 2026-05-15</title>
+    <title>人工智能行业日报</title>
     <style>
       :root {
         color-scheme: light;
@@ -48,69 +48,75 @@
   </head>
   <body>
     <main>
-      <p class="meta">生成时间：2026-05-15T02:00:00.000Z</p>
-      <h1>人工智能行业日报 | 2026-05-15</h1>
-      <p class="topline">Ollama v0.30.0 重大架构变更，直接支持 llama.cpp；Anthropic 与普华永道、盖茨基金会达成重磅合作；llama.cpp 持续优化 AMD GPU 性能；Sea Limited 部署 Codex 加速亚洲 人工智能 软件开发；Ai2 发布 人工智能 气候模型基准 AIMIP。</p>
+      <p class="meta">生成时间：2026-05-16T06:00:00.000Z</p>
+      <h1>人工智能行业日报</h1>
+      <p class="topline">今日人工智能行业聚焦于开源推理框架更新、异步批处理技术突破、人工智能气候模型基准发布、机器人基础模型升级以及科学推理基准扩展。</p>
       
         <section class="section">
           <h2>产品与智能体</h2>
-          <p class="summary">Ollama 发布 v0.30.0，架构转向直接支持 llama.cpp；llama.cpp 连续发布多个版本，优化 AMD GPU 和 WebGPU 支持。</p>
+          <p class="summary">llama.cpp 发布 b9174 版本，重构 UI 目录结构并统一命名规范。</p>
           
             <article class="story">
-              <h3>Ollama v0.30.0 重大架构变更：直接支持 llama.cpp 和 GGUF 格式</h3>
-              <p>Ollama 发布 v0.30.0 版本，架构从基于 GGML 改为直接支持 llama.cpp，并兼容 GGUF 文件格式。</p><p>新版本还支持 MLX 框架，并优化了批处理大小以提升性能。</p><p>同时发布的 v0.24.0 版本集成了 OpenAI Codex App，允许用户在桌面应用中使用本地或云端 Ollama 模型进行编程、浏览和审查。</p>
-              <p><strong>结论：Ollama 的架构变更表明其正加速与 llama.cpp 生态融合，提升兼容性和性能。</strong></p>
-              <p>影响：开发者将获得更高效的本地模型运行体验，且通过 Codex 集成降低了 人工智能 编程门槛。</p>
-              <p class="links"><a href="https://github.com/ollama/ollama/releases/tag/v0.30.0-rc17" target="_blank" rel="noreferrer">https://github.com/ollama/ollama/releases/tag/v0.30.0-rc17</a><br><a href="https://github.com/ollama/ollama/releases/tag/v0.24.0" target="_blank" rel="noreferrer">https://github.com/ollama/ollama/releases/tag/v0.24.0</a></p>
+              <h3>llama.cpp 发布 b9174 版本，重构 UI 目录结构</h3>
+              <p>llama.cpp 项目发布了 b9174 版本，主要对仓库 UI 部分进行重构，将相关文件移至 tools/ui 文件夹，并统一使用 ui / UI / llama-ui / LLAMA_UI 命名规范。</p><p>此前版本 b9173 和 b9172 分别修复了 CI 中的 release 符号链接问题以及 WebUI 中 Hugging Face 校验和检查的大小写问题。</p>
+              <p><strong>结论：此次重构提升了 llama.cpp 项目的代码组织性和可维护性，是持续优化用户体验的体现。</strong></p>
+              <p>影响：对开发者而言，更清晰的目录结构和命名规范降低了贡献门槛，有助于社区协作。</p>
+              <p class="links"><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9174" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9174</a></p>
             </article>
           
+        </section>
+      
+        <section class="section">
+          <h2>基础设施与芯片</h2>
+          <p class="summary">Hugging Face 发布博客，介绍在连续批处理中实现异步性的技术。</p>
+          
             <article class="story">
-              <h3>llama.cpp 连续发布多个版本：优化 AMD GPU 与 WebGPU 支持</h3>
-              <p>llama.cpp 发布 b9159、b9158、b9156 等多个版本，主要改进包括：b9158 针对 AMD RDNA3 架构优化矩阵乘法和转置操作，提升 AMD GPU 性能。</p><p>b9156 启用 NVIDIA 自托管 CI，b9159 为 Hexagon DSP 添加连续快速路径。</p>
-              <p><strong>结论：llama.cpp 持续优化多平台硬件支持，尤其强化 AMD GPU 推理能力。</strong></p>
-              <p>影响：AMD 用户将获得更快的本地推理速度，WebGPU 支持扩展了浏览器端 人工智能 应用场景。</p>
-              <p class="links"><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9159" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9159</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9158" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9158</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9156" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9156</a></p>
+              <h3>Hugging Face 发布异步连续批处理技术博客</h3>
+              <p>Hugging Face 发布博客《Unlocking asynchronicity in continuous batching》，介绍在连续批处理中引入异步性的方法。</p><p>该技术旨在提升推理效率，减少等待时间，从而优化大规模模型部署的性能。</p>
+              <p><strong>结论：异步连续批处理是推理优化的重要方向，有望显著降低延迟并提高吞吐量。</strong></p>
+              <p>影响：对部署大模型的团队而言，该技术可降低推理成本，提升用户体验。</p>
+              <p class="links"><a href="https://huggingface.co/blog/continuous_async" target="_blank" rel="noreferrer">https://huggingface.co/blog/continuous_async</a></p>
             </article>
           
         </section>
       
         <section class="section">
           <h2>模型与推理</h2>
-          <p class="summary">Anthropic 与普华永道、盖茨基金会达成合作，推动 Claude 在企业与公益领域应用；Sea Limited 部署 OpenAI Codex 加速 人工智能 软件开发；Ai2 发布 AIMIP 基准评估 人工智能 气候模型。</p>
+          <p class="summary">Ai2 发布 AIMIP 气候模型基准、MolmoAct 2 机器人基础模型以及 AstaBench 更新。</p>
           
             <article class="story">
-              <h3>Anthropic 与普华永道、盖茨基金会达成重大合作</h3>
-              <p>Anthropic 宣布普华永道将部署 Claude 用于构建技术、执行交易和重塑企业职能。</p><p>同日，Anthropic 与盖茨基金会达成 2 亿美元合作，推动 人工智能 在公益领域的应用。</p>
-              <p><strong>结论：Anthropic 通过企业级和公益合作，加速 Claude 的商业化与社会影响力。</strong></p>
-              <p>影响：Claude 在专业服务和非营利领域的应用将扩大，可能带动更多企业采用其模型。</p>
-              <p class="links"><a href="https://www.anthropic.com/news/pwc-expanded-partnership" target="_blank" rel="noreferrer">https://www.anthropic.com/news/pwc-expanded-partnership</a><br><a href="https://www.anthropic.com/news/gates-foundation-partnership" target="_blank" rel="noreferrer">https://www.anthropic.com/news/gates-foundation-partnership</a></p>
-            </article>
-          
-            <article class="story">
-              <h3>Sea Limited 部署 OpenAI Codex 加速亚洲 人工智能 软件开发</h3>
-              <p>Sea Limited 首席产品官表示，公司正在工程团队中部署 OpenAI Codex，以加速亚洲地区的 人工智能 原生软件开发。</p><p>Codex 将帮助 Sea 提升开发效率，推动 人工智能 在电商、游戏等业务中的应用。</p>
-              <p><strong>结论：Sea Limited 积极采用 人工智能 编程工具，表明亚洲科技巨头正加速 人工智能 原生开发。</strong></p>
-              <p>影响：Codex 在亚洲企业的落地将推动 人工智能 辅助编程的普及，可能改变软件开发流程。</p>
-              <p class="links"><a href="https://openai.com/index/sea-david-chen" target="_blank" rel="noreferrer">https://openai.com/index/sea-david-chen</a></p>
-            </article>
-          
-            <article class="story">
-              <h3>Ai2 发布 AIMIP：人工智能 气候模型评估基准与数据集</h3>
-              <p>Ai2 推出 AIMIP（人工智能 天气与气候模型比较项目），这是一个开放基准和数据集，用于评估 人工智能 气候模型。</p><p>初步结果显示，人工智能 模型在某些历史气候指标上可媲美甚至超越传统模型，但在其他方面仍有不足。</p>
-              <p><strong>结论：AIMIP 为 人工智能 气候模型提供了标准化评估框架，推动该领域发展。</strong></p>
-              <p>影响：研究人员和开发者可利用 AIMIP 比较模型性能，加速 人工智能 在气候科学中的应用。</p>
+              <h3>Ai2 推出 AIMIP：人工智能 天气与气候模型比较项目</h3>
+              <p>Allen Institute for 人工智能 (Ai2) 发布了 AIMIP，这是一个用于评估 人工智能 气候模型的开放基准和数据集。</p><p>初步结果显示，人工智能 气候模型在某些历史气候指标上可以匹配甚至超越传统模型，但在其他方面仍有不足。</p>
+              <p><strong>结论：AIMIP 为 人工智能 气候模型提供了标准化评估框架，有助于推动该领域发展。</strong></p>
+              <p>影响：气候研究社区可利用该基准客观比较不同模型，加速 人工智能 在气候科学中的应用。</p>
               <p class="links"><a href="https://allenai.org/blog/aimip" target="_blank" rel="noreferrer">https://allenai.org/blog/aimip</a></p>
+            </article>
+          
+            <article class="story">
+              <h3>Ai2 发布 MolmoAct 2：面向真实世界机器人的开放基础模型</h3>
+              <p>Ai2 推出 MolmoAct 2，这是一个完全开放的机器人基础模型，具备更快、更强的 3D 动作推理能力。</p><p>同时发布了大规模双臂操作数据集，以支持真实世界机器人任务。</p>
+              <p><strong>结论：MolmoAct 2 在开放性和性能上均有提升，为机器人研究提供了强大基础。</strong></p>
+              <p>影响：机器人研究人员和开发者可利用该模型和数据集加速双臂操作任务的开发。</p>
+              <p class="links"><a href="https://allenai.org/blog/molmoact2" target="_blank" rel="noreferrer">https://allenai.org/blog/molmoact2</a></p>
+            </article>
+          
+            <article class="story">
+              <h3>AstaBench 更新：新增 GPT-5.5 结果并获行业采用</h3>
+              <p>Ai2 的 AstaBench 基准测试发布春季更新，新增包括 GPT-5.5 在内的前沿模型结果。</p><p>该基准已获得英国 AISI、General Reasoning、Elicit、SciSpace 等机构的采用。</p>
+              <p><strong>结论：AstaBench 正成为科学推理评估的重要基准，行业采用度持续提升。</strong></p>
+              <p>影响：模型开发者可通过 AstaBench 评估科学推理能力，推动模型在科研领域的应用。</p>
+              <p class="links"><a href="https://allenai.org/blog/astabench-update-spring-2026" target="_blank" rel="noreferrer">https://allenai.org/blog/astabench-update-spring-2026</a></p>
             </article>
           
         </section>
       
       <section class="section">
         <h2>关联判断</h2>
-        <ul><li>Ollama v0.30.0 直接支持 llama.cpp，与 llama.cpp 的持续优化形成生态协同，共同提升本地推理性能。</li><li>Anthropic 与普华永道、盖茨基金会的合作，以及 Sea Limited 部署 Codex，均表明 人工智能 模型在企业级和公益领域的应用正在加速。</li><li>AIMIP 基准的发布为 人工智能 模型在气候科学领域的评估提供了新工具，与模型推理能力的提升相辅相成。</li></ul>
+        <ul><li>llama.cpp 的 UI 重构与 Hugging Face 的异步批处理技术均旨在提升开发者体验和推理效率。</li><li>Ai2 发布的 AIMIP、MolmoAct 2 和 AstaBench 更新均聚焦于模型评估与应用，覆盖气候、机器人和科学推理领域。</li><li>AstaBench 新增 GPT-5.5 结果，体现了前沿模型在科学推理上的进展，与 AIMIP 和 MolmoAct 2 共同展示了 人工智能 在专业领域的深化。</li></ul>
       </section>
       <section class="section">
         <h2>继续观察</h2>
-        <ul><li>Ollama v0.30.0 正式版发布后的社区反馈与性能测试</li><li>Anthropic Claude 在普华永道和盖茨基金会项目中的实际效果</li><li>AIMIP 基准后续的模型排名与改进方向</li></ul>
+        <ul><li>llama.cpp 后续版本对 UI 和推理性能的进一步优化</li><li>Hugging Face 异步连续批处理技术的实际部署效果</li><li>Ai2 的 AIMIP 和 MolmoAct 2 在社区中的采用情况</li></ul>
       </section>
     </main>
   </body>
