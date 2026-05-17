@@ -11,6 +11,10 @@ permissions:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
+concurrency:
+  group: ai-digest-writes-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   source_audit:
     runs-on: ${{ vars.ACTIONS_RUNNER || 'ubuntu-latest' }}
@@ -59,4 +63,5 @@ jobs:
           git add config/generated_sources.yaml site/source-health private-data/source-audits
           git add config/generated_sources.snapshot.*.yaml 2>/dev/null || true
           git diff --cached --quiet || git commit -m "chore: update source audit artifacts"
+          git pull --rebase origin main
           git push
