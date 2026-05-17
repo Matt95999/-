@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>人工智能行业日报</title>
+    <title>人工智能行业日报 | 2026-05-17</title>
     <style>
       :root {
         color-scheme: light;
@@ -48,63 +48,57 @@
   </head>
   <body>
     <main>
-      <p class="meta">生成时间：2026-05-16T06:00:00.000Z</p>
-      <h1>人工智能行业日报</h1>
-      <p class="topline">今日人工智能行业聚焦于开源推理框架更新、异步批处理技术突破、人工智能气候模型基准发布、机器人基础模型升级以及科学推理基准扩展。</p>
+      <p class="meta">生成时间：2026-05-17T00:00:00Z</p>
+      <h1>人工智能行业日报 | 2026-05-17</h1>
+      <p class="topline">今日人工智能行业聚焦于推理框架的密集更新、开源模型在气候与机器人领域的突破，以及基准测试的行业采纳。llama.cpp和SGLang均发布多个版本，优化性能与兼容性；Ai2推出AIMIP气候模型基准、MolmoAct 2机器人基础模型和AstaBench更新，展示开源生态的多元化进展。</p>
       
         <section class="section">
           <h2>产品与智能体</h2>
-          <p class="summary">llama.cpp 发布 b9174 版本，重构 UI 目录结构并统一命名规范。</p>
+          <p class="summary">llama.cpp和SGLang两大推理框架发布多个版本，带来性能优化、新模型支持和架构调整。</p>
           
             <article class="story">
-              <h3>llama.cpp 发布 b9174 版本，重构 UI 目录结构</h3>
-              <p>llama.cpp 项目发布了 b9174 版本，主要对仓库 UI 部分进行重构，将相关文件移至 tools/ui 文件夹，并统一使用 ui / UI / llama-ui / LLAMA_UI 命名规范。</p><p>此前版本 b9173 和 b9172 分别修复了 CI 中的 release 符号链接问题以及 WebUI 中 Hugging Face 校验和检查的大小写问题。</p>
-              <p><strong>结论：此次重构提升了 llama.cpp 项目的代码组织性和可维护性，是持续优化用户体验的体现。</strong></p>
-              <p>影响：对开发者而言，更清晰的目录结构和命名规范降低了贡献门槛，有助于社区协作。</p>
-              <p class="links"><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9174" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9174</a></p>
+              <h3>llama.cpp 发布 b9174 至 b9190 多个版本，重构UI目录并优化服务器路由</h3>
+              <p>llama.cpp 在短时间内连续发布 b9174、b9180、b9181、b9186、b9189、b9190 等多个版本。主要变更包括：将UI相关文件重组到 tools/ui 文件夹，并统一命名规范为 ui/UI/llama-ui/LLAMA_UI；在服务器路由模式下将临时缓冲区分配到堆上，避免创建 CUDA 主上下文以提升兼容性。</p><p>这些更新旨在改善代码组织结构和跨平台部署体验，尤其是 macOS/iOS 平台获得了二进制包更新。</p>
+              <p><strong>结论：llama.cpp 通过密集的版本迭代，持续优化工程质量和运行时效率，显示出项目维护的活跃度。</strong></p>
+              <p>影响：对开发者而言，UI重构降低了二次开发门槛；服务器路由优化减少了GPU资源占用，有利于多卡部署场景。</p>
+              <p class="links"><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9190" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9190</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9189" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9189</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9186" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9186</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9181" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9181</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9180" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9180</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9174" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9174</a></p>
             </article>
           
-        </section>
-      
-        <section class="section">
-          <h2>基础设施与芯片</h2>
-          <p class="summary">Hugging Face 发布博客，介绍在连续批处理中实现异步性的技术。</p>
-          
             <article class="story">
-              <h3>Hugging Face 发布异步连续批处理技术博客</h3>
-              <p>Hugging Face 发布博客《Unlocking asynchronicity in continuous batching》，介绍在连续批处理中引入异步性的方法。</p><p>该技术旨在提升推理效率，减少等待时间，从而优化大规模模型部署的性能。</p>
-              <p><strong>结论：异步连续批处理是推理优化的重要方向，有望显著降低延迟并提高吞吐量。</strong></p>
-              <p>影响：对部署大模型的团队而言，该技术可降低推理成本，提升用户体验。</p>
-              <p class="links"><a href="https://huggingface.co/blog/continuous_async" target="_blank" rel="noreferrer">https://huggingface.co/blog/continuous_async</a></p>
+              <h3>SGLang 发布 v0.5.9 至 v0.5.12 版本，支持 DeepSeek V4 并升级 CUDA 13</h3>
+              <p>SGLang 推出 v0.5.9、v0.5.10、v0.5.11、v0.5.12 等多个版本。v0.5.9 亮点包括 LoRA 权重加载与计算重叠，将首令牌延迟（TTFT）降低约78%；v0.5.11 默认 CUDA 版本升级至 13.0，PyTorch 升级至 2.11；v0.5.12 新增对 DeepSeek V4 的完整推理支持。</p><p>这些更新显著提升了推理效率和新模型兼容性，尤其是 DeepSeek V4 的支持扩展了 SGLang 的应用范围。</p>
+              <p><strong>结论：SGLang 通过快速迭代保持了对最新模型和硬件生态的适配，性能优化成果突出。</strong></p>
+              <p>影响：LoRA 加载优化直接降低推理延迟，对实时应用有利；CUDA 13 和 DeepSeek V4 支持使 SGLang 成为前沿模型部署的有力选择。</p>
+              <p class="links"><a href="https://github.com/sgl-project/sglang/releases/tag/v0.5.12" target="_blank" rel="noreferrer">https://github.com/sgl-project/sglang/releases/tag/v0.5.12</a><br><a href="https://github.com/sgl-project/sglang/releases/tag/v0.5.11" target="_blank" rel="noreferrer">https://github.com/sgl-project/sglang/releases/tag/v0.5.11</a><br><a href="https://github.com/sgl-project/sglang/releases/tag/v0.5.10.post1" target="_blank" rel="noreferrer">https://github.com/sgl-project/sglang/releases/tag/v0.5.10.post1</a><br><a href="https://github.com/sgl-project/sglang/releases/tag/v0.5.10" target="_blank" rel="noreferrer">https://github.com/sgl-project/sglang/releases/tag/v0.5.10</a><br><a href="https://github.com/sgl-project/sglang/releases/tag/v0.5.10rc0" target="_blank" rel="noreferrer">https://github.com/sgl-project/sglang/releases/tag/v0.5.10rc0</a><br><a href="https://github.com/sgl-project/sglang/releases/tag/v0.5.9" target="_blank" rel="noreferrer">https://github.com/sgl-project/sglang/releases/tag/v0.5.9</a></p>
             </article>
           
         </section>
       
         <section class="section">
           <h2>模型与推理</h2>
-          <p class="summary">Ai2 发布 AIMIP 气候模型基准、MolmoAct 2 机器人基础模型以及 AstaBench 更新。</p>
+          <p class="summary">Ai2发布三项重要成果：AIMIP气候模型基准、MolmoAct 2机器人基础模型和AstaBench更新，推动开源模型在专业领域的应用。</p>
           
             <article class="story">
               <h3>Ai2 推出 AIMIP：人工智能 天气与气候模型比较项目</h3>
-              <p>Allen Institute for 人工智能 (Ai2) 发布了 AIMIP，这是一个用于评估 人工智能 气候模型的开放基准和数据集。</p><p>初步结果显示，人工智能 气候模型在某些历史气候指标上可以匹配甚至超越传统模型，但在其他方面仍有不足。</p>
-              <p><strong>结论：AIMIP 为 人工智能 气候模型提供了标准化评估框架，有助于推动该领域发展。</strong></p>
-              <p>影响：气候研究社区可利用该基准客观比较不同模型，加速 人工智能 在气候科学中的应用。</p>
+              <p>Ai2 发布 AIMIP（人工智能 天气与气候模型比较项目），这是一个用于评估 人工智能 气候模型的开源基准和数据集。初步结果显示，人工智能 模型在某些历史气候指标上可以匹配甚至超越传统数值模型，但在其他方面仍存在不足。</p><p>该项目旨在为 人工智能 气候建模提供标准化评估框架，推动该领域的透明度和可重复性。</p>
+              <p><strong>结论：AIMIP 为 人工智能 气候模型提供了首个系统化比较基准，有助于识别当前模型的优势与短板。</strong></p>
+              <p>影响：对气候研究社区而言，AIMIP 降低了评估门槛，加速 人工智能 在气候科学中的应用；对模型开发者，提供了明确的改进方向。</p>
               <p class="links"><a href="https://allenai.org/blog/aimip" target="_blank" rel="noreferrer">https://allenai.org/blog/aimip</a></p>
             </article>
           
             <article class="story">
-              <h3>Ai2 发布 MolmoAct 2：面向真实世界机器人的开放基础模型</h3>
-              <p>Ai2 推出 MolmoAct 2，这是一个完全开放的机器人基础模型，具备更快、更强的 3D 动作推理能力。</p><p>同时发布了大规模双臂操作数据集，以支持真实世界机器人任务。</p>
-              <p><strong>结论：MolmoAct 2 在开放性和性能上均有提升，为机器人研究提供了强大基础。</strong></p>
-              <p>影响：机器人研究人员和开发者可利用该模型和数据集加速双臂操作任务的开发。</p>
+              <h3>Ai2 发布 MolmoAct 2：面向真实世界机器人的开源基础模型</h3>
+              <p>Ai2 推出 MolmoAct 2，一个完全开源的机器人基础模型，具备更快、更强的 3D 动作推理能力，并附带一个大型双臂操作数据集。该模型旨在让机器人更好地在真实世界中工作。</p><p>MolmoAct 2 延续了 Molmo 系列的开放路线，提供模型权重、代码和数据集，以促进机器人研究的可复现性。</p>
+              <p><strong>结论：MolmoAct 2 是开源机器人领域的重要进展，强化了 3D 动作推理能力。</strong></p>
+              <p>影响：对机器人研究者，该模型降低了入门门槛，提供了高质量的双臂操作数据；对行业，加速了通用机器人技能的开发。</p>
               <p class="links"><a href="https://allenai.org/blog/molmoact2" target="_blank" rel="noreferrer">https://allenai.org/blog/molmoact2</a></p>
             </article>
           
             <article class="story">
-              <h3>AstaBench 更新：新增 GPT-5.5 结果并获行业采用</h3>
-              <p>Ai2 的 AstaBench 基准测试发布春季更新，新增包括 GPT-5.5 在内的前沿模型结果。</p><p>该基准已获得英国 AISI、General Reasoning、Elicit、SciSpace 等机构的采用。</p>
-              <p><strong>结论：AstaBench 正成为科学推理评估的重要基准，行业采用度持续提升。</strong></p>
-              <p>影响：模型开发者可通过 AstaBench 评估科学推理能力，推动模型在科研领域的应用。</p>
+              <h3>Ai2 更新 AstaBench：新增 GPT-5.5 结果并获行业采纳</h3>
+              <p>AstaBench 发布春季更新，新增包括 GPT-5.5 在内的前沿模型评估结果。该基准已被英国 人工智能 安全研究所（UK AISI）、General Reasoning、Elicit、SciSpace 等机构采用。</p><p>AstaBench 专注于科学推理评估，此次更新进一步巩固了其作为 人工智能 科学能力测试标准的位置。</p>
+              <p><strong>结论：AstaBench 的行业采纳表明其评估框架获得广泛认可，GPT-5.5 的加入反映了最新模型的能力。</strong></p>
+              <p>影响：对模型开发者，AstaBench 提供了科学推理的权威标尺；对用户，有助于选择适合科学任务的模型。</p>
               <p class="links"><a href="https://allenai.org/blog/astabench-update-spring-2026" target="_blank" rel="noreferrer">https://allenai.org/blog/astabench-update-spring-2026</a></p>
             </article>
           
@@ -112,11 +106,11 @@
       
       <section class="section">
         <h2>关联判断</h2>
-        <ul><li>llama.cpp 的 UI 重构与 Hugging Face 的异步批处理技术均旨在提升开发者体验和推理效率。</li><li>Ai2 发布的 AIMIP、MolmoAct 2 和 AstaBench 更新均聚焦于模型评估与应用，覆盖气候、机器人和科学推理领域。</li><li>AstaBench 新增 GPT-5.5 结果，体现了前沿模型在科学推理上的进展，与 AIMIP 和 MolmoAct 2 共同展示了 人工智能 在专业领域的深化。</li></ul>
+        <ul><li>llama.cpp 和 SGLang 的密集版本更新反映了开源推理框架在性能和模型支持上的激烈竞争，两者均针对最新硬件和模型进行优化。</li><li>Ai2 的三项发布（AIMIP、MolmoAct 2、AstaBench）共同展示了开源 人工智能 在专业领域（气候、机器人、科学推理）的拓展，与推理框架的通用优化形成互补。</li><li>AstaBench 对 GPT-5.5 的评估与 SGLang 对 DeepSeek V4 的支持，均体现了行业对前沿模型快速适配的需求。</li></ul>
       </section>
       <section class="section">
         <h2>继续观察</h2>
-        <ul><li>llama.cpp 后续版本对 UI 和推理性能的进一步优化</li><li>Hugging Face 异步连续批处理技术的实际部署效果</li><li>Ai2 的 AIMIP 和 MolmoAct 2 在社区中的采用情况</li></ul>
+        <ul><li>llama.cpp 后续版本对 UI 重构的稳定性反馈</li><li>SGLang v0.5.12 中 DeepSeek V4 推理的实际性能表现</li><li>MolmoAct 2 在真实机器人任务中的社区复现结果</li></ul>
       </section>
     </main>
   </body>
