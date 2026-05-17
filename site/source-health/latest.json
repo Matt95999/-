@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-05-17T05:45:20.166Z",
-  "healthy_source_count": 16,
-  "disabled_source_count": 2,
+  "generated_at": "2026-05-17T08:35:45.808Z",
+  "healthy_source_count": 15,
+  "disabled_source_count": 3,
   "product_statuses": [
     {
       "product_id": "chatgpt",
@@ -36,7 +36,7 @@
     {
       "product_id": "deepseek",
       "display_name": "DeepSeek",
-      "enabled_source_count": 2,
+      "enabled_source_count": 1,
       "status": "healthy"
     },
     {
@@ -65,11 +65,13 @@
     }
   ],
   "safety_gate": {
-    "paused": false,
-    "reasons": [],
-    "disabled_source_count": 2,
+    "paused": true,
+    "reasons": [
+      "generated_sources_change_volume"
+    ],
+    "disabled_source_count": 3,
     "active_product_outages": [],
-    "changed_entry_count": 2,
+    "changed_entry_count": 3,
     "new_quarantined_count": 0
   },
   "schema_check": {
