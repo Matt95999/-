@@ -2,93 +2,167 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { loadResourceText } from "./resource-loader.js";
 import { sha256 } from "../utils/hash.js";
-import { decodeHtmlEntities, stripHtml, truncate, unique } from "../utils/text.js";
+import { decodeHtmlEntities, jaccardSimilarity, stripHtml, toSlug, truncate, unique } from "../utils/text.js";
 import { nowIso } from "../utils/time.js";
 
 const ARTICLE_LINK_PATTERN = /https?:\/\/[^\s"'<>]+|file:\/\/[^\s"'<>]+/g;
 const HTML_ANCHOR_PATTERN = /<a\b([^>]*)href=["']([^"'#]+)["']([^>]*)>([\s\S]*?)<\/a>/gi;
 const HTML_ATTRIBUTE_PATTERN = /([a-zA-Z_:][-a-zA-Z0-9_:.]*)=["']([^"']*)["']/g;
+const HTML_HEADING_PATTERN = /<(h[1-6])\b([^>]*)>([\s\S]*?)<\/\1>/gi;
 const XML_ITEM_PATTERN = /<(item|entry)\b[\s\S]*?<\/\1>/gi;
 const REDIRECT_PARAM_NAMES = ["url", "target", "targetUrl", "dest", "destination", "u", "to", "redirect"];
 const BLOCKED_URL_PROTOCOLS = ["javascript:", "mailto:", "tel:", "data:"];
 const BLOCKED_EXTENSIONS = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg", ".css", ".js", ".ico", ".woff", ".woff2", ".ttf", ".pdf", ".zip", ".xml", ".atom"];
 const LISTING_SEGMENTS = new Set(["blog", "news", "archive", "archives", "about", "category", "categories", "tag", "tags", "topics", "topic", "page", "subscribe", "subscription"]);
 const HUMAN_DATE_PATTERN = /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)[a-z]* \d{1,2}, \d{4}\b/i;
+const PRODUCT_TOKEN_NORMALIZERS = [
+  [/gpt-5\.2-codex/gi, "gpt-5.2-codex"],
+  [/gpt-5-codex/gi, "gpt-5-codex"],
+  [/claude code/gi, "claude code"],
+  [/chatgpt/gi, "chatgpt"],
+  [/deepseek/gi, "deepseek"],
+  [/qwen/gi, "qwen"],
+  [/kimi/gi, "kimi"],
+  [/glm/gi, "glm"]
+];
 
 export async function discoverCandidates({ rootDir, config, envConfig, logger, mode = "daily_run" }) {
-  const discovered = [];
-
-  const whitelistCandidates = await discoverFromWhitelist({
-    config,
+  const effectiveConfig = ensureRegistryState(config);
+  const { candidates: sourceCandidates, sourceRuns } = await discoverFromRegistry({
+    config: effectiveConfig,
     envConfig,
-    logger
+    logger,
+    mode
   });
-  discovered.push(...whitelistCandidates);
 
-  const searchCandidates = shouldUseProviderSources({ mode, whitelistConfig: config.whitelist, whitelistCandidates })
+  const discovered = [...sourceCandidates];
+  const searchCandidates = shouldUseProviderSources({
+    mode,
+    registryState: effectiveConfig.registryState,
+    sourceCandidates
+  })
     ? await discoverFromProviders({
         rootDir,
-        config,
+        config: effectiveConfig,
         envConfig,
         logger
       })
     : [];
+
   discovered.push(...searchCandidates);
 
   const deduped = dedupeCandidates(discovered);
   logger.info("discovery completed", {
     discovered: deduped.length,
-    whitelist: whitelistCandidates.length,
-    provider: searchCandidates.length
+    registry: sourceCandidates.length,
+    provider: searchCandidates.length,
+    sourceRuns: sourceRuns.length
   });
-  return deduped;
+  return { candidates: deduped, sourceRuns };
 }
 
-async function discoverFromWhitelist({ config, envConfig, logger }) {
-  const results = [];
+function ensureRegistryState(config) {
+  if (config?.registryState?.sources) {
+    return config;
+  }
 
-  for (const source of config.whitelist.sources || []) {
+  const sources = (config?.whitelist?.sources || []).map((source, index) => ({
+    source_id: source.source_id || `legacy-source-${index + 1}`,
+    display_name: source.name || `Legacy Source ${index + 1}`,
+    source_type: source.source_type || "官方来源",
+    source_role: source.source_role || "official_news",
+    vendor_id: source.vendor_id || "",
+    product_ids: source.product_ids || [],
+    status: source.status || "active",
+    priority_weight: source.priority_weight || 0.8,
+    expected_update_cadence: source.expected_update_cadence || "medium",
+    evaluation_enabled: Boolean(source.evaluation_enabled),
+    allowed_hosts: source.allowed_hosts || [],
+    seed_urls: source.seed_urls || [],
+    include_url_patterns: source.include_url_patterns || [],
+    exclude_url_patterns: source.exclude_url_patterns || [],
+    include_entry_text_patterns: source.include_entry_text_patterns || [],
+    exclude_entry_text_patterns: source.exclude_entry_text_patterns || [],
+    entry_strategy: source.entry_strategy || "listing",
+    max_entries: source.max_entries || 8,
+    enabled: source.enabled !== false
+  }));
+
+  return {
+    ...config,
+    registryState: {
+      sources,
+      activeProducts: [],
+      productMap: new Map(),
+      sourceMap: new Map(sources.map((source) => [source.source_id, source]))
+    }
+  };
+}
+
+async function discoverFromRegistry({ config, envConfig, logger, mode }) {
+  const results = [];
+  const sourceRuns = [];
+  const sources = selectSourcesForMode(config.registryState, mode);
+
+  for (const source of sources) {
+    const sourceRun = createSourceRun(source);
+    sourceRuns.push(sourceRun);
+
     for (const seedUrl of source.seed_urls || []) {
+      sourceRun.discovery.seed_attempt_count += 1;
       try {
         const text = await loadResourceText(seedUrl, envConfig.discoveryProviderRequestHeaders);
-        const entries = extractDiscoveryEntries({
+        sourceRun.discovery.seed_success_count += 1;
+        sourceRun.discovery.last_scanned_at = nowIso();
+        const entryLimit = mode === "source_audit" ? Math.min(2, source.max_entries || 12) : source.max_entries || 12;
+        const entries = extractEntriesForSource({
+          source,
+          registryState: config.registryState,
           resourceUrl: seedUrl,
-          text,
-          sourceName: source.name,
-          sourceType: source.source_type || "公众号",
-          discoverySource: "whitelist",
-          sourcePriority: source.priority_weight || 1,
-          allowedHosts: source.allowed_hosts || [],
-          includeUrlPatterns: source.include_url_patterns || [],
-          excludeUrlPatterns: source.exclude_url_patterns || []
-        }).slice(0, source.max_entries || 12);
-        if (!entries.length) {
-          logger.warn("whitelist source yielded no article entries", { source: source.name, seedUrl });
-          continue;
+          text
+        }).slice(0, entryLimit);
+
+        sourceRun.discovery.discovered_count += entries.length;
+        if (entries.length) {
+          sourceRun.discovery.status = "success_with_candidates";
+        } else if (sourceRun.discovery.status !== "success_with_candidates") {
+          sourceRun.discovery.status = "success_empty";
         }
         for (const entry of entries) {
           results.push(entry);
         }
       } catch (error) {
-        logger.warn("whitelist discovery failed", { source: source.name, seedUrl, error: error.message });
+        sourceRun.discovery.errors.push({ seed_url: seedUrl, error: error.message });
+        logger.warn("registry discovery failed", { source: source.display_name, seedUrl, error: error.message });
       }
+    }
+
+    if (!sourceRun.discovery.seed_success_count) {
+      sourceRun.discovery.status = "failed";
     }
   }
 
-  return results;
+  return { candidates: results, sourceRuns };
 }
 
-function shouldUseProviderSources({ mode, whitelistConfig, whitelistCandidates }) {
+function selectSourcesForMode(registryState, mode) {
+  if (mode === "source_audit") {
+    return (registryState.sources || []).filter((source) => source.enabled || source.evaluation_enabled);
+  }
+
+  return (registryState.sources || []).filter((source) => source.enabled);
+}
+
+function shouldUseProviderSources({ mode, registryState, sourceCandidates }) {
   if (mode === "manual_review") {
     return true;
   }
 
-  const hasConfiguredWhitelist = (whitelistConfig?.sources || []).some((source) => Array.isArray(source.seed_urls) && source.seed_urls.length);
-  if (hasConfiguredWhitelist) {
+  if ((registryState.sources || []).some((source) => source.enabled && source.seed_urls.length)) {
     return false;
   }
 
-  return whitelistCandidates.length === 0;
+  return sourceCandidates.length === 0;
 }
 
 async function discoverFromProviders({ rootDir, config, envConfig, logger }) {
@@ -99,15 +173,23 @@ async function discoverFromProviders({ rootDir, config, envConfig, logger }) {
     const sampleText = await loadResourceText(envConfig.discoveryProviderSampleFile, envConfig.discoveryProviderRequestHeaders);
     const sampleItems = JSON.parse(sampleText);
     for (const item of sampleItems) {
+      const inferred = classifyAgainstRegistry(`${item.title || ""} ${item.excerpt || ""}`, config.registryState);
       results.push({
         source_name: item.source_name || "sample-provider",
         source_type: item.source_type || "公众号",
+        source_id: item.source_id || "sample-provider",
+        source_role: item.source_role || "official_news",
+        source_status: item.source_status || "sample",
+        vendor_id: item.vendor_id || "",
+        product_ids: Array.isArray(item.product_ids) && item.product_ids.length ? item.product_ids : inferred.productIds,
+        sub_product_ids: Array.isArray(item.sub_product_ids) && item.sub_product_ids.length ? item.sub_product_ids : inferred.subProductIds,
         url: item.url,
         title: item.title || item.query,
         discovered_at: nowIso(),
         published_at: item.published_at || null,
         excerpt: item.excerpt || null,
         full_text: null,
+        language: item.language || detectLanguage(`${item.title || ""} ${item.excerpt || ""}`),
         signals: {
           query: item.query || "",
           discovery_source: "sample-file",
@@ -134,7 +216,17 @@ async function discoverFromProviders({ rootDir, config, envConfig, logger }) {
           fallbackTitle: query
         });
         for (const entry of entries.slice(0, 5)) {
-          results.push(entry);
+          const inferred = classifyAgainstRegistry(`${entry.title || ""} ${entry.excerpt || ""}`, config.registryState);
+          results.push({
+            ...entry,
+            source_id: "search-template",
+            source_role: "third_party_search",
+            source_status: "provider",
+            vendor_id: "",
+            product_ids: inferred.productIds,
+            sub_product_ids: inferred.subProductIds,
+            language: detectLanguage(`${entry.title} ${entry.excerpt || ""}`)
+          });
         }
       } catch (error) {
         logger.warn("search provider failed", { template, query, error: error.message });
@@ -173,6 +265,123 @@ function extractLinks(baseUrl, text) {
       .filter((url) => isLikelyArticleUrl(url, baseUrl))
       .filter((url) => !isBlockedResourceUrl(url))
   );
+}
+
+function extractEntriesForSource({ source, registryState, resourceUrl, text }) {
+  const entries =
+    source.entry_strategy === "inline_changelog"
+      ? extractInlineChangelogEntries({ resourceUrl, text, source })
+      : source.entry_strategy === "page_as_article"
+        ? extractPageAsArticleEntries({ resourceUrl, text, source })
+        : extractDiscoveryEntries({
+            resourceUrl,
+            text,
+            sourceName: source.display_name,
+            sourceType: source.source_type || "官方来源",
+            discoverySource: "registry",
+            sourcePriority: source.priority_weight || 1,
+            allowedHosts: source.allowed_hosts || [],
+            includeUrlPatterns: source.include_url_patterns || [],
+            excludeUrlPatterns: source.exclude_url_patterns || []
+          });
+
+  return entries
+    .filter((entry) => matchesEntryTextPatterns(entry, source.include_entry_text_patterns, source.exclude_entry_text_patterns))
+    .map((entry) => enrichCandidateWithRegistry(entry, source, registryState));
+}
+
+function enrichCandidateWithRegistry(candidate, source, registryState) {
+  const text = [candidate.title, candidate.excerpt, candidate.full_text].filter(Boolean).join(" ");
+  const detected = classifyCandidateProducts(text, source, registryState);
+  return {
+    ...candidate,
+    source_name: source.display_name,
+    source_type: source.source_type,
+    source_id: source.source_id,
+    source_role: source.source_role,
+    source_status: source.status,
+    vendor_id: source.vendor_id,
+    product_ids: detected.productIds,
+    sub_product_ids: detected.subProductIds,
+    language: detectLanguage(text),
+    signals: {
+      ...candidate.signals,
+      source_priority: source.priority_weight,
+      source_role: source.source_role,
+      expected_update_cadence: source.expected_update_cadence
+    }
+  };
+}
+
+function classifyCandidateProducts(text, source, registryState) {
+  const normalized = normalizeMatchableText(text);
+  const productIds = [];
+  const subProductIds = [];
+
+  for (const productId of source.product_ids || []) {
+    const product = registryState.productMap.get(productId);
+    if (!product) {
+      continue;
+    }
+    const matchesProduct =
+      !product.detection_terms.length || product.detection_terms.some((term) => normalized.includes(normalizeMatchableText(term)));
+    if (matchesProduct || (source.product_ids || []).length === 1) {
+      if (!productIds.includes(productId)) {
+        productIds.push(productId);
+      }
+      for (const subProduct of product.sub_products || []) {
+        if ((subProduct.detection_terms || []).some((term) => normalized.includes(normalizeMatchableText(term)))) {
+          subProductIds.push(subProduct.sub_product_id);
+        }
+      }
+    }
+  }
+
+  return {
+    productIds: productIds.length ? productIds : [...(source.product_ids || [])],
+    subProductIds: unique(subProductIds)
+  };
+}
+
+function classifyAgainstRegistry(text, registryState) {
+  const normalized = normalizeMatchableText(text);
+  const productIds = [];
+  const subProductIds = [];
+  for (const product of registryState?.activeProducts || []) {
+    if ((product.detection_terms || []).some((term) => normalized.includes(normalizeMatchableText(term)))) {
+      productIds.push(product.product_id);
+      for (const subProduct of product.sub_products || []) {
+        if ((subProduct.detection_terms || []).some((term) => normalized.includes(normalizeMatchableText(term)))) {
+          subProductIds.push(subProduct.sub_product_id);
+        }
+      }
+    }
+  }
+  return { productIds: unique(productIds), subProductIds: unique(subProductIds) };
+}
+
+function createSourceRun(source) {
+  return {
+    source_id: source.source_id,
+    display_name: source.display_name,
+    source_role: source.source_role,
+    source_type: source.source_type,
+    vendor_id: source.vendor_id,
+    product_ids: [...(source.product_ids || [])],
+    source_status: source.status,
+    enabled: Boolean(source.enabled),
+    evaluation_enabled: Boolean(source.evaluation_enabled),
+    priority_weight: source.priority_weight,
+    avg_update_interval_days: source.avg_update_interval_days || null,
+    discovery: {
+      status: "pending",
+      seed_attempt_count: 0,
+      seed_success_count: 0,
+      discovered_count: 0,
+      last_scanned_at: null,
+      errors: []
+    }
+  };
 }
 
 export function extractDiscoveryEntries({
@@ -236,6 +445,171 @@ function toCandidate(entry, options) {
     confidence: confidenceByFormat(entry.format),
     content_hash: sha256(`${url}|${title}`)
   };
+}
+
+function extractInlineChangelogEntries({ resourceUrl, text, source }) {
+  const baseUrl = makeBaseUrl(resourceUrl);
+  const entries = [];
+  const matches = [...text.matchAll(HTML_HEADING_PATTERN)];
+  let currentExactDate = null;
+  let currentMonthContext = null;
+
+  for (let index = 0; index < matches.length; index += 1) {
+    const match = matches[index];
+    const level = Number.parseInt(match[1].slice(1), 10);
+    const attrs = parseHtmlAttributes(match[2] || "");
+    const title = cleanText(stripHtml(match[3] || ""));
+    if (!title) {
+      continue;
+    }
+
+    const exactDate = parseHeadingDate(title);
+    if (exactDate) {
+      currentExactDate = exactDate;
+      currentMonthContext = exactDate.slice(0, 7);
+      continue;
+    }
+
+    const monthContext = parseMonthContext(title);
+    if (monthContext) {
+      currentMonthContext = monthContext;
+      continue;
+    }
+
+    if (isGenericChangelogHeading(title) || level <= 1) {
+      continue;
+    }
+
+    const nextMatch = matches[index + 1];
+    const bodyStart = match.index + match[0].length;
+    const bodyEnd = nextMatch ? nextMatch.index : text.length;
+    const snippet = cleanText(stripHtml(text.slice(bodyStart, bodyEnd)));
+    const excerpt = cleanExcerpt(snippet, title) || truncate(snippet, 220) || null;
+    const entryUrl = attrs.id ? `${resourceUrl}#${attrs.id}` : `${resourceUrl}#${toSlug(title)}`;
+
+    entries.push({
+      url: normalizeUrl(entryUrl, baseUrl),
+      title,
+      excerpt,
+      publishedAt: inferInlinePublishedAt(title, currentExactDate, currentMonthContext),
+      format: "inline"
+    });
+  }
+
+  return uniqueEntriesByUrl(entries);
+}
+
+function extractPageAsArticleEntries({ resourceUrl, text, source }) {
+  const title =
+    extractMeta(text, "property", "og:title") ||
+    extractMeta(text, "name", "twitter:title") ||
+    extractMeta(text, "name", "title") ||
+    extractFirstTag(text, "h1") ||
+    extractFirstTag(text, "title") ||
+    source.display_name;
+  const excerpt =
+    extractMeta(text, "name", "description") ||
+    extractMeta(text, "property", "og:description") ||
+    "";
+  return [
+    {
+      url: resourceUrl,
+      title: cleanText(title),
+      excerpt: cleanText(excerpt),
+      publishedAt: normalizePublishedAt(extractHumanDate(text), title),
+      format: "page"
+    }
+  ];
+}
+
+function matchesEntryTextPatterns(entry, includePatterns, excludePatterns) {
+  const haystack = `${entry.title || ""} ${entry.excerpt || ""}`.trim();
+  if (!haystack) {
+    return false;
+  }
+
+  if (Array.isArray(excludePatterns) && excludePatterns.some((pattern) => testPattern(haystack, pattern))) {
+    return false;
+  }
+  if (!Array.isArray(includePatterns) || !includePatterns.length) {
+    return true;
+  }
+  return includePatterns.some((pattern) => testPattern(haystack, pattern));
+}
+
+function normalizeMatchableText(text) {
+  let normalized = String(text || "").toLowerCase();
+  for (const [pattern, replacement] of PRODUCT_TOKEN_NORMALIZERS) {
+    normalized = normalized.replace(pattern, replacement);
+  }
+  return normalized;
+}
+
+function parseHeadingDate(text) {
+  const cleaned = cleanText(text).replace(/^date:\s*/i, "");
+  const full = parseMonthDayYear(cleaned) || parseIsoDate(cleaned);
+  return full;
+}
+
+function parseMonthContext(text) {
+  const match = cleanText(text).match(/^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)[a-z]*\s+(\d{4})$/i);
+  if (!match) {
+    return null;
+  }
+  const month = {
+    jan: "01",
+    feb: "02",
+    mar: "03",
+    apr: "04",
+    may: "05",
+    jun: "06",
+    jul: "07",
+    aug: "08",
+    sep: "09",
+    sept: "09",
+    oct: "10",
+    nov: "11",
+    dec: "12"
+  }[match[1].toLowerCase()];
+  return month ? `${match[2]}-${month}` : null;
+}
+
+function inferInlinePublishedAt(title, currentExactDate, currentMonthContext) {
+  const titleDate = parseHeadingDate(title);
+  if (titleDate) {
+    return titleDate;
+  }
+
+  const dayMatch = cleanText(title).match(/^(\d{1,2})\s*[-:：]?\s*/);
+  if (dayMatch && currentMonthContext) {
+    return `${currentMonthContext}-${dayMatch[1].padStart(2, "0")}T00:00:00.000Z`;
+  }
+
+  return currentExactDate || null;
+}
+
+function isGenericChangelogHeading(title) {
+  const normalized = cleanText(title).toLowerCase();
+  return [
+    "release notes",
+    "releases notes",
+    "changelog",
+    "change log",
+    "what's new",
+    "news",
+    "documentation",
+    "product updates",
+    "updates"
+  ].includes(normalized);
+}
+
+function detectLanguage(text) {
+  const chineseChars = (String(text || "").match(/[\u4e00-\u9fff]/g) || []).length;
+  const englishWords = String(text || "").match(/[A-Za-z]{2,}/g) || [];
+  if (chineseChars >= englishWords.length) {
+    return "zh-CN";
+  }
+  return "en";
 }
 
 function extractJsonEntries(text, baseUrl) {
@@ -456,6 +830,11 @@ function normalizePublishedAt(value, fallbackText = "") {
     return humanDate;
   }
 
+  const isoDate = parseIsoDate(text);
+  if (isoDate) {
+    return isoDate;
+  }
+
   const parsed = new Date(text);
   if (Number.isNaN(parsed.getTime())) {
     return text;
@@ -497,6 +876,28 @@ function parseHumanDateToIso(text) {
   const day = Number.parseInt(match[2], 10);
   const year = Number.parseInt(match[3], 10);
   return new Date(Date.UTC(year, monthIndex, day)).toISOString();
+}
+
+function parseMonthDayYear(text) {
+  const match = cleanText(text).match(/^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)[a-z]* (\d{1,2}), (\d{4})$/i);
+  if (!match) {
+    return null;
+  }
+  return parseHumanDateToIso(`${match[1]} ${match[2]}, ${match[3]}`);
+}
+
+function parseIsoDate(text) {
+  const match = cleanText(text).match(/(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
+  if (!match) {
+    return null;
+  }
+  const year = Number.parseInt(match[1], 10);
+  const month = Number.parseInt(match[2], 10);
+  const day = Number.parseInt(match[3], 10);
+  if (!year || !month || !day) {
+    return null;
+  }
+  return new Date(Date.UTC(year, month - 1, day)).toISOString();
 }
 
 function normalizeUrl(rawUrl, baseUrl) {
@@ -577,6 +978,10 @@ function confidenceByFormat(format) {
       return 0.78;
     case "xml":
       return 0.72;
+    case "inline":
+      return 0.8;
+    case "page":
+      return 0.7;
     case "html":
       return 0.56;
     default:
@@ -597,7 +1002,7 @@ function isLikelyArticleUrl(url, baseUrl) {
     }
 
     const lastSegment = pathSegments.at(-1)?.toLowerCase() || "";
-    const articleLikeSegments = new Set(["article", "articles", "post", "posts", "news", "story", "entry", "blog", "archive", "archives"]);
+    const articleLikeSegments = new Set(["article", "articles", "post", "posts", "news", "story", "entry", "blog", "archive", "archives", "update", "updates", "release", "releases"]);
     if (pathSegments.some((segment) => articleLikeSegments.has(segment.toLowerCase())) && lastSegment.length >= 4) {
       return true;
     }
@@ -690,14 +1095,66 @@ function testPattern(value, pattern) {
 }
 
 function dedupeCandidates(candidates) {
-  const map = new Map();
+  const byUrl = new Map();
   for (const candidate of candidates) {
-    const existing = map.get(candidate.url);
-    if (!existing || existing.confidence < candidate.confidence) {
-      map.set(candidate.url, candidate);
+    const existing = byUrl.get(candidate.url);
+    if (!existing || compareCandidateQuality(candidate, existing) > 0) {
+      byUrl.set(candidate.url, candidate);
     }
   }
-  return [...map.values()];
+
+  const deduped = [...byUrl.values()];
+  const filtered = [];
+  for (const candidate of deduped) {
+    const duplicateIndex = filtered.findIndex((existing) => isCrossLanguageDuplicate(existing, candidate));
+    if (duplicateIndex === -1) {
+      filtered.push(candidate);
+      continue;
+    }
+    if (compareCandidateQuality(candidate, filtered[duplicateIndex]) > 0) {
+      filtered[duplicateIndex] = mergeDuplicateCandidates(filtered[duplicateIndex], candidate);
+    } else {
+      filtered[duplicateIndex] = mergeDuplicateCandidates(candidate, filtered[duplicateIndex]);
+    }
+  }
+  return filtered;
+}
+
+function compareCandidateQuality(left, right) {
+  const leftScore = (left.language === "zh-CN" ? 5 : 0) + (left.confidence || 0) + ((left.excerpt || "").length > 40 ? 0.2 : 0);
+  const rightScore = (right.language === "zh-CN" ? 5 : 0) + (right.confidence || 0) + ((right.excerpt || "").length > 40 ? 0.2 : 0);
+  return leftScore - rightScore;
+}
+
+function isCrossLanguageDuplicate(left, right) {
+  const leftProducts = (left.product_ids || []).join("|");
+  const rightProducts = (right.product_ids || []).join("|");
+  if (!leftProducts || leftProducts !== rightProducts) {
+    return false;
+  }
+  const titleSimilarity = jaccardSimilarity(left.title || "", right.title || "");
+  if (titleSimilarity >= 0.72) {
+    return true;
+  }
+  const titlePrefix = normalizeMatchableText(left.title || "").slice(0, 80);
+  const rightPrefix = normalizeMatchableText(right.title || "").slice(0, 80);
+  return Boolean(titlePrefix && titlePrefix === rightPrefix);
+}
+
+function mergeDuplicateCandidates(primary, secondary) {
+  return {
+    ...primary,
+    product_ids: unique([...(primary.product_ids || []), ...(secondary.product_ids || [])]),
+    sub_product_ids: unique([...(primary.sub_product_ids || []), ...(secondary.sub_product_ids || [])]),
+    excerpt: primary.excerpt || secondary.excerpt,
+    full_text: primary.full_text || secondary.full_text,
+    published_at: primary.published_at || secondary.published_at,
+    confidence: Math.max(primary.confidence || 0, secondary.confidence || 0),
+    signals: {
+      ...secondary.signals,
+      ...primary.signals
+    }
+  };
 }
 
 function inferSourceName(url) {
@@ -716,6 +1173,16 @@ function inferTitleFromUrl(url) {
   } catch {
     return path.basename(url);
   }
+}
+
+function extractMeta(html, attrName, attrValue) {
+  const pattern = new RegExp(`<meta[^>]*${attrName}=["']${escapeRegex(attrValue)}["'][^>]*content=["']([^"']+)["'][^>]*>`, "i");
+  return html.match(pattern)?.[1] || null;
+}
+
+function extractFirstTag(html, tag) {
+  const pattern = new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, "i");
+  return stripHtml(html.match(pattern)?.[1] || "");
 }
 
 function escapeRegex(value) {

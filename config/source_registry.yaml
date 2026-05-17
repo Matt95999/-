@@ -1,0 +1,579 @@
+{
+  "products": [
+    {
+      "vendor_id": "openai",
+      "product_id": "chatgpt",
+      "display_name": "ChatGPT",
+      "region": "global",
+      "priority_tier": "p0",
+      "status": "active",
+      "detection_terms": ["ChatGPT", "GPT-5", "GPT-4o", "Deep Research", "Canvas", "Projects", "Voice"],
+      "sub_products": [
+        {
+          "sub_product_id": "chatgpt_app",
+          "display_name": "ChatGPT 应用",
+          "detection_terms": ["ChatGPT", "Voice", "Canvas", "Projects", "Search", "Connector", "File upload"]
+        },
+        {
+          "sub_product_id": "chatgpt_model_updates",
+          "display_name": "ChatGPT 模型更新",
+          "detection_terms": ["GPT-5", "GPT-4o", "o3", "o4-mini", "model", "reasoning"]
+        }
+      ]
+    },
+    {
+      "vendor_id": "openai",
+      "product_id": "openai_codex",
+      "display_name": "Codex",
+      "region": "global",
+      "priority_tier": "p0",
+      "status": "active",
+      "detection_terms": ["Codex", "GPT-5-Codex", "GPT-5.2-Codex", "codex-mini", "coding agent"],
+      "sub_products": [
+        {
+          "sub_product_id": "codex_product",
+          "display_name": "Codex 产品",
+          "detection_terms": ["Codex app", "Codex", "coding agent", "GitHub Action"]
+        },
+        {
+          "sub_product_id": "codex_cli",
+          "display_name": "Codex CLI",
+          "detection_terms": ["Codex CLI", "codex-mini", "GPT-5-Codex", "GPT-5.2-Codex"]
+        }
+      ]
+    },
+    {
+      "vendor_id": "anthropic",
+      "product_id": "claude",
+      "display_name": "Claude",
+      "region": "global",
+      "priority_tier": "p0",
+      "status": "active",
+      "detection_terms": ["Claude", "Sonnet", "Opus", "Haiku", "Claude.ai"],
+      "sub_products": [
+        {
+          "sub_product_id": "claude_app",
+          "display_name": "Claude 应用",
+          "detection_terms": ["Claude", "Claude.ai", "Memory", "Chat", "Desktop", "Mobile", "Cowork"]
+        },
+        {
+          "sub_product_id": "claude_model_updates",
+          "display_name": "Claude 模型更新",
+          "detection_terms": ["Sonnet", "Opus", "Haiku", "model", "Models overview"]
+        }
+      ]
+    },
+    {
+      "vendor_id": "anthropic",
+      "product_id": "claude_code",
+      "display_name": "Claude Code",
+      "region": "global",
+      "priority_tier": "p0",
+      "status": "active",
+      "detection_terms": ["Claude Code", "Dispatch", "computer use", "agentic coding", "Cowork"],
+      "sub_products": [
+        {
+          "sub_product_id": "claude_code",
+          "display_name": "Claude Code",
+          "detection_terms": ["Claude Code", "Dispatch", "terminal", "coding", "computer use"]
+        }
+      ]
+    },
+    {
+      "vendor_id": "google",
+      "product_id": "gemini",
+      "display_name": "Gemini",
+      "region": "global",
+      "priority_tier": "p0",
+      "status": "active",
+      "detection_terms": ["Gemini", "Gemma", "AI Studio", "Live API", "Deep Research Agent"]
+    },
+    {
+      "vendor_id": "deepseek",
+      "product_id": "deepseek",
+      "display_name": "DeepSeek",
+      "region": "global",
+      "priority_tier": "p0",
+      "status": "active",
+      "detection_terms": ["DeepSeek", "deepseek", "R1", "V3", "V4", "reasoner", "chat"],
+      "sub_products": [
+        {
+          "sub_product_id": "deepseek_model",
+          "display_name": "DeepSeek 模型",
+          "detection_terms": ["DeepSeek-V4", "DeepSeek-V3", "DeepSeek-R1", "model card"]
+        },
+        {
+          "sub_product_id": "deepseek_api",
+          "display_name": "DeepSeek API",
+          "detection_terms": ["API", "base_url", "ChatCompletions", "Anthropic interface", "price"]
+        }
+      ]
+    },
+    {
+      "vendor_id": "alibaba",
+      "product_id": "qwen",
+      "display_name": "Qwen",
+      "region": "global",
+      "priority_tier": "p0",
+      "status": "active",
+      "detection_terms": ["Qwen", "QwQ", "Qwen3", "Qwen Code", "Qwen Team"]
+    },
+    {
+      "vendor_id": "mistral",
+      "product_id": "mistral",
+      "display_name": "Mistral",
+      "region": "global",
+      "priority_tier": "p1",
+      "status": "active",
+      "detection_terms": ["Mistral", "Ministral", "Pixtral", "Magistral", "Codestral", "Le Chat"]
+    },
+    {
+      "vendor_id": "moonshot",
+      "product_id": "kimi",
+      "display_name": "Kimi",
+      "region": "cn",
+      "priority_tier": "p0",
+      "status": "active",
+      "detection_terms": ["Kimi", "kimi", "Moonshot", "K2", "K2.5", "K2.6", "Agent"],
+      "sub_products": [
+        {
+          "sub_product_id": "kimi_model",
+          "display_name": "Kimi 模型",
+          "detection_terms": ["K2", "K2.5", "K2.6", "thinking", "模型"]
+        },
+        {
+          "sub_product_id": "kimi_api",
+          "display_name": "Kimi API",
+          "detection_terms": ["API", "开放平台", "Open Platform", "Context Caching", "tool"]
+        }
+      ]
+    },
+    {
+      "vendor_id": "zhipu",
+      "product_id": "glm",
+      "display_name": "GLM",
+      "region": "cn",
+      "priority_tier": "p0",
+      "status": "active",
+      "detection_terms": ["GLM", "智谱", "AutoGLM", "bigmodel", "Z.ai"]
+    },
+    {
+      "vendor_id": "minimax",
+      "product_id": "minimax",
+      "display_name": "MiniMax",
+      "region": "cn",
+      "priority_tier": "candidate",
+      "status": "candidate",
+      "detection_terms": ["MiniMax", "minimax", "M2", "Agent"]
+    },
+    {
+      "vendor_id": "bytedance",
+      "product_id": "doubao",
+      "display_name": "豆包",
+      "region": "cn",
+      "priority_tier": "candidate",
+      "status": "candidate",
+      "detection_terms": ["豆包", "Doubao", "字节", "ByteDance"]
+    },
+    {
+      "vendor_id": "tencent",
+      "product_id": "hunyuan",
+      "display_name": "混元",
+      "region": "cn",
+      "priority_tier": "candidate",
+      "status": "candidate",
+      "detection_terms": ["混元", "Hunyuan", "腾讯混元"]
+    },
+    {
+      "vendor_id": "stepfun",
+      "product_id": "stepfun",
+      "display_name": "阶跃星辰",
+      "region": "cn",
+      "priority_tier": "candidate",
+      "status": "candidate",
+      "detection_terms": ["StepFun", "阶跃星辰", "Step-1"]
+    },
+    {
+      "vendor_id": "baichuan",
+      "product_id": "baichuan",
+      "display_name": "百川",
+      "region": "cn",
+      "priority_tier": "candidate",
+      "status": "candidate",
+      "detection_terms": ["百川", "Baichuan"]
+    },
+    {
+      "vendor_id": "lingyi",
+      "product_id": "yi",
+      "display_name": "零一万物",
+      "region": "cn",
+      "priority_tier": "candidate",
+      "status": "candidate",
+      "detection_terms": ["Yi", "零一万物", "01.AI"]
+    }
+  ],
+  "sources": [
+    {
+      "source_id": "openai-chatgpt-release-notes",
+      "display_name": "ChatGPT Release Notes",
+      "source_type": "官方帮助中心",
+      "source_role": "official_release_notes",
+      "vendor_id": "openai",
+      "product_ids": ["chatgpt"],
+      "status": "active",
+      "priority_weight": 1,
+      "expected_update_cadence": "high",
+      "evaluation_enabled": false,
+      "allowed_hosts": ["help.openai.com"],
+      "seed_urls": ["https://help.openai.com/en/articles/6825453-release-notes"],
+      "entry_strategy": "inline_changelog",
+      "include_entry_text_patterns": ["ChatGPT", "GPT-", "Voice", "Canvas", "Projects", "deep research"],
+      "max_entries": 12
+    },
+    {
+      "source_id": "openai-chatgpt-newsroom",
+      "display_name": "OpenAI Newsroom / ChatGPT",
+      "source_type": "官方新闻",
+      "source_role": "official_news",
+      "vendor_id": "openai",
+      "product_ids": ["chatgpt"],
+      "status": "active",
+      "priority_weight": 0.96,
+      "expected_update_cadence": "medium",
+      "evaluation_enabled": false,
+      "allowed_hosts": ["openai.com"],
+      "seed_urls": ["https://openai.com/news/rss.xml"],
+      "include_entry_text_patterns": ["ChatGPT", "GPT-", "deep research", "Voice", "Canvas", "Projects"],
+      "exclude_entry_text_patterns": [
+        "partner",
+        "partnership",
+        "customer",
+        "case study",
+        "how .* teams use",
+        "scales engineering",
+        "brings GPT-.*enterprise",
+        "Malta",
+        "Databricks",
+        "AutoScout",
+        "Parloa",
+        "NVIDIA engineers"
+      ],
+      "max_entries": 10
+    },
+    {
+      "source_id": "openai-codex-changelog",
+      "display_name": "Codex Changelog",
+      "source_type": "官方帮助中心",
+      "source_role": "official_release_notes",
+      "vendor_id": "openai",
+      "product_ids": ["openai_codex"],
+      "status": "active",
+      "priority_weight": 1,
+      "expected_update_cadence": "medium",
+      "evaluation_enabled": false,
+      "allowed_hosts": ["help.openai.com"],
+      "seed_urls": ["https://help.openai.com/en/articles/11428266-codex-changelog/"],
+      "entry_strategy": "inline_changelog",
+      "include_entry_text_patterns": ["Codex", "GPT-5-Codex", "codex-mini", "coding"],
+      "max_entries": 10
+    },
+    {
+      "source_id": "openai-codex-newsroom",
+      "display_name": "OpenAI Newsroom / Codex",
+      "source_type": "官方新闻",
+      "source_role": "official_news",
+      "vendor_id": "openai",
+      "product_ids": ["openai_codex"],
+      "status": "active",
+      "priority_weight": 0.96,
+      "expected_update_cadence": "medium",
+      "evaluation_enabled": false,
+      "allowed_hosts": ["openai.com"],
+      "seed_urls": ["https://openai.com/news/rss.xml"],
+      "include_entry_text_patterns": ["Codex", "GPT-5-Codex", "coding agent", "CLI"],
+      "exclude_entry_text_patterns": [
+        "how .* teams use Codex",
+        "customer",
+        "case study",
+        "AutoScout",
+        "NVIDIA engineers"
+      ],
+      "max_entries": 10
+    },
+    {
+      "source_id": "anthropic-claude-apps",
+      "display_name": "Claude Apps Release Notes",
+      "source_type": "官方文档",
+      "source_role": "official_release_notes",
+      "vendor_id": "anthropic",
+      "product_ids": ["claude"],
+      "status": "active",
+      "priority_weight": 1,
+      "expected_update_cadence": "high",
+      "evaluation_enabled": false,
+      "allowed_hosts": ["docs.anthropic.com", "support.anthropic.com"],
+      "seed_urls": ["https://docs.anthropic.com/en/release-notes/claude-apps"],
+      "entry_strategy": "inline_changelog",
+      "include_entry_text_patterns": ["Claude", "Opus", "Sonnet", "Haiku", "Claude.ai", "Desktop", "Mobile"],
+      "max_entries": 12
+    },
+    {
+      "source_id": "anthropic-claude-news",
+      "display_name": "Anthropic News / Claude",
+      "source_type": "官方新闻",
+      "source_role": "official_news",
+      "vendor_id": "anthropic",
+      "product_ids": ["claude"],
+      "status": "active",
+      "priority_weight": 0.97,
+      "expected_update_cadence": "medium",
+      "evaluation_enabled": false,
+      "allowed_hosts": ["anthropic.com", "www.anthropic.com"],
+      "seed_urls": ["https://www.anthropic.com/news"],
+      "include_url_patterns": ["/news/[^/?#]+"],
+      "exclude_url_patterns": ["press-kit"],
+      "include_entry_text_patterns": ["Claude", "Opus", "Sonnet", "Haiku"],
+      "max_entries": 10
+    },
+    {
+      "source_id": "anthropic-claude-code-release-notes",
+      "display_name": "Claude Code Release Notes",
+      "source_type": "官方文档",
+      "source_role": "official_release_notes",
+      "vendor_id": "anthropic",
+      "product_ids": ["claude_code"],
+      "status": "active",
+      "priority_weight": 1,
+      "expected_update_cadence": "high",
+      "evaluation_enabled": false,
+      "allowed_hosts": ["docs.anthropic.com", "support.anthropic.com"],
+      "seed_urls": ["https://docs.anthropic.com/en/release-notes/claude-apps"],
+      "entry_strategy": "inline_changelog",
+      "include_entry_text_patterns": ["Claude Code", "Cowork", "Dispatch", "computer use", "coding"],
+      "max_entries": 12
+    },
+    {
+      "source_id": "anthropic-claude-code-engineering",
+      "display_name": "Anthropic Engineering / Claude Code",
+      "source_type": "官方工程博客",
+      "source_role": "official_news",
+      "vendor_id": "anthropic",
+      "product_ids": ["claude_code"],
+      "status": "active",
+      "priority_weight": 0.93,
+      "expected_update_cadence": "medium",
+      "evaluation_enabled": false,
+      "allowed_hosts": ["anthropic.com", "www.anthropic.com"],
+      "seed_urls": ["https://www.anthropic.com/engineering"],
+      "include_url_patterns": ["/engineering/[^/?#]+"],
+      "include_entry_text_patterns": ["Claude Code", "computer use", "coding", "agent"],
+      "max_entries": 8
+    },
+    {
+      "source_id": "google-gemini-api-changelog",
+      "display_name": "Gemini API Changelog",
+      "source_type": "官方文档",
+      "source_role": "official_docs_changelog",
+      "vendor_id": "google",
+      "product_ids": ["gemini"],
+      "status": "active",
+      "priority_weight": 1,
+      "expected_update_cadence": "high",
+      "evaluation_enabled": false,
+      "allowed_hosts": ["ai.google.dev"],
+      "seed_urls": ["https://ai.google.dev/gemini-api/docs/changelog"],
+      "entry_strategy": "inline_changelog",
+      "include_entry_text_patterns": ["Gemini", "Gemma", "AI Studio", "Live API", "Deep Research Agent"],
+      "max_entries": 12
+    },
+    {
+      "source_id": "google-deepmind-gemini-blog",
+      "display_name": "Google DeepMind Blog / Gemini",
+      "source_type": "官方博客",
+      "source_role": "official_news",
+      "vendor_id": "google",
+      "product_ids": ["gemini"],
+      "status": "active",
+      "priority_weight": 0.95,
+      "expected_update_cadence": "medium",
+      "evaluation_enabled": false,
+      "allowed_hosts": ["deepmind.google"],
+      "seed_urls": ["https://deepmind.google/discover/blog/"],
+      "include_url_patterns": ["/discover/blog/[^/?#]+"],
+      "include_entry_text_patterns": ["Gemini", "Gemma", "DeepMind"],
+      "max_entries": 10
+    },
+    {
+      "source_id": "deepseek-api-updates",
+      "display_name": "DeepSeek API Updates",
+      "source_type": "官方文档",
+      "source_role": "official_docs_changelog",
+      "vendor_id": "deepseek",
+      "product_ids": ["deepseek"],
+      "status": "active",
+      "priority_weight": 1,
+      "expected_update_cadence": "high",
+      "evaluation_enabled": false,
+      "allowed_hosts": ["api-docs.deepseek.com"],
+      "seed_urls": ["https://api-docs.deepseek.com/updates"],
+      "entry_strategy": "inline_changelog",
+      "include_entry_text_patterns": ["DeepSeek", "API", "chat", "reasoner", "V4", "R1"],
+      "max_entries": 12
+    },
+    {
+      "source_id": "deepseek-home",
+      "display_name": "DeepSeek 官方站",
+      "source_type": "官方站点",
+      "source_role": "official_news",
+      "vendor_id": "deepseek",
+      "product_ids": ["deepseek"],
+      "status": "active",
+      "priority_weight": 0.91,
+      "expected_update_cadence": "medium",
+      "evaluation_enabled": false,
+      "allowed_hosts": ["www.deepseek.com", "deepseek.com"],
+      "seed_urls": ["https://www.deepseek.com/api-docs"],
+      "include_url_patterns": ["/(news|api-docs|research|guides)/"],
+      "include_entry_text_patterns": ["DeepSeek", "V4", "V3", "R1", "API"],
+      "max_entries": 8
+    },
+    {
+      "source_id": "qwen-blog",
+      "display_name": "Qwen Blog",
+      "source_type": "官方博客",
+      "source_role": "official_news",
+      "vendor_id": "alibaba",
+      "product_ids": ["qwen"],
+      "status": "active",
+      "priority_weight": 1,
+      "expected_update_cadence": "medium",
+      "evaluation_enabled": false,
+      "allowed_hosts": ["qwenlm.github.io"],
+      "seed_urls": ["https://qwenlm.github.io/blog/index.xml"],
+      "include_url_patterns": ["/blog/(?!page/)[^?#]+"],
+      "exclude_url_patterns": ["/zh/blog/?$", "/blog/?$", "/blog/page/", "\\.xml$", "%3Clink"],
+      "include_entry_text_patterns": ["Qwen", "QwQ", "Qwen3", "Qwen2.5", "Qwen2"],
+      "max_entries": 10
+    },
+    {
+      "source_id": "qwen-code-blog",
+      "display_name": "Qwen Code Docs Blog",
+      "source_type": "官方文档博客",
+      "source_role": "official_docs_changelog",
+      "vendor_id": "alibaba",
+      "product_ids": ["qwen"],
+      "status": "active",
+      "priority_weight": 0.86,
+      "expected_update_cadence": "high",
+      "evaluation_enabled": false,
+      "allowed_hosts": ["qwenlm.github.io"],
+      "seed_urls": ["https://qwenlm.github.io/qwen-code-docs/en/blog/"],
+      "include_url_patterns": ["/qwen-code-docs/en/blog/[^?#]+"],
+      "include_entry_text_patterns": ["Qwen", "Qwen 3", "Qwen Team", "Plus Launch"],
+      "max_entries": 8
+    },
+    {
+      "source_id": "mistral-docs-changelog",
+      "display_name": "Mistral Docs Changelog",
+      "source_type": "官方文档",
+      "source_role": "official_docs_changelog",
+      "vendor_id": "mistral",
+      "product_ids": ["mistral"],
+      "status": "active",
+      "priority_weight": 1,
+      "expected_update_cadence": "high",
+      "evaluation_enabled": false,
+      "allowed_hosts": ["docs.mistral.ai"],
+      "seed_urls": ["https://docs.mistral.ai/resources/changelogs"],
+      "entry_strategy": "inline_changelog",
+      "include_entry_text_patterns": ["Mistral", "Ministral", "Pixtral", "Magistral", "Codestral", "Le Chat"],
+      "max_entries": 12
+    },
+    {
+      "source_id": "mistral-news",
+      "display_name": "Mistral News",
+      "source_type": "官方新闻",
+      "source_role": "official_news",
+      "vendor_id": "mistral",
+      "product_ids": ["mistral"],
+      "status": "active",
+      "priority_weight": 0.95,
+      "expected_update_cadence": "medium",
+      "evaluation_enabled": false,
+      "allowed_hosts": ["mistral.ai"],
+      "seed_urls": ["https://mistral.ai/news"],
+      "include_url_patterns": ["/news/[^/?#]+"],
+      "exclude_url_patterns": ["\\?id=", "opengraph-image", "\\.png"],
+      "include_entry_text_patterns": ["Mistral", "Ministral", "Pixtral", "Magistral", "Codestral", "Le Chat"],
+      "max_entries": 10
+    },
+    {
+      "source_id": "moonshot-kimi-blog",
+      "display_name": "Kimi 开放平台博客",
+      "source_type": "官方博客",
+      "source_role": "official_news",
+      "vendor_id": "moonshot",
+      "product_ids": ["kimi"],
+      "status": "active",
+      "priority_weight": 0.96,
+      "expected_update_cadence": "medium",
+      "evaluation_enabled": false,
+      "allowed_hosts": ["platform.moonshot.cn"],
+      "seed_urls": ["https://platform.moonshot.cn/blog"],
+      "include_url_patterns": ["/blog/posts/[^?#]+"],
+      "include_entry_text_patterns": ["Kimi", "kimi", "K2", "K2.5", "K2.6", "Agent", "开放平台", "API"],
+      "max_entries": 10
+    },
+    {
+      "source_id": "moonshot-kimi-changelog",
+      "display_name": "Kimi 开放平台变更记录",
+      "source_type": "官方博客",
+      "source_role": "official_docs_changelog",
+      "vendor_id": "moonshot",
+      "product_ids": ["kimi"],
+      "status": "active",
+      "priority_weight": 1,
+      "expected_update_cadence": "high",
+      "evaluation_enabled": false,
+      "allowed_hosts": ["platform.moonshot.cn"],
+      "seed_urls": ["https://platform.moonshot.cn/blog/posts/changelog"],
+      "entry_strategy": "inline_changelog",
+      "include_entry_text_patterns": ["Kimi", "API", "Agent", "模型", "Context Caching", "Open Platform"],
+      "max_entries": 12
+    },
+    {
+      "source_id": "glm-new-releases",
+      "display_name": "智谱新品发布",
+      "source_type": "官方文档",
+      "source_role": "official_docs_changelog",
+      "vendor_id": "zhipu",
+      "product_ids": ["glm"],
+      "status": "active",
+      "priority_weight": 1,
+      "expected_update_cadence": "high",
+      "evaluation_enabled": false,
+      "allowed_hosts": ["docs.bigmodel.cn"],
+      "seed_urls": ["https://docs.bigmodel.cn/cn/update/new-releases"],
+      "entry_strategy": "inline_changelog",
+      "include_entry_text_patterns": ["GLM", "AutoGLM", "智谱", "Coding", "Agent"],
+      "max_entries": 12
+    },
+    {
+      "source_id": "glm-zai-research",
+      "display_name": "Z.ai 研究发布",
+      "source_type": "官方研究",
+      "source_role": "official_research",
+      "vendor_id": "zhipu",
+      "product_ids": ["glm"],
+      "status": "active",
+      "priority_weight": 0.88,
+      "expected_update_cadence": "medium",
+      "evaluation_enabled": false,
+      "allowed_hosts": ["zhipuai.cn", "www.zhipuai.cn"],
+      "seed_urls": ["https://www.zhipuai.cn/zh/research"],
+      "include_url_patterns": ["/(zh|en)/research/[^?#]+"],
+      "include_entry_text_patterns": ["GLM", "AutoGLM", "智谱", "Coding", "Agent"],
+      "max_entries": 10
+    }
+  ]
+}

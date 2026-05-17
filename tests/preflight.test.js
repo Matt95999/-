@@ -47,10 +47,27 @@ test("runPreflightChecks accepts whitelist-first production mode without provide
   });
 
   await seedConfig(tempRoot, {
-    whitelist: {
+    registry: {
+      products: [
+        {
+          vendor_id: "openai",
+          product_id: "chatgpt",
+          display_name: "ChatGPT",
+          region: "global",
+          priority_tier: "p0",
+          status: "active"
+        }
+      ],
       sources: [
         {
-          name: "OpenAI Newsroom",
+          source_id: "openai-newsroom",
+          display_name: "OpenAI Newsroom",
+          source_type: "官方新闻",
+          source_role: "official_news",
+          vendor_id: "openai",
+          product_ids: ["chatgpt"],
+          status: "active",
+          priority_weight: 1,
           seed_urls: ["https://openai.com/news/rss.xml"]
         }
       ]
@@ -80,8 +97,13 @@ async function seedConfig(rootDir, overrides = {}) {
     "utf8"
   );
   await writeFile(
-    path.join(configDir, "whitelist_sources.yaml"),
-    `${JSON.stringify(overrides.whitelist || { sources: [] })}\n`,
+    path.join(configDir, "source_registry.yaml"),
+    `${JSON.stringify(overrides.registry || { products: [], sources: [] })}\n`,
+    "utf8"
+  );
+  await writeFile(
+    path.join(configDir, "generated_sources.yaml"),
+    `${JSON.stringify(overrides.generatedSources || { sources: [] })}\n`,
     "utf8"
   );
   await writeFile(

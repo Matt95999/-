@@ -38,7 +38,13 @@ export function buildFeishuPayload(digest, reportUrl) {
   bodyLines.push(digest.topline_summary);
   bodyLines.push("");
 
-  for (const section of digest.theme_sections) {
+  bodyLines.push("头部产品覆盖面板");
+  for (const item of digest.coverage_board || []) {
+    bodyLines.push(`• ${item.display_name}：${item.status_label}（上次更新：${item.last_known_update_label}）`);
+  }
+  bodyLines.push("");
+
+  for (const section of digest.product_sections || []) {
     bodyLines.push(`${section.title}`);
     bodyLines.push(section.summary);
     for (const storyId of section.story_ids) {
@@ -57,9 +63,9 @@ export function buildFeishuPayload(digest, reportUrl) {
     bodyLines.push("");
   }
 
-  if (digest.connections.length) {
-    bodyLines.push("关联关系");
-    for (const item of digest.connections) {
+  if ((digest.cross_product_connections || []).length) {
+    bodyLines.push("跨产品线关联分析");
+    for (const item of digest.cross_product_connections) {
       bodyLines.push(`• ${item}`);
     }
     bodyLines.push("");
@@ -69,6 +75,14 @@ export function buildFeishuPayload(digest, reportUrl) {
     bodyLines.push("继续观察");
     for (const item of digest.watchlist) {
       bodyLines.push(`• ${item}`);
+    }
+    bodyLines.push("");
+  }
+
+  if ((digest.missing_products || []).length) {
+    bodyLines.push("今日缺口");
+    for (const item of digest.missing_products) {
+      bodyLines.push(`• ${item.product_id}：${item.reason}`);
     }
     bodyLines.push("");
   }
@@ -149,5 +163,42 @@ export async function deliverFailureIncident({ incident, recommendation, envConf
     return { delivered: false, previewPath };
   }
 
+  return { delivered: true };
+}
+
+export async function deliverSourceAuditSummary({ summaryText, envConfig, runContext, logger }) {
+  if (!summaryText) {
+    return { delivered: false, skipped: true };
+  }
+
+  if (!envConfig.feishuWebhookUrl) {
+    const previewPath = path.join(
+      runContext.privateDataDir,
+      "runs",
+      `${getAttemptArtifactId(runContext)}-source-audit-preview.md`
+    );
+    await writeText(previewPath, summaryText);
+    logger.warn("feishu source audit preview written", { previewPath });
+    return { delivered: false, previewPath };
+  }
+
+  const response = await fetch(envConfig.feishuWebhookUrl, {
+    method: "POST",
+    signal: createTimeoutSignal(15000),
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      msg_type: "text",
+      content: {
+        text: summaryText
+      }
+    })
+  });
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`feishu source audit webhook failed with status ${response.status}: ${body}`);
+  }
+
+  logger.info("feishu source audit summary delivered");
   return { delivered: true };
 }

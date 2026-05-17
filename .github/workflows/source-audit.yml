@@ -1,0 +1,62 @@
+name: Source Audit
+
+on:
+  schedule:
+    - cron: "0 2 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+jobs:
+  source_audit:
+    runs-on: ${{ vars.ACTIONS_RUNNER || 'ubuntu-latest' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run preflight checks
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          FEISHU_WEBHOOK_URL: ${{ secrets.FEISHU_WEBHOOK_URL }}
+          PRIVATE_DATA_REPO_PAT: ${{ secrets.PRIVATE_DATA_REPO_PAT }}
+          PRIVATE_DATA_REPO: ${{ secrets.PRIVATE_DATA_REPO }}
+          PRIVATE_DATA_REPO_BRANCH: ${{ vars.PRIVATE_DATA_REPO_BRANCH }}
+          PRIVATE_DATA_REPO_BASE_PATH: ${{ vars.PRIVATE_DATA_REPO_BASE_PATH }}
+          PUBLIC_BASE_URL: ${{ vars.PUBLIC_BASE_URL }}
+          DISCOVERY_PROVIDER_REQUEST_HEADERS: ${{ vars.DISCOVERY_PROVIDER_REQUEST_HEADERS }}
+        run: npm run preflight_check -- --mode source_audit
+
+      - name: Run source audit
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          FEISHU_WEBHOOK_URL: ${{ secrets.FEISHU_WEBHOOK_URL }}
+          PRIVATE_DATA_REPO_PAT: ${{ secrets.PRIVATE_DATA_REPO_PAT }}
+          PRIVATE_DATA_REPO: ${{ secrets.PRIVATE_DATA_REPO }}
+          PRIVATE_DATA_REPO_BRANCH: ${{ vars.PRIVATE_DATA_REPO_BRANCH }}
+          PRIVATE_DATA_REPO_BASE_PATH: ${{ vars.PRIVATE_DATA_REPO_BASE_PATH }}
+          PUBLIC_BASE_URL: ${{ vars.PUBLIC_BASE_URL }}
+          DISCOVERY_PROVIDER_REQUEST_HEADERS: ${{ vars.DISCOVERY_PROVIDER_REQUEST_HEADERS }}
+        run: npm run source_audit
+
+      - name: Commit audit artifacts
+        if: ${{ success() }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add config/generated_sources.yaml site/source-health private-data/source-audits
+          git add config/generated_sources.snapshot.*.yaml 2>/dev/null || true
+          git diff --cached --quiet || git commit -m "chore: update source audit artifacts"
+          git push

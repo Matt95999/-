@@ -3,14 +3,39 @@ import { parseJsonFromModelText, truncate, unique } from "../utils/text.js";
 import { nowIso } from "../utils/time.js";
 import { createTimeoutSignal } from "../utils/http.js";
 
-export async function summarizeDailyDigest({ clusters, config, envConfig, remediation, logger }) {
-  if (!clusters.length) {
-    throw new StageError("summarize", "empty_story_clusters", "no story clusters available for summarization");
+export async function summarizeDailyDigest({
+  clusters,
+  config,
+  envConfig,
+  remediation,
+  logger,
+  coverageContext,
+  productSections,
+  crossProductConnections
+}) {
+  if (!coverageContext?.coverage_board?.length) {
+    throw new StageError("summarize", "missing_coverage_context", "coverage board is required for digest generation");
   }
 
-  if (envConfig.deepseekApiKey && !remediation.forceLocalSummary) {
+  if (clusters.length && envConfig.deepseekApiKey && !remediation.forceLocalSummary) {
     try {
-      const digest = normalizeDigest(await summarizeWithDeepSeek({ clusters, config, envConfig }), clusters, config);
+      const digest = normalizeDigest(
+        await summarizeWithDeepSeek({
+          clusters,
+          config,
+          envConfig,
+          coverageContext,
+          productSections,
+          crossProductConnections
+        }),
+        {
+          clusters,
+          config,
+          coverageContext,
+          productSections,
+          crossProductConnections
+        }
+      );
       validateDigest(digest);
       return digest;
     } catch (error) {
@@ -21,12 +46,27 @@ export async function summarizeDailyDigest({ clusters, config, envConfig, remedi
     }
   }
 
-  const fallbackDigest = normalizeDigest(summarizeLocally(clusters, config), clusters, config);
+  const fallbackDigest = normalizeDigest(
+    summarizeLocally({
+      clusters,
+      config,
+      coverageContext,
+      productSections,
+      crossProductConnections
+    }),
+    {
+      clusters,
+      config,
+      coverageContext,
+      productSections,
+      crossProductConnections
+    }
+  );
   validateDigest(fallbackDigest);
   return fallbackDigest;
 }
 
-async function summarizeWithDeepSeek({ clusters, config, envConfig }) {
+async function summarizeWithDeepSeek({ clusters, config, envConfig, coverageContext, productSections, crossProductConnections }) {
   const maxRetries = Math.max(1, envConfig.deepseekMaxRetries || 1);
   const retryDelayMs = Math.max(0, envConfig.deepseekRetryDelayMs || 0);
   let lastError = null;
@@ -35,7 +75,10 @@ async function summarizeWithDeepSeek({ clusters, config, envConfig }) {
     const payload = buildDeepSeekPayload({
       clusters,
       config,
-      attemptNo
+      attemptNo,
+      coverageContext,
+      productSections,
+      crossProductConnections
     });
 
     try {
@@ -70,9 +113,9 @@ async function summarizeWithDeepSeek({ clusters, config, envConfig }) {
   throw lastError || new Error("DeepSeek summarization failed");
 }
 
-function buildDeepSeekPayload({ clusters, config, attemptNo }) {
-  const storyLimit = Math.max(2, Math.min(5, config.scoring.maximum_story_items) - (attemptNo - 1));
-  const excerptLimit = Math.max(100, 180 - (attemptNo - 1) * 40);
+function buildDeepSeekPayload({ clusters, config, attemptNo, coverageContext, productSections, crossProductConnections }) {
+  const storyLimit = Math.max(0, Math.min(6, config.scoring.maximum_story_items) - (attemptNo - 1));
+  const excerptLimit = Math.max(100, 220 - (attemptNo - 1) * 40);
   const topClusters = clusters.slice(0, storyLimit);
 
   return {
@@ -83,7 +126,7 @@ function buildDeepSeekPayload({ clusters, config, attemptNo }) {
       {
         role: "system",
         content:
-          "你是一个中文人工智能行业日报编辑。请把输入故事整理成一份整体化日报，必须输出严格JSON，不要输出Markdown。除模型名、产品名、机构名、项目名、API名、版本号和URL外，所有标题、摘要、结论、影响、关联判断和观察项必须使用简体中文，不得直接复制英文原文句子。每条重点摘要用2到4句中文叙述事实，随后给出结论和影响。connections字段要说明多个摘要之间的关联。"
+          "你是一个中文头部大模型情报日报编辑。请把输入故事整理成一份整体化日报，必须输出严格 JSON，不要输出 Markdown。除模型名、产品名、机构名、项目名、API 名、版本号和 URL 外，所有标题、摘要、结论、影响、关联判断和观察项必须使用简体中文，不得直接复制英文原文句子。日报要先给主线，再按产品线分段，多个摘要之间要形成整体叙事。"
       },
       {
         role: "user",
@@ -91,29 +134,26 @@ function buildDeepSeekPayload({ clusters, config, attemptNo }) {
           schema_hint: {
             daily_brief_title: "string",
             topline_summary: "string",
-            theme_sections: [{ title: "string", summary: "string", story_ids: ["string"] }],
+            product_sections: [{ product_id: "string", title: "string", summary: "string", story_ids: ["string"] }],
             story_items: [
               {
                 story_id: "string",
                 headline: "string",
-                theme: "string",
                 narrative: ["string", "string"],
                 conclusion: "string",
                 impact: "string",
                 source_links: ["string"]
               }
             ],
-            connections: ["string"],
+            cross_product_connections: ["string"],
             watchlist: ["string"],
             generated_at: "ISO-8601 string"
           },
           constraints: {
+            language: "zh-CN",
             maximum_story_items: config.scoring.maximum_story_items,
             maximum_watchlist_items: config.scoring.maximum_watchlist_items,
-            must_keep_fact_and_inference_separate: true,
-            must_keep_overall_narrative: true,
-            language: "zh-CN",
-            output_style: "统一中文日报格式；允许保留必要英文专有名词，但不能出现英文整句或英文段落。",
+            output_style: "统一中文产品线日报格式；允许保留必要英文专有名词，但不能出现英文整句或英文段落。",
             required_story_item_format: [
               "事实：2到4句中文，说明发生了什么、涉及谁、有什么关键变化。",
               "结论：1句中文，明确这条消息应如何判断。",
@@ -121,19 +161,26 @@ function buildDeepSeekPayload({ clusters, config, attemptNo }) {
               "原文：保留链接。"
             ]
           },
+          coverage_board: coverageContext.coverage_board,
+          product_sections: productSections,
+          existing_cross_product_connections: crossProductConnections,
           stories: topClusters.map((cluster) => ({
             story_id: cluster.story_id,
+            product_ids: cluster.product_ids,
+            primary_product_id: cluster.primary_product_id,
+            primary_sub_product_id: cluster.primary_sub_product_id,
+            headline: cluster.headline,
             theme: cluster.theme,
             score: cluster.score,
             confidence: cluster.confidence,
-            headline: cluster.headline,
             brief: cluster.brief,
             cross_links: cluster.cross_links,
             articles: cluster.articles.slice(0, 3).map((article) => ({
               title: article.title,
               excerpt: truncate(article.excerpt || article.full_text || "", excerptLimit),
               published_at: article.published_at,
-              url: article.url
+              url: article.url,
+              source_name: article.source_name
             }))
           }))
         })
@@ -158,22 +205,25 @@ function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function summarizeLocally(clusters, config) {
+function summarizeLocally({ clusters, config, coverageContext, productSections, crossProductConnections }) {
   const selected = clusters.slice(0, config.scoring.maximum_story_items);
   const storyItems = selected.map((cluster) => makeFallbackStoryItem(cluster));
 
   return {
-    daily_brief_title: `人工智能情报日报 ${new Date().toISOString().slice(0, 10)}`,
-    topline_summary: buildTopline(selected),
-    theme_sections: buildThemeSectionsFromStories(storyItems),
+    daily_brief_title: buildDailyTitle(),
+    topline_summary: buildTopline(coverageContext, selected),
+    coverage_board: coverageContext.coverage_board,
+    covered_products: coverageContext.covered_products,
+    missing_products: coverageContext.missing_products,
+    product_sections: buildProductSectionsFromStories(productSections, storyItems),
     story_items: storyItems,
-    connections: buildConnections(selected),
-    watchlist: buildWatchlist(selected, config),
+    cross_product_connections: buildCrossProductConnections(selected, crossProductConnections),
+    watchlist: buildWatchlist(coverageContext, selected, config),
     generated_at: nowIso()
   };
 }
 
-function normalizeDigest(rawDigest, clusters, config) {
+function normalizeDigest(rawDigest, { clusters, config, coverageContext, productSections, crossProductConnections }) {
   const selected = clusters.slice(0, config.scoring.maximum_story_items);
   const clusterById = new Map(selected.map((cluster) => [cluster.story_id, cluster]));
   const normalizedStoryItems = [];
@@ -197,18 +247,21 @@ function normalizeDigest(rawDigest, clusters, config) {
   }
 
   return {
-    daily_brief_title:
-      isUsableChineseText(rawDigest?.daily_brief_title)
-        ? polishChineseText(rawDigest.daily_brief_title.trim())
-        : buildDailyTitle(selected),
+    daily_brief_title: buildDailyTitle(),
     topline_summary:
       isUsableChineseText(rawDigest?.topline_summary)
         ? polishChineseText(rawDigest.topline_summary.trim())
-        : buildTopline(selected),
-    theme_sections: normalizeThemeSections(rawDigest?.theme_sections, normalizedStoryItems),
+        : buildTopline(coverageContext, selected),
+    coverage_board: coverageContext.coverage_board,
+    covered_products: coverageContext.covered_products,
+    missing_products: coverageContext.missing_products,
+    product_sections: normalizeProductSections(rawDigest?.product_sections, normalizedStoryItems, productSections),
     story_items: normalizedStoryItems,
-    connections: normalizeStringList(rawDigest?.connections, buildConnections(selected)),
-    watchlist: normalizeStringList(rawDigest?.watchlist, buildWatchlist(selected, config)),
+    cross_product_connections: normalizeStringList(
+      rawDigest?.cross_product_connections,
+      buildCrossProductConnections(selected, crossProductConnections)
+    ),
+    watchlist: normalizeStringList(rawDigest?.watchlist, buildWatchlist(coverageContext, selected, config)),
     generated_at:
       typeof rawDigest?.generated_at === "string" && rawDigest.generated_at.trim()
         ? rawDigest.generated_at.trim()
@@ -229,7 +282,6 @@ function normalizeStoryItem(item, cluster) {
   return {
     story_id: cluster.story_id,
     headline,
-    theme: isUsableChineseText(item?.theme) ? polishChineseText(item.theme.trim()) : cluster.theme,
     narrative: normalizeNarrative(item?.narrative, cluster),
     conclusion,
     impact,
@@ -243,6 +295,7 @@ function normalizeNarrative(narrative, cluster) {
         .filter((line) => typeof line === "string")
         .map((line) => line.trim())
         .filter(isUsableChineseText)
+        .filter((line) => !/^(结论|影响|原文)[：:]/.test(line))
         .map(polishChineseText)
     : [];
 
@@ -268,32 +321,44 @@ function normalizeSourceLinks(sourceLinks, cluster) {
   return cluster.articles.map((article) => article.url).filter(Boolean);
 }
 
-function normalizeThemeSections(themeSections, storyItems) {
+function normalizeProductSections(productSections, storyItems, fallbackSections) {
   const storyMap = new Map(storyItems.map((item) => [item.story_id, item]));
   const normalized = [];
 
-  for (const section of Array.isArray(themeSections) ? themeSections : []) {
+  for (const section of Array.isArray(productSections) ? productSections : []) {
     const storyIds = Array.isArray(section?.story_ids)
       ? section.story_ids.filter((storyId) => storyMap.has(storyId))
       : [];
-    const fallbackTitle = storyIds.length ? storyMap.get(storyIds[0])?.theme : null;
-    const title = isUsableChineseText(section?.title) ? polishChineseText(section.title.trim()) : fallbackTitle;
-
-    if (!title || !storyIds.length) {
+    if (!storyIds.length) {
       continue;
     }
 
     normalized.push({
-      title,
+      product_id: typeof section.product_id === "string" ? section.product_id : "",
+      title: normalizeSectionTitle(section?.title, section?.product_id),
       summary:
-        isUsableChineseText(section.summary)
+        isUsableChineseText(section?.summary)
           ? polishChineseText(section.summary.trim())
-          : buildThemeSectionSummary(title, storyIds.map((storyId) => storyMap.get(storyId))),
-      story_ids: unique(storyIds)
+          : `今天这一产品线共有 ${storyIds.length} 条重点更新。`,
+      story_ids: unique(storyIds),
+      sub_sections: Array.isArray(section?.sub_sections) ? section.sub_sections : []
     });
   }
 
-  return normalized.length ? normalized : buildThemeSectionsFromStories(storyItems);
+  return normalized.length ? normalized : buildProductSectionsFromStories(fallbackSections, storyItems);
+}
+
+function normalizeSectionTitle(title, productId) {
+  if (isUsableChineseText(title)) {
+    return polishChineseText(title.trim());
+  }
+
+  const raw = String(title || "").trim();
+  const productName = displayProductName(productId);
+  if (!raw || raw.toLowerCase() === String(productId || "").toLowerCase()) {
+    return productName;
+  }
+  return productName || raw || "重点产品线";
 }
 
 function normalizeStringList(value, fallback) {
@@ -312,7 +377,6 @@ function makeFallbackStoryItem(cluster) {
   return {
     story_id: cluster.story_id,
     headline: buildChineseHeadline(cluster),
-    theme: cluster.theme,
     narrative: buildNarrative(cluster),
     conclusion: buildConclusion(cluster),
     impact: buildImpact(cluster),
@@ -322,190 +386,94 @@ function makeFallbackStoryItem(cluster) {
 
 function buildNarrative(cluster) {
   const sourceNames = unique(cluster.articles.map((article) => displaySourceName(article.source_name)).filter(Boolean)).slice(0, 3);
-  const focus = inferChineseFocus(cluster);
-  const sourceText = sourceNames.length ? `来源包括${sourceNames.join("、")}` : "来源来自已抓取的公开文章";
-  const priority = cluster.score >= 60 ? "中高优先级" : "观察级";
+  const productName = cluster.primary_product_id || "重点产品";
+  const sourceText = sourceNames.length ? `来源包括${sourceNames.join("、")}` : "来源来自已抓取的官方页面";
+  const priority = cluster.score >= 80 ? "高优先级" : cluster.score >= 60 ? "中高优先级" : "观察级";
 
   return [
-    `${buildChineseHeadline(cluster)}，${sourceText}，主题归入${cluster.theme}。`,
-    `这条线索的核心是${focus}，需要重点看它是否改变模型能力、工程部署或产品落地节奏。`,
-    `系统将其列为${priority}线索，依据是来源权重、发布时间、主题相关性和重复提及情况。`
+    `${buildChineseHeadline(cluster)}，${sourceText}，核心归属到 ${displayProductName(productName)}。`,
+    `这条更新的重点在于它改变了该产品线的能力、接口、交互方式或落地节奏，需要结合后续几天的连续信号一起看。`,
+    `系统把它列为${priority}线索，依据是官方来源等级、产品优先级、发布时间和重复提及情况。`
   ];
 }
 
 function buildConclusion(cluster) {
   if (cluster.score >= 80) {
-    return `结论：这不是单点消息，而是可以进入日常跟踪列表的高优先级进展。`;
+    return "结论：这是一条应进入头部产品跟踪列表的高优先级更新。";
   }
   if (cluster.score >= 60) {
-    return `结论：这是一个值得关注的中高优先级变化，短期内可能继续发酵。`;
+    return "结论：这是一个值得继续观察的中高优先级变化。";
   }
-  return `结论：这条消息仍有参考价值，但更适合放入观察名单等待后续证据。`;
+  return "结论：这条消息仍有参考价值，但更适合进入观察名单等待后续确认。";
 }
 
 function buildImpact(cluster) {
-  return `影响：它会影响${cluster.theme}方向的产品判断、资源投入或市场预期，尤其是在未来一到两周的跟进节奏上。`;
+  const productName = displayProductName(cluster.primary_product_id || "产品线");
+  return `影响：它会直接影响 ${productName} 的产品判断、接口使用方式或竞争节奏。`;
 }
 
-function buildTopline(clusters) {
-  const themes = unique(clusters.map((cluster) => cluster.theme)).slice(0, 3);
-  const headlines = clusters.slice(0, 3).map((cluster) => buildChineseHeadline(cluster));
-  return `今天的人工智能进展主要集中在${themes.join("、")}。最值得先看的线索包括${headlines.join("、")}，它们共同反映出行业正在从单点能力展示，转向更强调工程效率、智能体可靠性和真实场景落地。`;
+function buildTopline(coverageContext, clusters) {
+  if (!clusters.length) {
+    return "今天未发现头部产品线的高置信官方更新，系统已完成扫描，并把缺口与来源状态单独列出，便于后续继续跟踪。";
+  }
+  const products = unique(clusters.map((cluster) => displayProductName(cluster.primary_product_id)).filter(Boolean)).slice(0, 4);
+  const watched = coverageContext.missing_products.filter((item) => item.reason === "source_gap").map((item) => displayProductName(item.product_id));
+  const mainline = `今天的高置信更新主要集中在${products.join("、")}。`;
+  if (!watched.length) {
+    return `${mainline} 整体看，主线不是单一模型发布，而是头部产品在能力迭代、开发者接口和应用层体验上的同步推进。`;
+  }
+  return `${mainline} 同时，${watched.join("、")}仍存在来源缺口，需要继续关注来源恢复情况。`;
 }
 
-function buildConnections(clusters) {
+function buildCrossProductConnections(clusters, fallbackConnections) {
+  if (Array.isArray(fallbackConnections) && fallbackConnections.length) {
+    return fallbackConnections.slice(0, 4);
+  }
   if (clusters.length < 2) {
-    return ["今天的重点线索较少，暂时未形成清晰的跨主题关联。"];
+    return [];
   }
+  const current = clusters[0];
+  const next = clusters[1];
+  return [
+    `${displayProductName(current.primary_product_id)} 与 ${displayProductName(next.primary_product_id)} 的更新都在说明，头部模型产品正在把能力提升和产品化节奏一起前移。`
+  ];
+}
 
-  const connections = [];
-  for (let index = 0; index < clusters.length - 1; index += 1) {
-    const current = clusters[index];
-    const next = clusters[index + 1];
-    connections.push(`${buildChineseHeadline(current)}与${buildChineseHeadline(next)}都指向同一趋势：${current.theme}正在和${next.theme}形成更紧密的联动。`);
+function buildWatchlist(coverageContext, clusters, config) {
+  const watchlist = [];
+  for (const item of coverageContext.missing_products.filter((entry) => entry.reason === "source_gap")) {
+    watchlist.push(`${displayProductName(item.product_id)} 目前存在来源缺口，后续应优先检查官方入口是否改版或新增可用候选源。`);
   }
-  return connections.slice(0, 4);
+  for (const cluster of clusters.slice(0, config.scoring.maximum_watchlist_items)) {
+    watchlist.push(`${buildChineseHeadline(cluster)} 后续值得继续跟踪，因为它可能带来后续模型、接口或产品节奏的连续更新。`);
+  }
+  return unique(watchlist).slice(0, config.scoring.maximum_watchlist_items + 2);
 }
 
-function buildWatchlist(clusters, config) {
-  return clusters
-    .slice(0, config.scoring.maximum_watchlist_items)
-    .map((cluster) => `${buildChineseHeadline(cluster)}后续值得继续跟踪，因为它会影响${cluster.theme}的下一阶段节奏。`);
+function buildProductSectionsFromStories(productSections, storyItems) {
+  const storyMap = new Map(storyItems.map((story) => [story.story_id, story]));
+  return (productSections || [])
+    .map((section) => ({
+      product_id: section.product_id,
+      title: section.title,
+      summary: section.summary,
+      story_ids: (section.story_ids || []).filter((storyId) => storyMap.has(storyId)),
+      sub_sections: section.sub_sections || []
+    }))
+    .filter((section) => section.story_ids.length);
 }
 
-function buildThemeSectionsFromStories(storyItems) {
-  const grouped = groupBy(storyItems, (story) => story.theme || "其他");
-  return Object.entries(grouped).map(([title, stories]) => ({
-    title,
-    summary: buildThemeSectionSummary(title, stories),
-    story_ids: stories.map((story) => story.story_id)
-  }));
-}
-
-function buildThemeSectionSummary(title, stories) {
-  return `${title}相关动态在今天共出现${stories.length}条重点线索，主线集中在${stories
-    .map((item) => item.headline)
-    .slice(0, 2)
-    .join("、")}。`;
-}
-
-function buildDailyTitle(clusters) {
-  const themes = unique(clusters.map((cluster) => cluster.theme)).slice(0, 2);
-  return themes.length
-    ? `人工智能情报日报：${themes.join("与")}进展`
-    : `人工智能情报日报 ${new Date().toISOString().slice(0, 10)}`;
+function buildDailyTitle() {
+  return `头部大模型情报日报 ${new Date().toISOString().slice(0, 10)}`;
 }
 
 function buildChineseHeadline(cluster) {
   const article = cluster.articles[0] || {};
   const title = String(cluster.headline || article.title || "");
-  const lower = title.toLowerCase();
-  const project = inferProjectName(article, title);
-  const version = inferVersion(title, article.url);
-
-  if (/github release/i.test(article.source_type || "") || /^release\b/i.test(title)) {
-    return version ? `${project} 发布 ${version} 版本更新` : `${project} 发布项目版本更新`;
-  }
-
-  if (lower.includes("evaluating agents") || lower.includes("scientific discovery")) {
-    return "Ai2 发布科学发现智能体评估研究";
-  }
-  if (lower.includes("wilddet3d")) {
-    return "Ai2 发布 WildDet3D 单图 3D 检测模型";
-  }
-  if (lower.includes("molmoweb")) {
-    return "Ai2 发布 MolmoWeb 网页任务自动化智能体";
-  }
-  if (lower.includes("molmopoint")) {
-    return "Ai2 发布 MolmoPoint 视觉定位架构";
-  }
-  if (lower.includes("molmobot")) {
-    return "Ai2 发布 MolmoBot 仿真训练机器人操作模型";
-  }
-  if (lower.includes("qwen3guard")) {
-    return "Qwen 发布 Qwen3Guard 实时安全护栏模型";
-  }
-  if (lower.includes("olmohybrid")) {
-    return "Ai2 发布 OLMoHybrid 混合推理模型研究";
-  }
-
   if (isUsableChineseText(title)) {
     return title;
   }
-
-  const source = displaySourceName(article.source_name || inferSourceFromUrl(article.url) || "重点来源");
-  return `${source} 发布${cluster.theme}相关更新`;
-}
-
-function inferChineseFocus(cluster) {
-  const combined = cluster.articles
-    .map((article) => `${article.title || ""} ${article.excerpt || ""} ${article.full_text || ""}`)
-    .join(" ")
-    .toLowerCase();
-
-  if (combined.includes("llama.cpp") || combined.includes("webgpu") || combined.includes("cuda")) {
-    return "本地推理、硬件加速和部署兼容性的持续优化";
-  }
-  if (combined.includes("vllm") || combined.includes("serving") || combined.includes("transformers")) {
-    return "模型服务、推理吞吐和框架兼容性的变化";
-  }
-  if (combined.includes("3d") || combined.includes("robot") || combined.includes("vision")) {
-    return "多模态感知、空间智能或机器人能力的推进";
-  }
-  if (combined.includes("agent") || combined.includes("scientific discovery") || combined.includes("benchmark")) {
-    return "智能体能力评估、任务可靠性和真实场景泛化";
-  }
-  if (combined.includes("safety") || combined.includes("guardrail") || combined.includes("moderation")) {
-    return "模型安全、内容审核和风险控制能力建设";
-  }
-  if (combined.includes("api") || combined.includes("release") || combined.includes("model")) {
-    return "模型能力、开发者接口或工程工具的版本更新";
-  }
-
-  return `${cluster.theme}方向的能力变化、工程进展或应用信号`;
-}
-
-function inferProjectName(article, title) {
-  const sourceName = String(article.source_name || "");
-  const releaseMatch = String(title || "").match(/Release\s+[^·]+·\s+([^/]+\/)?([^/\s]+)/i);
-  if (releaseMatch?.[2]) {
-    return releaseMatch[2];
-  }
-
-  try {
-    const parsed = new URL(article.url || "");
-    const segments = parsed.pathname.split("/").filter(Boolean);
-    if (parsed.hostname === "github.com" && segments.length >= 2) {
-      return segments[1];
-    }
-  } catch {
-    // Ignore malformed URLs and fall back to source names.
-  }
-
-  return sourceName.replace(/\s+Releases$/i, "") || "项目";
-}
-
-function inferVersion(title, url) {
-  const titleMatch = String(title || "").match(/\b(v?\d+(?:\.\d+){0,3}(?:[-\w.]*)?|b\d{3,})\b/i);
-  if (titleMatch?.[1]) {
-    return titleMatch[1];
-  }
-
-  try {
-    const segments = new URL(url || "").pathname.split("/").filter(Boolean);
-    const tagIndex = segments.indexOf("tag");
-    return tagIndex >= 0 ? segments[tagIndex + 1] || "" : "";
-  } catch {
-    return "";
-  }
-}
-
-function inferSourceFromUrl(url) {
-  try {
-    return new URL(url || "").hostname.replace(/^www\./, "");
-  } catch {
-    return "";
-  }
+  return `${displayProductName(cluster.primary_product_id)} 发布新一轮更新`;
 }
 
 function displaySourceName(sourceName = "") {
@@ -513,9 +481,25 @@ function displaySourceName(sourceName = "") {
     .replace(/\bNewsroom\b/gi, "官方新闻")
     .replace(/\bNews\b/gi, "新闻")
     .replace(/\bBlog\b/gi, "博客")
-    .replace(/\bReleases\b/gi, "发布页")
+    .replace(/\bReleases?\b/gi, "发布页")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function displayProductName(productId = "") {
+  const map = {
+    chatgpt: "ChatGPT",
+    openai_codex: "Codex",
+    claude: "Claude",
+    claude_code: "Claude Code",
+    gemini: "Gemini",
+    deepseek: "DeepSeek",
+    qwen: "Qwen",
+    mistral: "Mistral",
+    kimi: "Kimi",
+    glm: "GLM"
+  };
+  return map[productId] || productId || "重点产品线";
 }
 
 function polishChineseText(text) {
@@ -555,14 +539,14 @@ function validateDigest(digest) {
   if (!digest?.daily_brief_title || !digest?.topline_summary) {
     throw new Error("digest missing required top-level fields");
   }
-  if (!Array.isArray(digest.story_items) || !digest.story_items.length) {
-    throw new Error("digest contains no story_items");
+  if (!Array.isArray(digest.coverage_board) || !digest.coverage_board.length) {
+    throw new Error("digest missing coverage_board");
   }
-  if (!Array.isArray(digest.theme_sections) || !digest.theme_sections.length) {
-    throw new Error("digest missing theme_sections");
+  if (!Array.isArray(digest.product_sections)) {
+    throw new Error("digest missing product_sections");
   }
-  if (!Array.isArray(digest.connections) || !digest.connections.length) {
-    throw new Error("digest missing connections");
+  if (!Array.isArray(digest.story_items)) {
+    throw new Error("digest missing story_items");
   }
   for (const item of digest.story_items) {
     if (!item.story_id || !item.headline) {
@@ -575,14 +559,4 @@ function validateDigest(digest) {
       throw new Error("digest contains story without source_links");
     }
   }
-}
-
-function groupBy(values, makeKey) {
-  const output = {};
-  for (const value of values) {
-    const key = makeKey(value);
-    output[key] ||= [];
-    output[key].push(value);
-  }
-  return output;
 }

@@ -1,5 +1,6 @@
 import path from "node:path";
 import { readText } from "../utils/fs.js";
+import { mergeSourceRegistry } from "./source-registry.js";
 
 async function readJsonCompatibleYaml(filePath) {
   const raw = await readText(filePath);
@@ -8,13 +9,78 @@ async function readJsonCompatibleYaml(filePath) {
 
 export async function loadConfig(rootDir) {
   const configDir = path.join(rootDir, "config");
-  const [keywords, whitelist, scoring] = await Promise.all([
+  const [keywords, registryOrNull, generatedOrNull, scoring] = await Promise.all([
     readJsonCompatibleYaml(path.join(configDir, "discovery_keywords.yaml")),
-    readJsonCompatibleYaml(path.join(configDir, "whitelist_sources.yaml")),
+    readJsonCompatibleYaml(path.join(configDir, "source_registry.yaml")).catch(() => null),
+    readJsonCompatibleYaml(path.join(configDir, "generated_sources.yaml")).catch(() => ({ sources: [] })),
     readJsonCompatibleYaml(path.join(configDir, "scoring_rules.yaml"))
   ]);
+  const legacyWhitelist =
+    registryOrNull ? null : await readJsonCompatibleYaml(path.join(configDir, "whitelist_sources.yaml")).catch(() => ({ sources: [] }));
+  const registry = registryOrNull || adaptLegacyWhitelistToRegistry(legacyWhitelist);
+  const generatedSources = generatedOrNull || { sources: [] };
 
-  return { keywords, whitelist, scoring };
+  const registryState = mergeSourceRegistry({ registry, generatedSources });
+
+  return {
+    keywords,
+    scoring,
+    registry,
+    generatedSources,
+    registryState,
+    whitelist: {
+      sources: registryState.sources.map((source) => ({
+        name: source.display_name,
+        source_id: source.source_id,
+        source_type: source.source_type,
+        source_role: source.source_role,
+        vendor_id: source.vendor_id,
+        product_ids: source.product_ids,
+        priority_weight: source.priority_weight,
+        allowed_hosts: source.allowed_hosts,
+        include_url_patterns: source.include_url_patterns,
+        exclude_url_patterns: source.exclude_url_patterns,
+        include_entry_text_patterns: source.include_entry_text_patterns,
+        exclude_entry_text_patterns: source.exclude_entry_text_patterns,
+        entry_strategy: source.entry_strategy,
+        max_entries: source.max_entries,
+        seed_urls: source.seed_urls,
+        expected_update_cadence: source.expected_update_cadence,
+        evaluation_enabled: source.evaluation_enabled,
+        enabled: source.enabled,
+        status: source.status,
+        cooldown_until: source.cooldown_until,
+        quarantined: source.quarantined,
+        avg_update_interval_days: source.avg_update_interval_days
+      }))
+    }
+  };
+}
+
+function adaptLegacyWhitelistToRegistry(whitelist) {
+  return {
+    products: [],
+    sources: (whitelist?.sources || []).map((source, index) => ({
+      source_id: source.source_id || `legacy-source-${index + 1}`,
+      display_name: source.name || `Legacy Source ${index + 1}`,
+      source_type: source.source_type || "官方来源",
+      source_role: source.source_role || "official_news",
+      vendor_id: source.vendor_id || "",
+      product_ids: source.product_ids || [],
+      status: source.status || "active",
+      priority_weight: source.priority_weight || 0.8,
+      expected_update_cadence: source.expected_update_cadence || "medium",
+      evaluation_enabled: Boolean(source.evaluation_enabled),
+      allowed_hosts: source.allowed_hosts || [],
+      seed_urls: source.seed_urls || [],
+      include_url_patterns: source.include_url_patterns || [],
+      exclude_url_patterns: source.exclude_url_patterns || [],
+      include_entry_text_patterns: source.include_entry_text_patterns || [],
+      exclude_entry_text_patterns: source.exclude_entry_text_patterns || [],
+      entry_strategy: source.entry_strategy || "listing",
+      max_entries: source.max_entries || 8
+    }))
+  };
 }
 
 export async function loadDotEnv(rootDir) {

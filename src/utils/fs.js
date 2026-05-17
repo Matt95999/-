@@ -1,4 +1,4 @@
-import { mkdir, readFile, readdir, stat, writeFile } from "node:fs/promises";
+import { mkdir, readFile, readdir, rename, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 export async function ensureDir(dirPath) {
@@ -11,11 +11,18 @@ export async function readText(filePath) {
 
 export async function writeText(filePath, content) {
   await ensureDir(path.dirname(filePath));
-  await writeFile(filePath, content, "utf8");
+  await writeFile(filePath, String(content ?? ""), "utf8");
 }
 
 export async function writeJson(filePath, value) {
-  await writeText(filePath, `${JSON.stringify(value, null, 2)}\n`);
+  const serialized = JSON.stringify(value, null, 2);
+  await writeText(filePath, `${serialized ?? "null"}\n`);
+}
+
+export async function writeJsonAtomic(filePath, value) {
+  const tempPath = `${filePath}.tmp`;
+  await writeJson(tempPath, value);
+  await rename(tempPath, filePath);
 }
 
 export async function readJson(filePath) {
@@ -39,4 +46,26 @@ export async function listJsonFiles(dirPath) {
   } catch {
     return [];
   }
+}
+
+export async function listFiles(dirPath, matcher = () => true) {
+  try {
+    const entries = await readdir(dirPath);
+    const files = await Promise.all(
+      entries
+        .filter((entry) => matcher(entry))
+        .map(async (entry) => {
+          const fullPath = path.join(dirPath, entry);
+          const fileStat = await stat(fullPath);
+          return { fullPath, name: entry, mtimeMs: fileStat.mtimeMs };
+        })
+    );
+    return files.sort((a, b) => b.mtimeMs - a.mtimeMs);
+  } catch {
+    return [];
+  }
+}
+
+export async function removeFile(filePath) {
+  await rm(filePath, { force: true });
 }

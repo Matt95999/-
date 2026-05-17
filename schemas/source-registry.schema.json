@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SourceRegistry",
+  "type": "object",
+  "required": ["products", "sources"],
+  "properties": {
+    "products": { "type": "array", "items": { "type": "object" } },
+    "sources": { "type": "array", "items": { "type": "object" } }
+  }
+}

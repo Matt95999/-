@@ -32,7 +32,13 @@ export async function executeWithRemediation({ runContext, scoringConfig, execut
       const incident = createIncident(runContext, attemptNo, error, remediation);
       latestIncident = incident;
       await persistIncident(runContext, incident);
-      logger.warn("attempt failed", { attemptNo, stage: incident.stage, errorType: incident.error_type });
+      logger.warn("attempt failed", {
+        attemptNo,
+        stage: incident.stage,
+        errorType: incident.error_type,
+        message: error?.message || incident.root_cause_guess,
+        stack: error?.stack || ""
+      });
     }
   }
 

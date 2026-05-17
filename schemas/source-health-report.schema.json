@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SourceHealthReport",
+  "type": "object",
+  "required": ["source_id", "product_id", "window_days", "health_score", "recommended_action"],
+  "properties": {
+    "source_id": { "type": "string" },
+    "product_id": { "type": "string" },
+    "window_days": { "type": "number" },
+    "discovery_success_rate": { "type": "number" },
+    "scrape_success_rate": { "type": "number" },
+    "unique_story_contribution_rate": { "type": "number" },
+    "duplicate_rate": { "type": "number" },
+    "fallback_rate": { "type": "number" },
+    "staleness_days": { "type": "number" },
+    "noise_rate": { "type": "number" },
+    "health_score": { "type": "number" },
+    "recommended_action": { "type": "string" }
+  }
+}

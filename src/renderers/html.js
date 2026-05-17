@@ -7,7 +7,15 @@ function escapeHtml(value) {
 }
 
 export function renderDigestHtml(digest) {
-  const sectionHtml = digest.theme_sections
+  const coverageHtml = (digest.coverage_board || [])
+    .map(
+      (item) => `
+        <li><strong>${escapeHtml(item.display_name)}</strong>：${escapeHtml(item.status_label)}（上次更新：${escapeHtml(item.last_known_update_label)}）</li>
+      `
+    )
+    .join("");
+
+  const sectionHtml = (digest.product_sections || [])
     .map((section) => {
       const stories = section.story_ids
         .map((storyId) => digest.story_items.find((item) => item.story_id === storyId))
@@ -38,8 +46,11 @@ export function renderDigestHtml(digest) {
     })
     .join("");
 
-  const connections = digest.connections.map((item) => `<li>${escapeHtml(item)}</li>`).join("");
-  const watchlist = digest.watchlist.map((item) => `<li>${escapeHtml(item)}</li>`).join("");
+  const connections = (digest.cross_product_connections || []).map((item) => `<li>${escapeHtml(item)}</li>`).join("");
+  const watchlist = (digest.watchlist || []).map((item) => `<li>${escapeHtml(item)}</li>`).join("");
+  const gaps = (digest.missing_products || [])
+    .map((item) => `<li>${escapeHtml(item.product_id)}：${escapeHtml(item.reason)}</li>`)
+    .join("");
 
   return `<!doctype html>
 <html lang="zh-CN">
@@ -94,14 +105,19 @@ export function renderDigestHtml(digest) {
       <p class="meta">生成时间：${escapeHtml(digest.generated_at)}</p>
       <h1>${escapeHtml(digest.daily_brief_title)}</h1>
       <p class="topline">${escapeHtml(digest.topline_summary)}</p>
-      ${sectionHtml}
       <section class="section">
-        <h2>关联判断</h2>
-        <ul>${connections}</ul>
+        <h2>头部产品覆盖面板</h2>
+        <ul>${coverageHtml}</ul>
       </section>
+      ${sectionHtml}
+      ${connections ? `<section class="section"><h2>跨产品线关联分析</h2><ul>${connections}</ul></section>` : ""}
       <section class="section">
         <h2>继续观察</h2>
         <ul>${watchlist}</ul>
+      </section>
+      <section class="section">
+        <h2>今日缺口</h2>
+        <ul>${gaps}</ul>
       </section>
     </main>
   </body>

@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>人工智能行业日报 | 2026-05-17</title>
+    <title>头部大模型情报日报 2026-05-17</title>
     <style>
       :root {
         color-scheme: light;
@@ -48,69 +48,114 @@
   </head>
   <body>
     <main>
-      <p class="meta">生成时间：2026-05-17T00:00:00Z</p>
-      <h1>人工智能行业日报 | 2026-05-17</h1>
-      <p class="topline">今日人工智能行业聚焦于推理框架的密集更新、开源模型在气候与机器人领域的突破，以及基准测试的行业采纳。llama.cpp和SGLang均发布多个版本，优化性能与兼容性；Ai2推出AIMIP气候模型基准、MolmoAct 2机器人基础模型和AstaBench更新，展示开源生态的多元化进展。</p>
-      
-        <section class="section">
-          <h2>产品与智能体</h2>
-          <p class="summary">llama.cpp和SGLang两大推理框架发布多个版本，带来性能优化、新模型支持和架构调整。</p>
-          
-            <article class="story">
-              <h3>llama.cpp 发布 b9174 至 b9190 多个版本，重构UI目录并优化服务器路由</h3>
-              <p>llama.cpp 在短时间内连续发布 b9174、b9180、b9181、b9186、b9189、b9190 等多个版本。主要变更包括：将UI相关文件重组到 tools/ui 文件夹，并统一命名规范为 ui/UI/llama-ui/LLAMA_UI；在服务器路由模式下将临时缓冲区分配到堆上，避免创建 CUDA 主上下文以提升兼容性。</p><p>这些更新旨在改善代码组织结构和跨平台部署体验，尤其是 macOS/iOS 平台获得了二进制包更新。</p>
-              <p><strong>结论：llama.cpp 通过密集的版本迭代，持续优化工程质量和运行时效率，显示出项目维护的活跃度。</strong></p>
-              <p>影响：对开发者而言，UI重构降低了二次开发门槛；服务器路由优化减少了GPU资源占用，有利于多卡部署场景。</p>
-              <p class="links"><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9190" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9190</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9189" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9189</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9186" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9186</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9181" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9181</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9180" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9180</a><br><a href="https://github.com/ggml-org/llama.cpp/releases/tag/b9174" target="_blank" rel="noreferrer">https://github.com/ggml-org/llama.cpp/releases/tag/b9174</a></p>
-            </article>
-          
-            <article class="story">
-              <h3>SGLang 发布 v0.5.9 至 v0.5.12 版本，支持 DeepSeek V4 并升级 CUDA 13</h3>
-              <p>SGLang 推出 v0.5.9、v0.5.10、v0.5.11、v0.5.12 等多个版本。v0.5.9 亮点包括 LoRA 权重加载与计算重叠，将首令牌延迟（TTFT）降低约78%；v0.5.11 默认 CUDA 版本升级至 13.0，PyTorch 升级至 2.11；v0.5.12 新增对 DeepSeek V4 的完整推理支持。</p><p>这些更新显著提升了推理效率和新模型兼容性，尤其是 DeepSeek V4 的支持扩展了 SGLang 的应用范围。</p>
-              <p><strong>结论：SGLang 通过快速迭代保持了对最新模型和硬件生态的适配，性能优化成果突出。</strong></p>
-              <p>影响：LoRA 加载优化直接降低推理延迟，对实时应用有利；CUDA 13 和 DeepSeek V4 支持使 SGLang 成为前沿模型部署的有力选择。</p>
-              <p class="links"><a href="https://github.com/sgl-project/sglang/releases/tag/v0.5.12" target="_blank" rel="noreferrer">https://github.com/sgl-project/sglang/releases/tag/v0.5.12</a><br><a href="https://github.com/sgl-project/sglang/releases/tag/v0.5.11" target="_blank" rel="noreferrer">https://github.com/sgl-project/sglang/releases/tag/v0.5.11</a><br><a href="https://github.com/sgl-project/sglang/releases/tag/v0.5.10.post1" target="_blank" rel="noreferrer">https://github.com/sgl-project/sglang/releases/tag/v0.5.10.post1</a><br><a href="https://github.com/sgl-project/sglang/releases/tag/v0.5.10" target="_blank" rel="noreferrer">https://github.com/sgl-project/sglang/releases/tag/v0.5.10</a><br><a href="https://github.com/sgl-project/sglang/releases/tag/v0.5.10rc0" target="_blank" rel="noreferrer">https://github.com/sgl-project/sglang/releases/tag/v0.5.10rc0</a><br><a href="https://github.com/sgl-project/sglang/releases/tag/v0.5.9" target="_blank" rel="noreferrer">https://github.com/sgl-project/sglang/releases/tag/v0.5.9</a></p>
-            </article>
-          
-        </section>
-      
-        <section class="section">
-          <h2>模型与推理</h2>
-          <p class="summary">Ai2发布三项重要成果：AIMIP气候模型基准、MolmoAct 2机器人基础模型和AstaBench更新，推动开源模型在专业领域的应用。</p>
-          
-            <article class="story">
-              <h3>Ai2 推出 AIMIP：人工智能 天气与气候模型比较项目</h3>
-              <p>Ai2 发布 AIMIP（人工智能 天气与气候模型比较项目），这是一个用于评估 人工智能 气候模型的开源基准和数据集。初步结果显示，人工智能 模型在某些历史气候指标上可以匹配甚至超越传统数值模型，但在其他方面仍存在不足。</p><p>该项目旨在为 人工智能 气候建模提供标准化评估框架，推动该领域的透明度和可重复性。</p>
-              <p><strong>结论：AIMIP 为 人工智能 气候模型提供了首个系统化比较基准，有助于识别当前模型的优势与短板。</strong></p>
-              <p>影响：对气候研究社区而言，AIMIP 降低了评估门槛，加速 人工智能 在气候科学中的应用；对模型开发者，提供了明确的改进方向。</p>
-              <p class="links"><a href="https://allenai.org/blog/aimip" target="_blank" rel="noreferrer">https://allenai.org/blog/aimip</a></p>
-            </article>
-          
-            <article class="story">
-              <h3>Ai2 发布 MolmoAct 2：面向真实世界机器人的开源基础模型</h3>
-              <p>Ai2 推出 MolmoAct 2，一个完全开源的机器人基础模型，具备更快、更强的 3D 动作推理能力，并附带一个大型双臂操作数据集。该模型旨在让机器人更好地在真实世界中工作。</p><p>MolmoAct 2 延续了 Molmo 系列的开放路线，提供模型权重、代码和数据集，以促进机器人研究的可复现性。</p>
-              <p><strong>结论：MolmoAct 2 是开源机器人领域的重要进展，强化了 3D 动作推理能力。</strong></p>
-              <p>影响：对机器人研究者，该模型降低了入门门槛，提供了高质量的双臂操作数据；对行业，加速了通用机器人技能的开发。</p>
-              <p class="links"><a href="https://allenai.org/blog/molmoact2" target="_blank" rel="noreferrer">https://allenai.org/blog/molmoact2</a></p>
-            </article>
-          
-            <article class="story">
-              <h3>Ai2 更新 AstaBench：新增 GPT-5.5 结果并获行业采纳</h3>
-              <p>AstaBench 发布春季更新，新增包括 GPT-5.5 在内的前沿模型评估结果。该基准已被英国 人工智能 安全研究所（UK AISI）、General Reasoning、Elicit、SciSpace 等机构采用。</p><p>AstaBench 专注于科学推理评估，此次更新进一步巩固了其作为 人工智能 科学能力测试标准的位置。</p>
-              <p><strong>结论：AstaBench 的行业采纳表明其评估框架获得广泛认可，GPT-5.5 的加入反映了最新模型的能力。</strong></p>
-              <p>影响：对模型开发者，AstaBench 提供了科学推理的权威标尺；对用户，有助于选择适合科学任务的模型。</p>
-              <p class="links"><a href="https://allenai.org/blog/astabench-update-spring-2026" target="_blank" rel="noreferrer">https://allenai.org/blog/astabench-update-spring-2026</a></p>
-            </article>
-          
-        </section>
-      
+      <p class="meta">生成时间：2026-05-17T08:01:39.943Z</p>
+      <h1>头部大模型情报日报 2026-05-17</h1>
+      <p class="topline">今日大模型行业主线为模型能力与产品化节奏同步加速，多家厂商密集发布新模型、API更新及行业应用方案。Kimi 正式发布长思考模型 API，DeepSeek 推出 V4 系列模型，GLM 发布旗舰模型 GLM-5.1，Qwen 推出 人工智能 编程智能体 Qwen Code，Claude 宣布与普华永道合作并推出小企业版，ChatGPT 更新语音智能和个人理财功能，Codex 与 AWS 集成。</p>
       <section class="section">
-        <h2>关联判断</h2>
-        <ul><li>llama.cpp 和 SGLang 的密集版本更新反映了开源推理框架在性能和模型支持上的激烈竞争，两者均针对最新硬件和模型进行优化。</li><li>Ai2 的三项发布（AIMIP、MolmoAct 2、AstaBench）共同展示了开源 人工智能 在专业领域（气候、机器人、科学推理）的拓展，与推理框架的通用优化形成互补。</li><li>AstaBench 对 GPT-5.5 的评估与 SGLang 对 DeepSeek V4 的支持，均体现了行业对前沿模型快速适配的需求。</li></ul>
+        <h2>头部产品覆盖面板</h2>
+        <ul>
+        <li><strong>ChatGPT</strong>：有高置信更新（上次更新：9 天前）</li>
+      
+        <li><strong>Codex</strong>：有高置信更新（上次更新：2 天前）</li>
+      
+        <li><strong>Claude</strong>：有高置信更新（上次更新：3 天前）</li>
+      
+        <li><strong>Claude Code</strong>：信源异常，需人工关注（上次更新：今天）</li>
+      
+        <li><strong>Gemini</strong>：信源异常，需人工关注（上次更新：今天）</li>
+      
+        <li><strong>DeepSeek</strong>：有高置信更新（上次更新：暂无历史命中）</li>
+      
+        <li><strong>Qwen</strong>：有高置信更新（上次更新：暂无历史命中）</li>
+      
+        <li><strong>Mistral</strong>：信源异常，需人工关注（上次更新：18 天前）</li>
+      
+        <li><strong>Kimi</strong>：有高置信更新（上次更新：暂无历史命中）</li>
+      
+        <li><strong>GLM</strong>：有高置信更新（上次更新：暂无历史命中）</li>
+      </ul>
       </section>
+      
+        <section class="section">
+          <h2>DeepSeek</h2>
+          <p class="summary">DeepSeek 今日更新 API 文档，支持 V4-Pro 和 V4-Flash 模型，共 1 条高置信更新。</p>
+          
+            <article class="story">
+              <h3>DeepSeek API 更新：支持 V4-Pro 和 V4-Flash 模型</h3>
+              <p>DeepSeek 发布新一轮更新，来源包括DeepSeek API Updates，核心归属到 DeepSeek。</p><p>这条更新的重点在于它改变了该产品线的能力、接口、交互方式或落地节奏，需要结合后续几天的连续信号一起看。</p><p>系统把它列为高优先级线索，依据是官方来源等级、产品优先级、发布时间和重复提及情况。</p>
+              <p><strong>结论：这是一条应进入头部产品跟踪列表的高优先级更新。</strong></p>
+              <p>影响：它会直接影响 DeepSeek 的产品判断、接口使用方式或竞争节奏。</p>
+              <p class="links"><a href="https://api-docs.deepseek.com/updates#deepseek-v4" target="_blank" rel="noreferrer">https://api-docs.deepseek.com/updates#deepseek-v4</a><br><a href="https://api-docs.deepseek.com/updates#deepseek-v32" target="_blank" rel="noreferrer">https://api-docs.deepseek.com/updates#deepseek-v32</a><br><a href="https://api-docs.deepseek.com/updates#deepseek-v32-speciale" target="_blank" rel="noreferrer">https://api-docs.deepseek.com/updates#deepseek-v32-speciale</a></p>
+            </article>
+          
+        </section>
+      
+        <section class="section">
+          <h2>Qwen</h2>
+          <p class="summary">Qwen 今日发布 人工智能 编程智能体 Qwen Code，并推出微信频道功能，共 17 条高置信更新。</p>
+          
+            <article class="story">
+              <h3>Qwen 发布 人工智能 编程智能体 Qwen Code</h3>
+              <p>Qwen 发布新一轮更新，来源包括Qwen Code Docs 博客，核心归属到 Qwen。</p><p>这条更新的重点在于它改变了该产品线的能力、接口、交互方式或落地节奏，需要结合后续几天的连续信号一起看。</p><p>系统把它列为高优先级线索，依据是官方来源等级、产品优先级、发布时间和重复提及情况。</p>
+              <p><strong>结论：这是一条应进入头部产品跟踪列表的高优先级更新。</strong></p>
+              <p>影响：它会直接影响 Qwen 的产品判断、接口使用方式或竞争节奏。</p>
+              <p class="links"><a href="https://qwenlm.github.io/qwen-code-docs/en/blog/thinks-like-a-programmer/" target="_blank" rel="noreferrer">https://qwenlm.github.io/qwen-code-docs/en/blog/thinks-like-a-programmer/</a></p>
+            </article>
+          
+            <article class="story">
+              <h3>Qwen Code Beta 推出微信频道功能</h3>
+              <p>Qwen 发布新一轮更新，来源包括Qwen Code Docs 博客，核心归属到 Qwen。</p><p>这条更新的重点在于它改变了该产品线的能力、接口、交互方式或落地节奏，需要结合后续几天的连续信号一起看。</p><p>系统把它列为高优先级线索，依据是官方来源等级、产品优先级、发布时间和重复提及情况。</p>
+              <p><strong>结论：这是一条应进入头部产品跟踪列表的高优先级更新。</strong></p>
+              <p>影响：它会直接影响 Qwen 的产品判断、接口使用方式或竞争节奏。</p>
+              <p class="links"><a href="https://qwenlm.github.io/qwen-code-docs/en/blog/channels-weixin-launch-announcement/" target="_blank" rel="noreferrer">https://qwenlm.github.io/qwen-code-docs/en/blog/channels-weixin-launch-announcement/</a></p>
+            </article>
+          
+        </section>
+      
+        <section class="section">
+          <h2>Kimi</h2>
+          <p class="summary">Kimi 今日正式发布长思考模型 API，并更新 K2 Think 系列模型及降价信息，共 3 条高置信更新。</p>
+          
+            <article class="story">
+              <h3>Kimi 长思考模型 API 正式发布</h3>
+              <p>Kimi 长思考模型 API 正式发布，来源包括Kimi 开放平台博客，核心归属到 Kimi。</p><p>这条更新的重点在于它改变了该产品线的能力、接口、交互方式或落地节奏，需要结合后续几天的连续信号一起看。</p><p>系统把它列为高优先级线索，依据是官方来源等级、产品优先级、发布时间和重复提及情况。</p>
+              <p><strong>结论：这是一条应进入头部产品跟踪列表的高优先级更新。</strong></p>
+              <p>影响：它会直接影响 Kimi 的产品判断、接口使用方式或竞争节奏。</p>
+              <p class="links"><a href="https://platform.moonshot.cn/blog/posts/changelog" target="_blank" rel="noreferrer">https://platform.moonshot.cn/blog/posts/changelog</a><br><a href="https://platform.moonshot.cn/blog/posts/k2-think" target="_blank" rel="noreferrer">https://platform.moonshot.cn/blog/posts/k2-think</a><br><a href="https://platform.moonshot.cn/blog/posts/k2-turbo-discount" target="_blank" rel="noreferrer">https://platform.moonshot.cn/blog/posts/k2-turbo-discount</a></p>
+            </article>
+          
+            <article class="story">
+              <h3>Moonshot 人工智能 博客：Kimi K2 Think 模型发布及降价</h3>
+              <p>Moonshot AI - 博客，来源包括Kimi 开放平台变更记录，核心归属到 Kimi。</p><p>这条更新的重点在于它改变了该产品线的能力、接口、交互方式或落地节奏，需要结合后续几天的连续信号一起看。</p><p>系统把它列为高优先级线索，依据是官方来源等级、产品优先级、发布时间和重复提及情况。</p>
+              <p><strong>结论：这是一条应进入头部产品跟踪列表的高优先级更新。</strong></p>
+              <p>影响：它会直接影响 Kimi 的产品判断、接口使用方式或竞争节奏。</p>
+              <p class="links"><a href="https://platform.moonshot.cn/blog/posts/changelog#2025%E5%B9%B411%E6%9C%886%E6%97%A5" target="_blank" rel="noreferrer">https://platform.moonshot.cn/blog/posts/changelog#2025%E5%B9%B411%E6%9C%886%E6%97%A5</a></p>
+            </article>
+          
+        </section>
+      
+        <section class="section">
+          <h2>GLM</h2>
+          <p class="summary">GLM 今日发布旗舰模型 GLM-5.1，增强编程能力和长程任务能力，共 1 条高置信更新。</p>
+          
+            <article class="story">
+              <h3>智谱 人工智能 发布旗舰模型 GLM-5.1</h3>
+              <p>新品发布 - 智谱AI开放文档，来源包括智谱新品发布，核心归属到 GLM。</p><p>这条更新的重点在于它改变了该产品线的能力、接口、交互方式或落地节奏，需要结合后续几天的连续信号一起看。</p><p>系统把它列为高优先级线索，依据是官方来源等级、产品优先级、发布时间和重复提及情况。</p>
+              <p><strong>结论：这是一条应进入头部产品跟踪列表的高优先级更新。</strong></p>
+              <p>影响：它会直接影响 GLM 的产品判断、接口使用方式或竞争节奏。</p>
+              <p class="links"><a href="https://docs.bigmodel.cn/cn/update/new-releases#%E5%85%AC%E5%91%8A%E9%80%9A%E7%9F%A5" target="_blank" rel="noreferrer">https://docs.bigmodel.cn/cn/update/new-releases#%E5%85%AC%E5%91%8A%E9%80%9A%E7%9F%A5</a></p>
+            </article>
+          
+        </section>
+      
+      <section class="section"><h2>跨产品线关联分析</h2><ul><li>Kimi 的长思考模型 API 与 DeepSeek 的 V4 系列模型更新均指向模型能力与产品化节奏同步加速，两者在 API 接口兼容性和定价策略上形成直接竞争。</li><li>Qwen Code 的开源智能体编程工具与 GLM-5.1 的编程能力增强，共同推动 人工智能 编程工具向智能体化发展，对传统 IDE 和低代码平台构成挑战。</li><li>Claude 与普华永道的企业合作以及小企业版推出，与 ChatGPT 的个人理财功能更新，分别从企业端和消费端拓展 人工智能 应用场景，形成差异化竞争。</li></ul></section>
       <section class="section">
         <h2>继续观察</h2>
-        <ul><li>llama.cpp 后续版本对 UI 重构的稳定性反馈</li><li>SGLang v0.5.12 中 DeepSeek V4 推理的实际性能表现</li><li>MolmoAct 2 在真实机器人任务中的社区复现结果</li></ul>
+        <ul><li>Kimi 长思考模型 API 的开发者采用率和实际推理效果</li><li>DeepSeek V4 系列模型的稳定性及临时端点后续计划</li><li>Qwen Code 在微信生态中的用户增长和合规进展</li></ul>
+      </section>
+      <section class="section">
+        <h2>今日缺口</h2>
+        <ul><li>claude_code：source_gap</li><li>gemini：source_gap</li><li>mistral：source_gap</li></ul>
       </section>
     </main>
   </body>

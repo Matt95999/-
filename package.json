@@ -9,6 +9,8 @@
     "publish_only": "node ./src/cli/publish-only.js",
     "feishu_only": "node ./src/cli/feishu-only.js",
     "manual_review": "node ./src/cli/manual-review.js",
+    "source_audit": "node ./src/cli/source-audit.js",
+    "source_refresh": "node ./src/cli/source-refresh.js",
     "preflight_check": "node ./src/cli/preflight-check.js",
     "test": "node --test"
   },

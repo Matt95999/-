@@ -1,0 +1,20 @@
+{
+  "sources": [
+    {
+      "source_id": "openai-chatgpt-release-notes",
+      "enabled": false,
+      "degrade_reason": "discovery_failure",
+      "last_auto_action": "disable",
+      "last_auto_action_at": "2026-05-17T05:45:20.164Z",
+      "avg_update_interval_days": 14
+    },
+    {
+      "source_id": "openai-codex-changelog",
+      "enabled": false,
+      "degrade_reason": "discovery_failure",
+      "last_auto_action": "disable",
+      "last_auto_action_at": "2026-05-17T05:45:20.164Z",
+      "avg_update_interval_days": 14
+    }
+  ]
+}

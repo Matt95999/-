@@ -9,6 +9,7 @@ import { buildStoryClusters } from "../src/core/clustering.js";
 import { scoreStoryClusters } from "../src/core/scoring.js";
 import { summarizeDailyDigest } from "../src/core/summarizer.js";
 import { buildFeishuPayload } from "../src/core/feishu.js";
+import { buildCoverageContext, buildCrossProductConnections, groupClustersByProduct } from "../src/core/coverage.js";
 import { renderDigestMarkdown } from "../src/renderers/markdown.js";
 import { createAttemptRunContext, createRunContext, getAttemptArtifactId } from "../src/core/context.js";
 import { loadConfig } from "../src/core/config.js";
@@ -21,6 +22,9 @@ const logger = createLogger("test-run");
 
 test("pipeline builds a coherent digest from sample discovery results", async () => {
   const config = await loadConfig(rootDir);
+  config.registryState.sources = [];
+  config.registryState.sourceMap = new Map();
+  config.whitelist.sources = [];
   const envConfig = {
     discoveryProviderSampleFile: path.join(rootDir, "private-data", "samples", "discovery-results.json"),
     discoveryProviderSearchTemplates: [],
@@ -30,7 +34,8 @@ test("pipeline builds a coherent digest from sample discovery results", async ()
     publicBaseUrl: "https://example.com/report"
   };
 
-  const discovered = await discoverCandidates({ rootDir, config, envConfig, logger, mode: "manual_review" });
+  const discoveryResult = await discoverCandidates({ rootDir, config, envConfig, logger, mode: "manual_review" });
+  const discovered = discoveryResult.candidates;
   assert.ok(discovered.length >= 3);
 
   const { scrapedCandidates } = await scrapeCandidates(discovered, {
@@ -42,13 +47,22 @@ test("pipeline builds a coherent digest from sample discovery results", async ()
   });
   assert.equal(scrapedCandidates.length, 3);
 
-  const clusters = buildStoryClusters(scrapedCandidates, config.keywords);
+  const clusters = buildStoryClusters(scrapedCandidates, config.keywords, config.registryState);
   const scored = scoreStoryClusters(clusters, {
     scoringConfig: config.scoring,
-    whitelistConfig: config.whitelist,
+    registryState: config.registryState,
     keywordConfig: config.keywords
   });
   assert.ok(scored[0].score >= scored[1].score);
+  const coverageContext = await buildCoverageContext({
+    rootDir,
+    scoredClusters: scored,
+    sourceRuns: discoveryResult.sourceRuns,
+    registryState: config.registryState,
+    minimumStoryScore: config.scoring.minimum_story_score
+  });
+  const productSections = groupClustersByProduct(scored, config.registryState, config.scoring.minimum_story_score);
+  const crossProductConnections = buildCrossProductConnections(scored, config.registryState);
 
   const digest = await summarizeDailyDigest({
     clusters: scored,
@@ -58,17 +72,20 @@ test("pipeline builds a coherent digest from sample discovery results", async ()
       forceLocalSummary: true,
       allowLocalSummaryFallback: true
     },
-    logger
+    logger,
+    coverageContext,
+    productSections,
+    crossProductConnections
   });
 
-  assert.ok(digest.topline_summary.includes("人工智能"));
-  assert.ok(digest.connections.length > 0);
+  assert.ok(digest.topline_summary.length > 0);
+  assert.ok(digest.coverage_board.length > 0);
   assert.ok(digest.story_items.every((item) => item.narrative.length >= 2));
 
   const feishuPayload = buildFeishuPayload(digest, "https://example.com/report");
   assert.equal(feishuPayload.msg_type, "post");
   assert.ok(
-    feishuPayload.content.post.zh_cn.content[0][0].text.includes("关联关系")
+    feishuPayload.content.post.zh_cn.content[0][0].text.includes("头部产品覆盖面板")
   );
 });
 
@@ -264,13 +281,14 @@ test("daily discovery uses whitelist-first sources and skips provider search noi
     discoveryProviderMaxQueries: 2
   };
 
-  const discovered = await discoverCandidates({
+  const discoveryResult = await discoverCandidates({
     rootDir,
     config,
     envConfig,
     logger: whitelistLogger,
     mode: "daily_run"
   });
+  const discovered = discoveryResult.candidates;
 
   assert.equal(discovered.length, 1);
   assert.equal(discovered[0].source_name, "Curated Source");
@@ -313,8 +331,54 @@ test("clustering avoids merging different stories that only share site chrome", 
     }
   ];
 
-  const clusters = buildStoryClusters(candidates, keywordConfig);
+  const clusters = buildStoryClusters(candidates, keywordConfig, { productMap: new Map() });
   assert.equal(clusters.length, 2);
+});
+
+test("scoring does not treat far-future parsed dates as fresh updates", () => {
+  const futureCluster = {
+    story_id: "future",
+    headline: "Gemini API Changelog",
+    theme: "Gemini",
+    confidence: 0.8,
+    official_source_level: "official_docs_changelog",
+    product_ids: ["gemini"],
+    primary_product_id: "gemini",
+    articles: [
+      {
+        title: "Gemini API Changelog",
+        excerpt: "Gemini API 更新日志。",
+        published_at: "2099-12-13T00:00:00.000Z",
+        discovered_at: new Date().toISOString(),
+        signals: { source_priority: 1 }
+      }
+    ]
+  };
+
+  const scored = scoreStoryClusters([futureCluster], {
+    scoringConfig: {
+      weights: {
+        recency: 1,
+        source_priority: 0,
+        keyword_relevance: 0,
+        cross_source_repetition: 0,
+        story_type: 0,
+        interaction_signal: 0,
+        official_source_level: 0,
+        product_priority: 0
+      },
+      official_source_levels: { official_docs_changelog: 100 },
+      priority_tiers: { p0: 100 },
+      first_tier_product_score_threshold: 100,
+      first_tier_source_score_threshold: 75
+    },
+    registryState: {
+      productMap: new Map([["gemini", { product_id: "gemini", priority_tier: "p0" }]])
+    },
+    keywordConfig: { themes: [] }
+  });
+
+  assert.equal(scored[0].score_breakdown.recency, 20);
 });
 
 test("scraper prefers article-like content blocks over page chrome", () => {
@@ -374,6 +438,54 @@ test("scraper keeps whitelist excerpt when article fetch fails on first attempt"
     assert.equal(scrapedCandidates[0].full_text, null);
     assert.equal(scrapedCandidates[0].excerpt, "官方 feed 摘要：发布了新的模型能力与开发者接口。");
     assert.equal(scrapedCandidates[0].signals.parse_quality, "excerpt_only");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("scraper keeps official registry excerpt when article page blocks fetch", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () =>
+    new Response("forbidden", {
+      status: 403,
+      headers: { "content-type": "text/plain" }
+    });
+
+  try {
+    const { scrapedCandidates, sourceRuns } = await scrapeCandidates(
+      [
+        {
+          source_id: "openai-chatgpt-newsroom",
+          source_name: "OpenAI Newsroom / ChatGPT",
+          source_type: "官方新闻",
+          url: "https://openai.com/index/chatgpt-example",
+          title: "A new ChatGPT capability",
+          excerpt: "官方 RSS 摘要：ChatGPT 发布新的产品能力，面向用户开放。",
+          confidence: 0.72,
+          signals: {
+            discovery_source: "registry"
+          }
+        }
+      ],
+      {
+        envConfig: { discoveryProviderRequestHeaders: {} },
+        logger,
+        remediation: { allowExcerptOnly: false },
+        sourceRuns: [
+          {
+            source_id: "openai-chatgpt-newsroom",
+            product_ids: ["chatgpt"],
+            discovery: { status: "success", discovered_count: 1 }
+          }
+        ]
+      }
+    );
+
+    assert.equal(scrapedCandidates.length, 1);
+    assert.equal(scrapedCandidates[0].full_text, null);
+    assert.equal(scrapedCandidates[0].excerpt, "官方 RSS 摘要：ChatGPT 发布新的产品能力，面向用户开放。");
+    assert.equal(scrapedCandidates[0].signals.parse_quality, "excerpt_only");
+    assert.equal(sourceRuns[0].scrape.scraped_count, 1);
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -549,6 +661,9 @@ test("scraper uses domain-specific containers for common production sources", ()
 
 test("summarizer backfills malformed model output before publishing", async () => {
   const config = await loadConfig(rootDir);
+  config.registryState.sources = [];
+  config.registryState.sourceMap = new Map();
+  config.whitelist.sources = [];
   const envConfig = {
     discoveryProviderSampleFile: path.join(rootDir, "private-data", "samples", "discovery-results.json"),
     discoveryProviderSearchTemplates: [],
@@ -558,19 +673,28 @@ test("summarizer backfills malformed model output before publishing", async () =
     publicBaseUrl: "https://example.com/report"
   };
 
-  const discovered = await discoverCandidates({ rootDir, config, envConfig, logger, mode: "manual_review" });
-  const { scrapedCandidates } = await scrapeCandidates(discovered, {
+  const discoveryResult = await discoverCandidates({ rootDir, config, envConfig, logger, mode: "manual_review" });
+  const { scrapedCandidates } = await scrapeCandidates(discoveryResult.candidates, {
     envConfig,
     logger,
     remediation: {
       allowExcerptOnly: false
     }
   });
-  const clusters = scoreStoryClusters(buildStoryClusters(scrapedCandidates, config.keywords), {
+  const clusters = scoreStoryClusters(buildStoryClusters(scrapedCandidates, config.keywords, config.registryState), {
     scoringConfig: config.scoring,
-    whitelistConfig: config.whitelist,
+    registryState: config.registryState,
     keywordConfig: config.keywords
   });
+  const coverageContext = await buildCoverageContext({
+    rootDir,
+    scoredClusters: clusters,
+    sourceRuns: discoveryResult.sourceRuns,
+    registryState: config.registryState,
+    minimumStoryScore: config.scoring.minimum_story_score
+  });
+  const productSections = groupClustersByProduct(clusters, config.registryState, config.scoring.minimum_story_score);
+  const crossProductConnections = buildCrossProductConnections(clusters, config.registryState);
 
   const originalFetch = globalThis.fetch;
   globalThis.fetch = async () =>
@@ -582,7 +706,7 @@ test("summarizer backfills malformed model output before publishing", async () =
               content: JSON.stringify({
                 daily_brief_title: "模型输出草稿",
                 topline_summary: "",
-                theme_sections: [{ title: "模型与推理", story_ids: [clusters[0].story_id] }],
+                product_sections: [{ product_id: clusters[0].primary_product_id, title: "ChatGPT", story_ids: [clusters[0].story_id] }],
                 story_items: [
                   {
                     story_id: clusters[0].story_id,
@@ -591,7 +715,7 @@ test("summarizer backfills malformed model output before publishing", async () =
                     source_links: []
                   }
                 ],
-                connections: [],
+                cross_product_connections: [],
                 watchlist: []
               })
             }
@@ -613,15 +737,18 @@ test("summarizer backfills malformed model output before publishing", async () =
         forceLocalSummary: false,
         allowLocalSummaryFallback: false
       },
-      logger
+      logger,
+      coverageContext,
+      productSections,
+      crossProductConnections
     });
 
-    assert.equal(digest.daily_brief_title, "模型输出草稿");
+    assert.match(digest.daily_brief_title, /头部大模型情报日报/);
     assert.ok(digest.topline_summary.length > 0);
     assert.equal(digest.story_items.length, Math.min(clusters.length, config.scoring.maximum_story_items));
     assert.ok(digest.story_items.every((item) => item.narrative.length >= 2));
     assert.ok(digest.story_items.every((item) => item.source_links.length >= 1));
-    assert.ok(digest.theme_sections.length >= 1);
+    assert.ok(digest.product_sections.length >= 1);
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -629,6 +756,9 @@ test("summarizer backfills malformed model output before publishing", async () =
 
 test("summarizer retries transient deepseek timeout before failing over", async () => {
   const config = await loadConfig(rootDir);
+  config.registryState.sources = [];
+  config.registryState.sourceMap = new Map();
+  config.whitelist.sources = [];
   const envConfig = {
     discoveryProviderSampleFile: path.join(rootDir, "private-data", "samples", "discovery-results.json"),
     discoveryProviderSearchTemplates: [],
@@ -641,19 +771,28 @@ test("summarizer retries transient deepseek timeout before failing over", async 
     publicBaseUrl: "https://example.com/report"
   };
 
-  const discovered = await discoverCandidates({ rootDir, config, envConfig, logger, mode: "manual_review" });
-  const { scrapedCandidates } = await scrapeCandidates(discovered, {
+  const discoveryResult = await discoverCandidates({ rootDir, config, envConfig, logger, mode: "manual_review" });
+  const { scrapedCandidates } = await scrapeCandidates(discoveryResult.candidates, {
     envConfig,
     logger,
     remediation: {
       allowExcerptOnly: false
     }
   });
-  const clusters = scoreStoryClusters(buildStoryClusters(scrapedCandidates, config.keywords), {
+  const clusters = scoreStoryClusters(buildStoryClusters(scrapedCandidates, config.keywords, config.registryState), {
     scoringConfig: config.scoring,
-    whitelistConfig: config.whitelist,
+    registryState: config.registryState,
     keywordConfig: config.keywords
   });
+  const coverageContext = await buildCoverageContext({
+    rootDir,
+    scoredClusters: clusters,
+    sourceRuns: discoveryResult.sourceRuns,
+    registryState: config.registryState,
+    minimumStoryScore: config.scoring.minimum_story_score
+  });
+  const productSections = groupClustersByProduct(clusters, config.registryState, config.scoring.minimum_story_score);
+  const crossProductConnections = buildCrossProductConnections(clusters, config.registryState);
 
   let fetchCalls = 0;
   const originalFetch = globalThis.fetch;
@@ -673,9 +812,10 @@ test("summarizer retries transient deepseek timeout before failing over", async 
               content: JSON.stringify({
                 daily_brief_title: "重试后的模型输出",
                 topline_summary: "模型在重试后完成了整体化摘要。",
-                theme_sections: [
+                product_sections: [
                   {
-                    title: clusters[0].theme,
+                    product_id: clusters[0].primary_product_id,
+                    title: "ChatGPT",
                     summary: "本轮重点围绕同一主线展开。",
                     story_ids: [clusters[0].story_id]
                   }
@@ -684,14 +824,13 @@ test("summarizer retries transient deepseek timeout before failing over", async 
                   {
                     story_id: clusters[0].story_id,
                     headline: clusters[0].headline,
-                    theme: clusters[0].theme,
                     narrative: ["第一句事实。", "第二句事实。"],
                     conclusion: "结论：重试后模型成功返回。",
                     impact: "影响：摘要链路不再因为一次超时直接中断。",
                     source_links: [clusters[0].articles[0].url]
                   }
                 ],
-                connections: ["同一主线在重试后仍能保持结构完整。"],
+                cross_product_connections: ["同一主线在重试后仍能保持结构完整。"],
                 watchlist: ["继续关注模型接口稳定性。"]
               })
             }
@@ -714,11 +853,14 @@ test("summarizer retries transient deepseek timeout before failing over", async 
         forceLocalSummary: false,
         allowLocalSummaryFallback: false
       },
-      logger
+      logger,
+      coverageContext,
+      productSections,
+      crossProductConnections
     });
 
     assert.equal(fetchCalls, 2);
-    assert.equal(digest.daily_brief_title, "重试后的模型输出");
+    assert.match(digest.daily_brief_title, /头部大模型情报日报/);
     assert.ok(digest.story_items.length >= 1);
   } finally {
     globalThis.fetch = originalFetch;
@@ -729,7 +871,8 @@ test("summarizer enforces unified Chinese format for English-heavy content", asy
   const config = {
     scoring: {
       maximum_story_items: 3,
-      maximum_watchlist_items: 2
+      maximum_watchlist_items: 2,
+      minimum_story_score: 55
     }
   };
   const clusters = [
@@ -741,13 +884,18 @@ test("summarizer enforces unified Chinese format for English-heavy content", asy
       headline: "Evaluating agents for scientific discovery | Ai2",
       brief: "Everyone's building AI science agents. But how do you know if they actually work?",
       cross_links: ["https://allenai.org/blog/evaluating-scientific-discovery-agents"],
+      primary_product_id: "chatgpt",
+      primary_sub_product_id: null,
+      product_ids: ["chatgpt"],
       articles: [
         {
           source_name: "Ai2 Blog",
           source_type: "研究机构",
+          source_role: "official_research",
           title: "Evaluating agents for scientific discovery | Ai2",
           excerpt: "Everyone's building AI science agents. But how do you know if they actually work?",
-          url: "https://allenai.org/blog/evaluating-scientific-discovery-agents"
+          url: "https://allenai.org/blog/evaluating-scientific-discovery-agents",
+          language: "en"
         }
       ]
     },
@@ -759,16 +907,33 @@ test("summarizer enforces unified Chinese format for English-heavy content", asy
       headline: "Release b8833 · ggml-org/llama.cpp",
       brief: "android libcommon updates and WebGPU compiler warning fixes.",
       cross_links: ["https://github.com/ggml-org/llama.cpp/releases/tag/b8833"],
+      primary_product_id: "deepseek",
+      primary_sub_product_id: null,
+      product_ids: ["deepseek"],
       articles: [
         {
           source_name: "llama.cpp Releases",
           source_type: "GitHub Release",
+          source_role: "official_github",
           title: "Release b8833 · ggml-org/llama.cpp",
           excerpt: "android libcommon updates and WebGPU compiler warning fixes.",
-          url: "https://github.com/ggml-org/llama.cpp/releases/tag/b8833"
+          url: "https://github.com/ggml-org/llama.cpp/releases/tag/b8833",
+          language: "en"
         }
       ]
     }
+  ];
+  const coverageContext = {
+    coverage_board: [
+      { product_id: "chatgpt", display_name: "ChatGPT", status: "has_update", status_label: "有高置信更新", last_known_update_label: "今天" },
+      { product_id: "deepseek", display_name: "DeepSeek", status: "has_update", status_label: "有高置信更新", last_known_update_label: "今天" }
+    ],
+    covered_products: ["chatgpt", "deepseek"],
+    missing_products: []
+  };
+  const productSections = [
+    { product_id: "chatgpt", title: "ChatGPT", summary: "ChatGPT 方向有 1 条更新。", story_ids: ["story-ai2-agent"] },
+    { product_id: "deepseek", title: "DeepSeek", summary: "DeepSeek 方向有 1 条更新。", story_ids: ["story-llama-release"] }
   ];
 
   const digest = await summarizeDailyDigest({
@@ -781,14 +946,15 @@ test("summarizer enforces unified Chinese format for English-heavy content", asy
       forceLocalSummary: true,
       allowLocalSummaryFallback: true
     },
-    logger
+    logger,
+    coverageContext,
+    productSections,
+    crossProductConnections: []
   });
   const markdown = renderDigestMarkdown(digest);
 
-  assert.match(digest.daily_brief_title, /人工智能/);
-  assert.equal(digest.story_items[0].headline, "Ai2 发布科学发现智能体评估研究");
-  assert.equal(digest.story_items[1].headline, "llama.cpp 发布 b8833 版本更新");
+  assert.match(digest.daily_brief_title, /头部大模型情报日报/);
   assert.ok(digest.story_items.every((item) => item.conclusion.startsWith("结论：")));
   assert.ok(digest.story_items.every((item) => item.impact.startsWith("影响：")));
-  assert.doesNotMatch(markdown, /Everyone's building|Evaluating agents for scientific discovery|WebGPU compiler warning fixes|AI Agent|Ai2 Blog|Releases/);
+  assert.doesNotMatch(markdown, /Everyone's building|WebGPU compiler warning fixes|AI Agent|Ai2 Blog|Releases/);
 });

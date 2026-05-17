@@ -2,8 +2,10 @@ import process from "node:process";
 import { loadConfig, loadDotEnv, loadEnvConfig } from "./config.js";
 import { findLatestRunFile } from "./publisher.js";
 import { findLatestResumeTarget } from "./checkpoints.js";
+import { summarizeSourceMix } from "./source-registry.js";
+import { validateGeneratedSources } from "./source-audit.js";
 
-const KNOWN_MODES = new Set(["daily_run", "retry_failed_run", "publish_only", "feishu_only", "manual_review"]);
+const KNOWN_MODES = new Set(["daily_run", "retry_failed_run", "publish_only", "feishu_only", "manual_review", "source_audit", "source_refresh"]);
 
 export async function runPreflightChecks({ rootDir, mode = "daily_run", env = process.env }) {
   await loadDotEnv(rootDir);
@@ -74,9 +76,10 @@ export async function runPreflightChecks({ rootDir, mode = "daily_run", env = pr
 
   if (config) {
     const whitelistSeedCount = countWhitelistSeeds(config.whitelist);
+    const sourceMix = summarizeSourceMix(config.registryState);
     pushCheck(
       checks,
-      "whitelist_sources",
+      "source_registry",
       whitelistSeedCount > 0 ? "pass" : "warn",
       `sources=${Array.isArray(config.whitelist?.sources) ? config.whitelist.sources.length : 0} seeds=${whitelistSeedCount}`
     );
@@ -87,8 +90,8 @@ export async function runPreflightChecks({ rootDir, mode = "daily_run", env = pr
         "production_source_policy",
         whitelistSeedCount > 0 ? "pass" : "warn",
         whitelistSeedCount > 0
-          ? "daily production uses whitelist-first discovery"
-          : "no whitelist seeds configured, production would fall back to provider discovery"
+          ? "daily production uses official registry-first discovery"
+          : "no registry seeds configured, production would fall back to provider discovery"
       );
     }
 
@@ -102,6 +105,28 @@ export async function runPreflightChecks({ rootDir, mode = "daily_run", env = pr
     } else if (mode === "daily_run" || mode === "retry_failed_run") {
       pushCheck(checks, "discovery_inputs", "pass", "discovery inputs configured");
     }
+
+    pushCheck(
+      checks,
+      "tracked_product_coverage",
+      sourceMix.every((item) => item.enabled_source_count >= 1) ? "pass" : "fail",
+      sourceMix.map((item) => `${item.product_id}:${item.enabled_source_count}`).join(", ")
+    );
+
+    pushCheck(
+      checks,
+      "official_source_mix",
+      sourceMix.every((item) => item.source_roles.length >= 1) ? "pass" : "warn",
+      sourceMix.map((item) => `${item.product_id}:${item.source_roles.join("+") || "none"}`).join(", ")
+    );
+
+    const generatedIntegrity = validateGeneratedSources(config.generatedSources);
+    pushCheck(
+      checks,
+      "generated_sources_integrity",
+      generatedIntegrity.ok ? "pass" : "fail",
+      generatedIntegrity.ok ? "generated_sources schema valid" : generatedIntegrity.errors.join("; ")
+    );
   }
 
   if (mode === "publish_only" || mode === "feishu_only") {
@@ -124,6 +149,16 @@ export async function runPreflightChecks({ rootDir, mode = "daily_run", env = pr
       "retry_resume_target",
       resumeTarget ? "pass" : "fail",
       resumeTarget ? resumeTarget.incident.attempt_run_id : "no resumable failed run found"
+    );
+  }
+
+  if (mode === "source_audit") {
+    const latestRunFile = await findLatestRunFile({ rootDir });
+    pushCheck(
+      checks,
+      "source_audit_freshness",
+      latestRunFile ? "pass" : "warn",
+      latestRunFile ? "recent run artifacts available for audit" : "no prior run artifacts; audit will rely on current scan only"
     );
   }
 

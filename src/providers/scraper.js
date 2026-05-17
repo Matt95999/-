@@ -70,17 +70,33 @@ const DOMAIN_CONTENT_PATTERNS = [
   }
 ];
 
-export async function scrapeCandidates(candidates, { envConfig, logger, remediation }) {
+export async function scrapeCandidates(candidates, { envConfig, logger, remediation, sourceRuns = [] }) {
+  const candidateList = Array.isArray(candidates) ? candidates : candidates?.candidates || [];
   const results = [];
   const failures = [];
+  const sourceRunMap = new Map(sourceRuns.map((sourceRun) => [sourceRun.source_id, sourceRun]));
 
-  for (const candidate of candidates) {
+  for (const sourceRun of sourceRuns) {
+    sourceRun.scrape = {
+      status: sourceRun.discovery.discovered_count ? "pending" : "not_applicable",
+      scraped_count: 0,
+      failed_count: 0,
+      excerpt_only_count: 0,
+      low_quality_count: 0,
+      last_scraped_at: null,
+      errors: []
+    };
+  }
+
+  for (const candidate of candidateList) {
+    const sourceRun = sourceRunMap.get(candidate.source_id);
     try {
       const html = await loadResourceText(candidate.url, envConfig.discoveryProviderRequestHeaders);
       const parsed = parseArticlePage(html, candidate.url);
       const fullText = shouldKeepParsedFullText(parsed.fullText) ? parsed.fullText : candidate.full_text || "";
       const excerpt = candidate.excerpt || parsed.excerpt || truncate(fullText, 180);
       const confidence = computeConfidence(candidate.confidence, parsed, remediation);
+      const parseQuality = fullText ? "full_text" : "excerpt_only";
 
       results.push({
         ...candidate,
@@ -94,15 +110,29 @@ export async function scrapeCandidates(candidates, { envConfig, logger, remediat
           has_full_text: Boolean(fullText),
           byline: parsed.byline,
           interaction_signal: parsed.interactionSignal,
-          parse_quality: fullText ? "full_text" : "excerpt_only"
+          parse_quality: parseQuality
         },
         confidence,
         content_hash: sha256(`${candidate.url}|${parsed.title || candidate.title}|${fullText || excerpt}`)
       });
+
+      if (sourceRun) {
+        sourceRun.scrape.status = "success";
+        sourceRun.scrape.scraped_count += 1;
+        sourceRun.scrape.last_scraped_at = nowIso();
+        if (parseQuality === "excerpt_only") {
+          sourceRun.scrape.excerpt_only_count += 1;
+        }
+      }
     } catch (error) {
       logger.warn("scrape failed", { url: candidate.url, error: error.message });
       failures.push({ candidate, reason: error.message });
-      if ((candidate.signals?.discovery_source === "whitelist" || remediation.allowExcerptOnly) && candidate.excerpt) {
+      if (sourceRun) {
+        sourceRun.scrape.status = sourceRun.scrape.scraped_count ? "partial_failure" : "failed";
+        sourceRun.scrape.failed_count += 1;
+        sourceRun.scrape.errors.push({ url: candidate.url, error: error.message });
+      }
+      if (shouldKeepCandidateExcerpt(candidate, remediation)) {
         results.push({
           ...candidate,
           full_text: null,
@@ -114,17 +144,40 @@ export async function scrapeCandidates(candidates, { envConfig, logger, remediat
             parse_quality: "excerpt_only"
           }
         });
+        if (sourceRun) {
+          sourceRun.scrape.scraped_count += 1;
+          sourceRun.scrape.excerpt_only_count += 1;
+          sourceRun.scrape.last_scraped_at = nowIso();
+        }
       }
     }
   }
 
-  if (!results.length) {
+  if (!results.length && candidateList.length > 0) {
     throw new StageError("scrape", "scrape_failure", "all candidate scraping attempts failed", {
       failureCount: failures.length
     });
   }
 
-  return { scrapedCandidates: results, failures };
+  for (const sourceRun of sourceRuns) {
+    if (sourceRun.scrape?.status === "pending") {
+      sourceRun.scrape.status = sourceRun.scrape.scraped_count ? "success" : "success_empty";
+    }
+  }
+
+  return { scrapedCandidates: results, failures, sourceRuns };
+}
+
+function shouldKeepCandidateExcerpt(candidate, remediation) {
+  if (!candidate?.excerpt) {
+    return false;
+  }
+
+  return (
+    remediation.allowExcerptOnly ||
+    candidate.signals?.discovery_source === "whitelist" ||
+    candidate.signals?.discovery_source === "registry"
+  );
 }
 
 export function parseArticlePage(html, sourceUrl = "") {

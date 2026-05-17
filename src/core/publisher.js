@@ -63,6 +63,14 @@ async function updateHistory(historyJsonPath, publicDigest) {
 export async function saveRunArtifacts({ runContext, artifacts }) {
   const runFile = path.join(runContext.privateDataDir, "runs", `${getAttemptArtifactId(runContext)}.json`);
   await writeJson(runFile, artifacts);
+  if (Array.isArray(artifacts.rankingAudit)) {
+    const rankingAuditPath = path.join(
+      runContext.privateDataDir,
+      "runs",
+      `${getAttemptArtifactId(runContext)}-top_ranked_candidates.json`
+    );
+    await writeJson(rankingAuditPath, artifacts.rankingAudit);
+  }
   return runFile;
 }
 

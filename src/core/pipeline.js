@@ -12,15 +12,16 @@ import { StageError } from "./errors.js";
 import { discoverCandidates } from "../providers/discovery.js";
 import { scrapeCandidates } from "../providers/scraper.js";
 import { buildStoryClusters } from "./clustering.js";
-import { scoreStoryClusters } from "./scoring.js";
+import { buildTopRankedCandidatesAudit, scoreStoryClusters } from "./scoring.js";
 import { summarizeDailyDigest } from "./summarizer.js";
 import { publishDigest, saveRunArtifacts } from "./publisher.js";
 import { deliverDigestToFeishu, deliverFailureIncident } from "./feishu.js";
 import { executeWithRemediation } from "./remediation.js";
 import { syncPrivateArtifacts } from "./private-sync.js";
 import { createLogger } from "../utils/logger.js";
+import { buildCoverageContext, buildCrossProductConnections, groupClustersByProduct } from "./coverage.js";
 
-export async function runDailyPipeline({ rootDir, mode = "daily_run" }) {
+export async function runDailyPipeline({ rootDir, mode = "daily_run", boostKeywords = [] }) {
   await loadDotEnv(rootDir);
   const config = await loadConfig(rootDir);
   const envConfig = loadEnvConfig();
@@ -49,21 +50,18 @@ export async function runDailyPipeline({ rootDir, mode = "daily_run" }) {
       const attemptLogger = createLogger(getAttemptArtifactId(attemptContext));
       const effectivePreviousIncident = previousIncident || resumeState?.incident || null;
 
-      const { discovered } = await resolveStage({
+      const { candidates: discovered, sourceRuns: discoverySourceRuns } = await resolveStage({
         stage: "discover",
         previousIncident: effectivePreviousIncident,
         checkpoints,
         attemptContext,
         logger: attemptLogger,
         compute: async () => ({
-          discovered: await discoverCandidates({ rootDir, config, envConfig, logger: attemptLogger, mode })
+          ...(await discoverCandidates({ rootDir, config, envConfig, logger: attemptLogger, mode }))
         })
       });
-      if (!discovered.length) {
-        throw new StageError("discover", "no_candidates", "no article candidates discovered");
-      }
 
-      const { scrapedCandidates, failures } = await resolveStage({
+      const { scrapedCandidates, failures, sourceRuns } = await resolveStage({
         stage: "scrape",
         previousIncident: effectivePreviousIncident,
         checkpoints,
@@ -73,7 +71,8 @@ export async function runDailyPipeline({ rootDir, mode = "daily_run" }) {
           scrapeCandidates(discovered, {
             envConfig,
             logger: attemptLogger,
-            remediation
+            remediation,
+            sourceRuns: discoverySourceRuns
           })
       });
 
@@ -84,28 +83,29 @@ export async function runDailyPipeline({ rootDir, mode = "daily_run" }) {
         attemptContext,
         logger: attemptLogger,
         compute: async () => {
-          const clusters = buildStoryClusters(scrapedCandidates, config.keywords);
+          const clusters = buildStoryClusters(scrapedCandidates, config.keywords, config.registryState);
           return {
             scored: scoreStoryClusters(clusters, {
               scoringConfig: config.scoring,
-              whitelistConfig: config.whitelist,
-              keywordConfig: config.keywords
+              registryState: config.registryState,
+              keywordConfig: config.keywords,
+              boostKeywords
             })
           };
         }
       });
 
-      const filtered = scored.filter(
-        (cluster) => remediation.partialPublish || cluster.score >= config.scoring.minimum_story_score
-      );
-
-      if (filtered.length < config.scoring.minimum_digest_story_count && !remediation.partialPublish) {
-        throw new StageError(
-          "score",
-          "insufficient_story_count",
-          `only ${filtered.length} scored stories available, below minimum`
-        );
-      }
+      const filtered = scored.filter((cluster) => remediation.partialPublish || cluster.score >= config.scoring.minimum_story_score);
+      const coverageContext = await buildCoverageContext({
+        rootDir,
+        scoredClusters: filtered,
+        sourceRuns,
+        registryState: config.registryState,
+        minimumStoryScore: config.scoring.minimum_story_score
+      });
+      const productSections = groupClustersByProduct(filtered, config.registryState, config.scoring.minimum_story_score);
+      const crossProductConnections = buildCrossProductConnections(filtered, config.registryState);
+      const rankingAudit = buildTopRankedCandidatesAudit(scored);
 
       const { digest } = await resolveStage({
         stage: "summarize",
@@ -119,7 +119,10 @@ export async function runDailyPipeline({ rootDir, mode = "daily_run" }) {
             config,
             envConfig,
             remediation,
-            logger: attemptLogger
+            logger: attemptLogger,
+            coverageContext,
+            productSections,
+            crossProductConnections
           })
         })
       });
@@ -162,6 +165,8 @@ export async function runDailyPipeline({ rootDir, mode = "daily_run" }) {
         discoveredCount: discovered.length,
         scrapedCount: scrapedCandidates.length,
         scrapeFailures: failures,
+        sourceRuns,
+        rankingAudit,
         clusters: filtered,
         digest,
         publishResult,

@@ -16,6 +16,11 @@ on:
           - publish_only
           - feishu_only
           - manual_review
+      boost_keywords:
+        description: "Optional special event boost keywords, comma separated"
+        required: false
+        default: ""
+        type: string
 
 permissions:
   contents: write
@@ -103,7 +108,12 @@ jobs:
           DISCOVERY_PROVIDER_MAX_QUERIES: ${{ vars.DISCOVERY_PROVIDER_MAX_QUERIES }}
         run: |
           MODE="${{ steps.prepare.outputs.mode }}"
-          npm run "$MODE"
+          BOOST_KEYWORDS="${{ github.event.inputs.boost_keywords }}"
+          if [ "$MODE" = "daily_run" ] && [ -n "$BOOST_KEYWORDS" ]; then
+            npm run "$MODE" -- --boost-keywords "$BOOST_KEYWORDS"
+          else
+            npm run "$MODE"
+          fi
 
       - name: Upload runtime artifacts
         if: always()
