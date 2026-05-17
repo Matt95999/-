@@ -432,7 +432,7 @@ function toCandidate(entry, options) {
     url,
     title,
     discovered_at: nowIso(),
-    published_at: normalizePublishedAt(entry.publishedAt, `${title} ${entry.excerpt || ""}`),
+    published_at: normalizePublishedAt(entry.publishedAt, `${title} ${entry.excerpt || ""}`) || inferPublishedAtFromUrl(url),
     excerpt,
     full_text: null,
     signals: {
@@ -840,6 +840,35 @@ function normalizePublishedAt(value, fallbackText = "") {
     return text;
   }
   return parsed.toISOString();
+}
+
+function inferPublishedAtFromUrl(url) {
+  try {
+    const parsed = new URL(url);
+    const hash = decodeURIComponent(parsed.hash || "").replace(/^#/, "");
+    const hashDate = parseMonthDayHashDate(hash);
+    if (hashDate) {
+      return hashDate;
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+function parseMonthDayHashDate(text) {
+  const match = cleanText(text).match(/^(\d{1,2})-(\d{1,2})-(\d{2}|\d{4})$/);
+  if (!match) {
+    return null;
+  }
+  const month = Number.parseInt(match[1], 10);
+  const day = Number.parseInt(match[2], 10);
+  const rawYear = Number.parseInt(match[3], 10);
+  const year = rawYear < 100 ? 2000 + rawYear : rawYear;
+  if (!month || !day || month > 12 || day > 31) {
+    return null;
+  }
+  return new Date(Date.UTC(year, month - 1, day)).toISOString();
 }
 
 function extractHumanDate(text) {

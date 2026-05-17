@@ -257,6 +257,20 @@ test("discovery infers published_at from human-readable dates in titles", () => 
   assert.equal(entries[0].published_at, "2026-04-16T00:00:00.000Z");
 });
 
+test("discovery infers old changelog dates from url anchors", () => {
+  const entries = extractDiscoveryEntries({
+    resourceUrl: "https://ai.google.dev/gemini-api/docs/changelog",
+    text: `<a href="https://ai.google.dev/gemini-api/docs/changelog#12-13-23">Gemini API release notes</a>`,
+    sourceName: "Gemini API Changelog",
+    sourceType: "官方文档",
+    discoverySource: "registry",
+    allowedHosts: ["ai.google.dev"]
+  });
+
+  assert.equal(entries.length, 1);
+  assert.equal(entries[0].published_at, "2023-12-13T00:00:00.000Z");
+});
+
 test("daily discovery uses whitelist-first sources and skips provider search noise", async () => {
   const whitelistLogger = createLogger("test-discovery-whitelist");
   const config = {
