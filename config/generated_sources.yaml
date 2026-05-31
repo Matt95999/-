@@ -9,11 +9,11 @@
       "avg_update_interval_days": 14
     },
     {
-      "source_id": "openai-codex-changelog",
+      "source_id": "deepseek-home",
       "enabled": false,
-      "degrade_reason": "discovery_failure",
+      "degrade_reason": "success_empty",
       "last_auto_action": "disable",
-      "last_auto_action_at": "2026-05-17T05:45:20.164Z",
+      "last_auto_action_at": "2026-06-01T00:00:00.000Z",
       "avg_update_interval_days": 14
     }
   ]

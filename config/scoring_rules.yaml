@@ -23,6 +23,7 @@
     "supplement": 35
   },
   "minimum_story_score": 55,
+  "maximum_digest_story_age_days": 7,
   "maximum_story_items": 6,
   "maximum_watchlist_items": 3,
   "maximum_attempts": 5,

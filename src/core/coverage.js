@@ -130,9 +130,9 @@ function groupSubProducts(stories) {
 
 function buildProductSectionSummary(displayName, stories) {
   if (stories.length === 1) {
-    return `今天 ${displayName} 只有 1 条高置信更新，重点在于 ${stories[0].headline}。`;
+    return `本期 ${displayName} 入选 1 条高置信线索，重点在于 ${stories[0].headline}。`;
   }
-  return `今天 ${displayName} 共出现 ${stories.length} 条高置信更新，主线集中在 ${stories
+  return `本期 ${displayName} 入选 ${stories.length} 条高置信线索，主线集中在 ${stories
     .slice(0, 2)
     .map((story) => story.headline)
     .join("、")}。`;

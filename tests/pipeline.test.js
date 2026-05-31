@@ -271,6 +271,132 @@ test("discovery infers old changelog dates from url anchors", () => {
   assert.equal(entries[0].published_at, "2023-12-13T00:00:00.000Z");
 });
 
+test("discovery infers chinese changelog dates", async () => {
+  const config = {
+    keywords: { themes: [], query_expansions: [] },
+    registryState: {
+      sources: [
+        {
+          source_id: "kimi-changelog-test",
+          display_name: "Kimi 变更记录",
+          source_type: "官方文档",
+          source_role: "official_docs_changelog",
+          vendor_id: "moonshot",
+          product_ids: ["kimi"],
+          status: "active",
+          enabled: true,
+          priority_weight: 1,
+          expected_update_cadence: "high",
+          allowed_hosts: [],
+          seed_urls: [path.join(rootDir, "tests", "fixtures", "kimi-changelog.html")],
+          entry_strategy: "inline_changelog",
+          include_entry_text_patterns: ["Kimi"],
+          max_entries: 3
+        }
+      ],
+      productMap: new Map([["kimi", { product_id: "kimi", display_name: "Kimi", detection_terms: ["Kimi"] }]]),
+      activeProducts: []
+    },
+    scoring: { maximum_attempts: 5 }
+  };
+  const result = await discoverCandidates({
+    rootDir,
+    config,
+    envConfig: { discoveryProviderRequestHeaders: {} },
+    logger,
+    mode: "daily_run"
+  });
+
+  assert.equal(result.candidates[0].published_at, "2025-11-06T00:00:00.000Z");
+});
+
+test("discovery extracts dated card changelog entries instead of navigation", async () => {
+  const config = {
+    keywords: { themes: [], query_expansions: [] },
+    registryState: {
+      sources: [
+        {
+          source_id: "codex-dated-cards-test",
+          display_name: "Codex Changelog",
+          source_type: "官方开发者文档",
+          source_role: "official_docs_changelog",
+          vendor_id: "openai",
+          product_ids: ["openai_codex"],
+          status: "active",
+          enabled: true,
+          priority_weight: 1,
+          expected_update_cadence: "high",
+          allowed_hosts: [],
+          seed_urls: [path.join(rootDir, "tests", "fixtures", "codex-changelog.html")],
+          entry_strategy: "dated_cards",
+          include_entry_text_patterns: ["Codex"],
+          require_published_at: true,
+          max_entries: 3
+        }
+      ],
+      productMap: new Map([["openai_codex", { product_id: "openai_codex", display_name: "Codex", detection_terms: ["Codex"] }]]),
+      activeProducts: []
+    },
+    scoring: { maximum_attempts: 5 }
+  };
+  const result = await discoverCandidates({
+    rootDir,
+    config,
+    envConfig: { discoveryProviderRequestHeaders: {} },
+    logger,
+    mode: "daily_run"
+  });
+
+  assert.equal(result.candidates.length, 1);
+  assert.match(result.candidates[0].title, /Codex CLI/);
+  assert.equal(result.candidates[0].published_at, "2026-05-28T00:00:00.000Z");
+  assert.doesNotMatch(result.candidates[0].title, /Using Codex/);
+});
+
+test("discovery extracts mintlify update changelog entries", async () => {
+  const config = {
+    keywords: { themes: [], query_expansions: [] },
+    registryState: {
+      sources: [
+        {
+          source_id: "claude-code-mintlify-test",
+          display_name: "Claude Code Changelog",
+          source_type: "官方文档",
+          source_role: "official_release_notes",
+          vendor_id: "anthropic",
+          product_ids: ["claude_code"],
+          status: "active",
+          enabled: true,
+          priority_weight: 1,
+          expected_update_cadence: "high",
+          allowed_hosts: [],
+          seed_urls: [path.join(rootDir, "tests", "fixtures", "claude-code-changelog.html")],
+          entry_strategy: "mintlify_updates",
+          include_entry_text_patterns: ["Claude Code", "IDE", "CLI"],
+          exclude_entry_text_patterns: ["no user-facing changes"],
+          require_published_at: true,
+          max_entries: 3
+        }
+      ],
+      productMap: new Map([["claude_code", { product_id: "claude_code", display_name: "Claude Code", detection_terms: ["Claude Code"] }]]),
+      activeProducts: []
+    },
+    scoring: { maximum_attempts: 5 }
+  };
+
+  const result = await discoverCandidates({
+    rootDir,
+    config,
+    envConfig: { discoveryProviderRequestHeaders: {} },
+    logger,
+    mode: "daily_run"
+  });
+
+  assert.equal(result.candidates.length, 1);
+  assert.equal(result.candidates[0].title, "Claude Code 2.1.158");
+  assert.equal(result.candidates[0].published_at, "2026-05-29T00:00:00.000Z");
+});
+
 test("daily discovery uses whitelist-first sources and skips provider search noise", async () => {
   const whitelistLogger = createLogger("test-discovery-whitelist");
   const config = {
@@ -393,6 +519,178 @@ test("scoring does not treat far-future parsed dates as fresh updates", () => {
   });
 
   assert.equal(scored[0].score_breakdown.recency, 20);
+});
+
+test("scoring caps excerpt-only failed official news below high-confidence threshold", () => {
+  const cluster = {
+    story_id: "excerpt-only",
+    headline: "ChatGPT 官方新闻摘要",
+    theme: "ChatGPT",
+    confidence: 0.6,
+    official_source_level: "official_news",
+    product_ids: ["chatgpt"],
+    primary_product_id: "chatgpt",
+    articles: [
+      {
+        source_id: "openai-chatgpt-newsroom",
+        source_role: "official_news",
+        title: "ChatGPT update",
+        excerpt: "OpenAI RSS 摘要。",
+        published_at: new Date().toISOString(),
+        signals: { source_priority: 1, evidence_level: "excerpt_only_failed", has_full_text: false }
+      }
+    ]
+  };
+
+  const scored = scoreStoryClusters([cluster], {
+    scoringConfig: {
+      weights: {
+        recency: 0.12,
+        source_priority: 0.13,
+        keyword_relevance: 0.08,
+        cross_source_repetition: 0.07,
+        story_type: 0.07,
+        interaction_signal: 0.03,
+        official_source_level: 0.25,
+        product_priority: 0.25
+      },
+      official_source_levels: { official_news: 75 },
+      priority_tiers: { p0: 100 },
+      first_tier_product_score_threshold: 100,
+      first_tier_source_score_threshold: 75
+    },
+    registryState: { productMap: new Map([["chatgpt", { priority_tier: "p0" }]]) },
+    keywordConfig: { themes: [] }
+  });
+
+  assert.ok(scored[0].score <= 54);
+  assert.equal(scored[0].score_breakdown.cross_source_repetition, 33.3);
+});
+
+test("scoring caps stale official changelog entries below high-confidence threshold", () => {
+  const cluster = {
+    story_id: "stale",
+    headline: "Gemini 旧更新",
+    official_source_level: "official_docs_changelog",
+    product_ids: ["gemini"],
+    primary_product_id: "gemini",
+    articles: [
+      {
+        source_id: "google-gemini-api-changelog",
+        source_role: "official_docs_changelog",
+        title: "Gemini old changelog",
+        excerpt: "旧版本更新。",
+        published_at: "2024-03-19T00:00:00.000Z",
+        signals: { source_priority: 1, has_full_text: true }
+      }
+    ]
+  };
+
+  const scored = scoreStoryClusters([cluster], {
+    scoringConfig: {
+      weights: {
+        recency: 0.12,
+        source_priority: 0.13,
+        keyword_relevance: 0.08,
+        cross_source_repetition: 0.07,
+        story_type: 0.07,
+        interaction_signal: 0.03,
+        official_source_level: 0.25,
+        product_priority: 0.25
+      },
+      official_source_levels: { official_docs_changelog: 100 },
+      priority_tiers: { p0: 100 },
+      first_tier_product_score_threshold: 100,
+      first_tier_source_score_threshold: 75
+    },
+    registryState: { productMap: new Map([["gemini", { priority_tier: "p0" }]]) },
+    keywordConfig: { themes: [] }
+  });
+
+  assert.ok(scored[0].score <= 54);
+});
+
+test("scoring caps official updates outside digest age window", () => {
+  const twentyDaysAgo = new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString();
+  const cluster = {
+    story_id: "outside-digest-window",
+    headline: "Codex 三周前更新",
+    official_source_level: "official_docs_changelog",
+    product_ids: ["openai_codex"],
+    primary_product_id: "openai_codex",
+    articles: [
+      {
+        source_id: "openai-codex-developers-changelog",
+        source_role: "official_docs_changelog",
+        title: "Codex old changelog",
+        excerpt: "三周前的官方更新。",
+        published_at: twentyDaysAgo,
+        signals: { source_priority: 1, has_full_text: true }
+      }
+    ]
+  };
+
+  const scored = scoreStoryClusters([cluster], {
+    scoringConfig: {
+      weights: {
+        recency: 0.12,
+        source_priority: 0.13,
+        keyword_relevance: 0.08,
+        cross_source_repetition: 0.07,
+        story_type: 0.07,
+        interaction_signal: 0.03,
+        official_source_level: 0.25,
+        product_priority: 0.25
+      },
+      official_source_levels: { official_docs_changelog: 100 },
+      priority_tiers: { p0: 100 },
+      maximum_digest_story_age_days: 14,
+      first_tier_product_score_threshold: 100,
+      first_tier_source_score_threshold: 75
+    },
+    registryState: { productMap: new Map([["openai_codex", { priority_tier: "p0" }]]) },
+    keywordConfig: { themes: [] }
+  });
+
+  assert.ok(scored[0].score <= 54);
+});
+
+test("scoring counts repetition by unique source, not same-source anchors", () => {
+  const cluster = {
+    story_id: "same-source",
+    headline: "DeepSeek API 更新",
+    confidence: 0.8,
+    official_source_level: "official_docs_changelog",
+    product_ids: ["deepseek"],
+    primary_product_id: "deepseek",
+    articles: [
+      { source_id: "deepseek-api-updates", source_role: "official_docs_changelog", title: "A", published_at: "2026-05-01T00:00:00.000Z", signals: { source_priority: 1 } },
+      { source_id: "deepseek-api-updates", source_role: "official_docs_changelog", title: "B", published_at: "2026-05-02T00:00:00.000Z", signals: { source_priority: 1 } },
+      { source_id: "deepseek-api-updates", source_role: "official_docs_changelog", title: "C", published_at: "2026-05-03T00:00:00.000Z", signals: { source_priority: 1 } }
+    ]
+  };
+  const scored = scoreStoryClusters([cluster], {
+    scoringConfig: {
+      weights: {
+        recency: 0,
+        source_priority: 0,
+        keyword_relevance: 0,
+        cross_source_repetition: 1,
+        story_type: 0,
+        interaction_signal: 0,
+        official_source_level: 0,
+        product_priority: 0
+      },
+      official_source_levels: { official_docs_changelog: 100 },
+      priority_tiers: { p0: 100 },
+      first_tier_product_score_threshold: 100,
+      first_tier_source_score_threshold: 75
+    },
+    registryState: { productMap: new Map([["deepseek", { priority_tier: "p0" }]]) },
+    keywordConfig: { themes: [] }
+  });
+
+  assert.equal(scored[0].score_breakdown.cross_source_repetition, 33.3);
 });
 
 test("scraper prefers article-like content blocks over page chrome", () => {

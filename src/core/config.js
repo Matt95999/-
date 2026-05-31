@@ -78,6 +78,8 @@ function adaptLegacyWhitelistToRegistry(whitelist) {
       include_entry_text_patterns: source.include_entry_text_patterns || [],
       exclude_entry_text_patterns: source.exclude_entry_text_patterns || [],
       entry_strategy: source.entry_strategy || "listing",
+      require_published_at: Boolean(source.require_published_at),
+      maximum_entry_age_days: source.maximum_entry_age_days || 0,
       max_entries: source.max_entries || 8
     }))
   };

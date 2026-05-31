@@ -2,18 +2,20 @@ import { hoursAgo } from "../utils/time.js";
 
 export function scoreStoryClusters(clusters, { scoringConfig, registryState, keywordConfig, boostKeywords = [] }) {
   const productMap = registryState?.productMap || new Map();
+  const maximumDigestStoryAgeDays = Number(scoringConfig.maximum_digest_story_age_days || 14);
 
   for (const cluster of clusters) {
-    const representative = cluster.articles[0];
-    const recency = recencyScore(representative.published_at || representative.discovered_at);
+    const publishedAt = mostRecentPublishedAt(cluster);
+    const recency = recencyScore(publishedAt);
     const sourcePriority = Math.min(
       1,
       cluster.articles.reduce((best, article) => Math.max(best, article.signals?.source_priority || 0.6), 0)
     );
     const keywordRelevance = keywordRelevanceScore(cluster, keywordConfig);
-    const repetition = Math.min(1, cluster.articles.length / 3);
+    const repetition = crossSourceRepetitionScore(cluster);
     const storyType = storyTypeScore(cluster);
     const interactionSignal = interactionScore(cluster);
+    const evidenceQuality = evidenceQualityScore(cluster);
     const officialSourceLevelScore = normalizeScore(
       scoringConfig.official_source_levels?.[cluster.official_source_level || "official_news"] || 75
     );
@@ -26,7 +28,9 @@ export function scoreStoryClusters(clusters, { scoringConfig, registryState, key
         (scoringConfig.first_tier_product_score_threshold || 100) &&
       (scoringConfig.official_source_levels?.[cluster.official_source_level || "official_news"] || 75) >=
         (scoringConfig.first_tier_source_score_threshold || 75) &&
-      hoursAgo(representative.published_at || representative.discovered_at) <= 48;
+      evidenceQuality >= 0.65 &&
+      publishedAt &&
+      hoursAgo(publishedAt) <= 48;
 
     const weights = scoringConfig.weights;
     const weightedScore =
@@ -39,7 +43,12 @@ export function scoreStoryClusters(clusters, { scoringConfig, registryState, key
       weights.official_source_level * officialSourceLevelScore +
       weights.product_priority * productPriorityScore;
 
-    cluster.score = round(100 * weightedScore + specialEventBoost + (isFirstTier ? 12 : 0));
+    cluster.score = capWeakEvidenceScore(
+      round(100 * weightedScore + specialEventBoost + (isFirstTier ? 12 : 0)),
+      evidenceQuality,
+      publishedAt,
+      maximumDigestStoryAgeDays
+    );
     cluster.score_breakdown = {
       recency: round(100 * recency),
       source_priority: round(100 * sourcePriority),
@@ -49,6 +58,7 @@ export function scoreStoryClusters(clusters, { scoringConfig, registryState, key
       interaction_signal: round(100 * interactionSignal),
       official_source_level_score: round(100 * officialSourceLevelScore),
       product_priority_score: round(100 * productPriorityScore),
+      evidence_quality: round(100 * evidenceQuality),
       special_event_boost: specialEventBoost,
       first_tier_boost: isFirstTier ? 12 : 0
     };
@@ -56,6 +66,77 @@ export function scoreStoryClusters(clusters, { scoringConfig, registryState, key
   }
 
   return [...clusters].sort(sortScoredClusters);
+}
+
+function mostRecentPublishedAt(cluster) {
+  const timestamps = cluster.articles
+    .map((article) => article.published_at)
+    .filter(Boolean)
+    .map((value) => new Date(value).getTime())
+    .filter((value) => !Number.isNaN(value));
+  if (!timestamps.length) {
+    return null;
+  }
+  return new Date(Math.max(...timestamps)).toISOString();
+}
+
+function crossSourceRepetitionScore(cluster) {
+  const uniqueSourceIds = new Set();
+  const uniqueHosts = new Set();
+  for (const article of cluster.articles) {
+    if (article.source_id) {
+      uniqueSourceIds.add(article.source_id);
+      continue;
+    }
+    try {
+      uniqueHosts.add(new URL(article.url).hostname);
+    } catch {
+      // Ignore malformed URLs; they should not increase cross-source confidence.
+    }
+  }
+  return Math.min(1, Math.max(uniqueSourceIds.size, uniqueHosts.size) / 3);
+}
+
+function evidenceQualityScore(cluster) {
+  const qualities = cluster.articles.map((article) => {
+    const hasPublishedAt = Boolean(article.published_at);
+    if (article.signals?.has_full_text && hasPublishedAt) {
+      return 1;
+    }
+    if (article.source_role === "official_docs_changelog" && hasPublishedAt) {
+      return 0.85;
+    }
+    if (article.source_role === "official_release_notes" && hasPublishedAt) {
+      return 0.85;
+    }
+    if (article.signals?.evidence_level === "excerpt_only_failed") {
+      return hasPublishedAt ? 0.42 : 0.28;
+    }
+    if (article.excerpt && hasPublishedAt) {
+      return 0.6;
+    }
+    return 0.25;
+  });
+  return qualities.length ? Math.max(...qualities) : 0;
+}
+
+function capWeakEvidenceScore(score, evidenceQuality, publishedAt, maximumDigestStoryAgeDays) {
+  if (!publishedAt) {
+    return Math.min(score, 54);
+  }
+  if (maximumDigestStoryAgeDays > 0 && hoursAgo(publishedAt) > maximumDigestStoryAgeDays * 24) {
+    return Math.min(score, 54);
+  }
+  if (hoursAgo(publishedAt) > 30 * 24) {
+    return Math.min(score, 54);
+  }
+  if (evidenceQuality < 0.45) {
+    return Math.min(score, 54);
+  }
+  if (evidenceQuality < 0.65) {
+    return Math.min(score, 68);
+  }
+  return score;
 }
 
 function sortScoredClusters(left, right) {
@@ -177,6 +258,7 @@ export function buildTopRankedCandidatesAudit(scoredClusters, limit = 10) {
     primary_sub_product_id: cluster.primary_sub_product_id,
     score: cluster.score,
     score_breakdown: cluster.score_breakdown,
+    latest_published_at: mostRecentPublishedAt(cluster),
     source_links: cluster.cross_links,
     source_names: cluster.articles.map((article) => article.source_name)
   }));

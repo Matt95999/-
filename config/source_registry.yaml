@@ -238,7 +238,7 @@
       "vendor_id": "openai",
       "product_ids": ["chatgpt"],
       "status": "active",
-      "priority_weight": 0.96,
+      "priority_weight": 0.72,
       "expected_update_cadence": "medium",
       "evaluation_enabled": false,
       "allowed_hosts": ["openai.com"],
@@ -258,23 +258,26 @@
         "Parloa",
         "NVIDIA engineers"
       ],
+      "maximum_entry_age_days": 45,
       "max_entries": 10
     },
     {
-      "source_id": "openai-codex-changelog",
-      "display_name": "Codex Changelog",
-      "source_type": "官方帮助中心",
-      "source_role": "official_release_notes",
+      "source_id": "openai-codex-developers-changelog",
+      "display_name": "Codex Developers Changelog",
+      "source_type": "官方开发者文档",
+      "source_role": "official_docs_changelog",
       "vendor_id": "openai",
       "product_ids": ["openai_codex"],
       "status": "active",
       "priority_weight": 1,
       "expected_update_cadence": "medium",
       "evaluation_enabled": false,
-      "allowed_hosts": ["help.openai.com"],
-      "seed_urls": ["https://help.openai.com/en/articles/11428266-codex-changelog/"],
-      "entry_strategy": "inline_changelog",
-      "include_entry_text_patterns": ["Codex", "GPT-5-Codex", "codex-mini", "coding"],
+      "allowed_hosts": ["developers.openai.com"],
+      "seed_urls": ["https://developers.openai.com/codex/changelog/"],
+      "entry_strategy": "dated_cards",
+      "include_entry_text_patterns": ["Codex", "GPT-5-Codex", "codex-mini", "coding", "CLI", "review", "agent"],
+      "require_published_at": true,
+      "maximum_entry_age_days": 120,
       "max_entries": 10
     },
     {
@@ -285,7 +288,7 @@
       "vendor_id": "openai",
       "product_ids": ["openai_codex"],
       "status": "active",
-      "priority_weight": 0.96,
+      "priority_weight": 0.72,
       "expected_update_cadence": "medium",
       "evaluation_enabled": false,
       "allowed_hosts": ["openai.com"],
@@ -298,6 +301,7 @@
         "AutoScout",
         "NVIDIA engineers"
       ],
+      "maximum_entry_age_days": 45,
       "max_entries": 10
     },
     {
@@ -311,10 +315,11 @@
       "priority_weight": 1,
       "expected_update_cadence": "high",
       "evaluation_enabled": false,
-      "allowed_hosts": ["docs.anthropic.com", "support.anthropic.com"],
+      "allowed_hosts": ["docs.anthropic.com", "support.claude.com"],
       "seed_urls": ["https://docs.anthropic.com/en/release-notes/claude-apps"],
       "entry_strategy": "inline_changelog",
       "include_entry_text_patterns": ["Claude", "Opus", "Sonnet", "Haiku", "Claude.ai", "Desktop", "Mobile"],
+      "maximum_entry_age_days": 45,
       "max_entries": 12
     },
     {
@@ -333,6 +338,7 @@
       "include_url_patterns": ["/news/[^/?#]+"],
       "exclude_url_patterns": ["press-kit"],
       "include_entry_text_patterns": ["Claude", "Opus", "Sonnet", "Haiku"],
+      "maximum_entry_age_days": 45,
       "max_entries": 10
     },
     {
@@ -346,10 +352,13 @@
       "priority_weight": 1,
       "expected_update_cadence": "high",
       "evaluation_enabled": false,
-      "allowed_hosts": ["docs.anthropic.com", "support.anthropic.com"],
-      "seed_urls": ["https://docs.anthropic.com/en/release-notes/claude-apps"],
-      "entry_strategy": "inline_changelog",
-      "include_entry_text_patterns": ["Claude Code", "Cowork", "Dispatch", "computer use", "coding"],
+      "allowed_hosts": ["code.claude.com"],
+      "seed_urls": ["https://code.claude.com/docs/en/changelog"],
+      "entry_strategy": "mintlify_updates",
+      "include_entry_text_patterns": ["Claude Code", "infrastructure", "feature", "fix", "improvement", "IDE", "CLI"],
+      "exclude_entry_text_patterns": ["no user-facing changes"],
+      "require_published_at": true,
+      "maximum_entry_age_days": 120,
       "max_entries": 12
     },
     {
@@ -367,6 +376,7 @@
       "seed_urls": ["https://www.anthropic.com/engineering"],
       "include_url_patterns": ["/engineering/[^/?#]+"],
       "include_entry_text_patterns": ["Claude Code", "computer use", "coding", "agent"],
+      "maximum_entry_age_days": 45,
       "max_entries": 8
     },
     {
@@ -384,6 +394,8 @@
       "seed_urls": ["https://ai.google.dev/gemini-api/docs/changelog"],
       "entry_strategy": "inline_changelog",
       "include_entry_text_patterns": ["Gemini", "Gemma", "AI Studio", "Live API", "Deep Research Agent"],
+      "require_published_at": true,
+      "maximum_entry_age_days": 45,
       "max_entries": 12
     },
     {
@@ -401,6 +413,7 @@
       "seed_urls": ["https://deepmind.google/discover/blog/"],
       "include_url_patterns": ["/discover/blog/[^/?#]+"],
       "include_entry_text_patterns": ["Gemini", "Gemma", "DeepMind"],
+      "maximum_entry_age_days": 45,
       "max_entries": 10
     },
     {
@@ -418,6 +431,8 @@
       "seed_urls": ["https://api-docs.deepseek.com/updates"],
       "entry_strategy": "inline_changelog",
       "include_entry_text_patterns": ["DeepSeek", "API", "chat", "reasoner", "V4", "R1"],
+      "require_published_at": true,
+      "maximum_entry_age_days": 45,
       "max_entries": 12
     },
     {
@@ -453,6 +468,7 @@
       "include_url_patterns": ["/blog/(?!page/)[^?#]+"],
       "exclude_url_patterns": ["/zh/blog/?$", "/blog/?$", "/blog/page/", "\\.xml$", "%3Clink"],
       "include_entry_text_patterns": ["Qwen", "QwQ", "Qwen3", "Qwen2.5", "Qwen2"],
+      "maximum_entry_age_days": 45,
       "max_entries": 10
     },
     {
@@ -470,6 +486,8 @@
       "seed_urls": ["https://qwenlm.github.io/qwen-code-docs/en/blog/"],
       "include_url_patterns": ["/qwen-code-docs/en/blog/[^?#]+"],
       "include_entry_text_patterns": ["Qwen", "Qwen 3", "Qwen Team", "Plus Launch"],
+      "exclude_entry_text_patterns": ["how-to", "guide", "students", "obsidian", "clean up desktop", "tutorial", "workflow"],
+      "maximum_entry_age_days": 45,
       "max_entries": 8
     },
     {
@@ -487,6 +505,8 @@
       "seed_urls": ["https://docs.mistral.ai/resources/changelogs"],
       "entry_strategy": "inline_changelog",
       "include_entry_text_patterns": ["Mistral", "Ministral", "Pixtral", "Magistral", "Codestral", "Le Chat"],
+      "require_published_at": true,
+      "maximum_entry_age_days": 45,
       "max_entries": 12
     },
     {
@@ -505,6 +525,7 @@
       "include_url_patterns": ["/news/[^/?#]+"],
       "exclude_url_patterns": ["\\?id=", "opengraph-image", "\\.png"],
       "include_entry_text_patterns": ["Mistral", "Ministral", "Pixtral", "Magistral", "Codestral", "Le Chat"],
+      "maximum_entry_age_days": 45,
       "max_entries": 10
     },
     {
@@ -522,6 +543,7 @@
       "seed_urls": ["https://platform.moonshot.cn/blog"],
       "include_url_patterns": ["/blog/posts/[^?#]+"],
       "include_entry_text_patterns": ["Kimi", "kimi", "K2", "K2.5", "K2.6", "Agent", "开放平台", "API"],
+      "maximum_entry_age_days": 45,
       "max_entries": 10
     },
     {
@@ -539,6 +561,8 @@
       "seed_urls": ["https://platform.moonshot.cn/blog/posts/changelog"],
       "entry_strategy": "inline_changelog",
       "include_entry_text_patterns": ["Kimi", "API", "Agent", "模型", "Context Caching", "Open Platform"],
+      "require_published_at": true,
+      "maximum_entry_age_days": 45,
       "max_entries": 12
     },
     {
@@ -556,6 +580,8 @@
       "seed_urls": ["https://docs.bigmodel.cn/cn/update/new-releases"],
       "entry_strategy": "inline_changelog",
       "include_entry_text_patterns": ["GLM", "AutoGLM", "智谱", "Coding", "Agent"],
+      "require_published_at": true,
+      "maximum_entry_age_days": 45,
       "max_entries": 12
     },
     {

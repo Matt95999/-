@@ -1,6 +1,6 @@
 import { StageError } from "./errors.js";
 import { parseJsonFromModelText, truncate, unique } from "../utils/text.js";
-import { nowIso } from "../utils/time.js";
+import { dateKey, nowIso } from "../utils/time.js";
 import { createTimeoutSignal } from "../utils/http.js";
 
 export async function summarizeDailyDigest({
@@ -154,6 +154,7 @@ function buildDeepSeekPayload({ clusters, config, attemptNo, coverageContext, pr
             maximum_story_items: config.scoring.maximum_story_items,
             maximum_watchlist_items: config.scoring.maximum_watchlist_items,
             output_style: "统一中文产品线日报格式；允许保留必要英文专有名词，但不能出现英文整句或英文段落。",
+            freshness_wording: "只有当天发布的事件才称为“今天”；其他入选线索统一用“本期”或“近期”，避免把数日前的官方更新写成当天新闻。",
             required_story_item_format: [
               "事实：2到4句中文，说明发生了什么、涉及谁、有什么关键变化。",
               "结论：1句中文，明确这条消息应如何判断。",
@@ -262,10 +263,7 @@ function normalizeDigest(rawDigest, { clusters, config, coverageContext, product
       buildCrossProductConnections(selected, crossProductConnections)
     ),
     watchlist: normalizeStringList(rawDigest?.watchlist, buildWatchlist(coverageContext, selected, config)),
-    generated_at:
-      typeof rawDigest?.generated_at === "string" && rawDigest.generated_at.trim()
-        ? rawDigest.generated_at.trim()
-        : nowIso()
+    generated_at: nowIso()
   };
 }
 
@@ -418,7 +416,7 @@ function buildTopline(coverageContext, clusters) {
   }
   const products = unique(clusters.map((cluster) => displayProductName(cluster.primary_product_id)).filter(Boolean)).slice(0, 4);
   const watched = coverageContext.missing_products.filter((item) => item.reason === "source_gap").map((item) => displayProductName(item.product_id));
-  const mainline = `今天的高置信更新主要集中在${products.join("、")}。`;
+  const mainline = `本期高置信更新主要集中在${products.join("、")}。`;
   if (!watched.length) {
     return `${mainline} 整体看，主线不是单一模型发布，而是头部产品在能力迭代、开发者接口和应用层体验上的同步推进。`;
   }
@@ -464,7 +462,7 @@ function buildProductSectionsFromStories(productSections, storyItems) {
 }
 
 function buildDailyTitle() {
-  return `头部大模型情报日报 ${new Date().toISOString().slice(0, 10)}`;
+  return `头部大模型情报日报 ${dateKey()}`;
 }
 
 function buildChineseHeadline(cluster) {
@@ -507,6 +505,8 @@ function polishChineseText(text) {
     .replace(/\bAI Agents?\b/gi, "智能体")
     .replace(/\bAgents?\b/gi, "智能体")
     .replace(/\bAI\b/g, "人工智能")
+    .replace(/([\u4e00-\u9fff])\s+人工智能/g, "$1人工智能")
+    .replace(/人工智能\s+([\u4e00-\u9fff])/g, "人工智能$1")
     .replace(/\s+/g, " ")
     .trim();
 }

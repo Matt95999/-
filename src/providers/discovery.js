@@ -271,6 +271,10 @@ function extractEntriesForSource({ source, registryState, resourceUrl, text }) {
   const entries =
     source.entry_strategy === "inline_changelog"
       ? extractInlineChangelogEntries({ resourceUrl, text, source })
+      : source.entry_strategy === "dated_cards"
+        ? extractDatedCardEntries({ resourceUrl, text, source })
+        : source.entry_strategy === "mintlify_updates"
+          ? extractMintlifyUpdateEntries({ resourceUrl, text })
       : source.entry_strategy === "page_as_article"
         ? extractPageAsArticleEntries({ resourceUrl, text, source })
         : extractDiscoveryEntries({
@@ -287,7 +291,25 @@ function extractEntriesForSource({ source, registryState, resourceUrl, text }) {
 
   return entries
     .filter((entry) => matchesEntryTextPatterns(entry, source.include_entry_text_patterns, source.exclude_entry_text_patterns))
+    .filter((entry) => matchesEntryFreshness(entry, source))
+    .map((entry) => normalizeRegistryEntry({ entry, resourceUrl, source }))
     .map((entry) => enrichCandidateWithRegistry(entry, source, registryState));
+}
+
+function normalizeRegistryEntry({ entry, resourceUrl, source }) {
+  if (entry.discovered_at || entry.published_at) {
+    return entry;
+  }
+
+  return toCandidate(entry, {
+    resourceUrl,
+    sourceName: source.display_name,
+    sourceType: source.source_type || "官方来源",
+    discoverySource: "registry",
+    sourcePriority: source.priority_weight || 1,
+    query: "",
+    fallbackTitle: source.display_name
+  });
 }
 
 function enrichCandidateWithRegistry(candidate, source, registryState) {
@@ -499,6 +521,64 @@ function extractInlineChangelogEntries({ resourceUrl, text, source }) {
   return uniqueEntriesByUrl(entries);
 }
 
+function extractDatedCardEntries({ resourceUrl, text }) {
+  const baseUrl = makeBaseUrl(resourceUrl);
+  const entries = [];
+  const cardPattern =
+    /<time\b[^>]*>(\d{4}-\d{2}-\d{2})<\/time>[\s\S]*?<h3\b[^>]*>([\s\S]*?)<\/h3>([\s\S]*?)(?=<time\b|<\/main>|<\/body>|$)/gi;
+  let match;
+  while ((match = cardPattern.exec(text)) !== null) {
+    const publishedAt = parseIsoDate(match[1]);
+    const title = cleanText(stripHtml(match[2] || ""));
+    if (!publishedAt || !title || isGenericChangelogHeading(title)) {
+      continue;
+    }
+
+    const bodyHtml = match[3] || "";
+    const anchorId = extractDataAnchorId(bodyHtml) || toSlug(title);
+    const snippet = cleanText(stripHtml(bodyHtml));
+    entries.push({
+      url: normalizeUrl(`${resourceUrl}#${anchorId}`, baseUrl),
+      title,
+      excerpt: cleanExcerpt(snippet, title) || truncate(snippet, 220) || null,
+      publishedAt,
+      format: "dated_card"
+    });
+  }
+  return uniqueEntriesByUrl(entries);
+}
+
+function extractMintlifyUpdateEntries({ resourceUrl, text }) {
+  const baseUrl = makeBaseUrl(resourceUrl);
+  const entries = [];
+  const updatePattern = /<div\b[^>]*class=["'][^"']*\bupdate\b[^"']*["'][^>]*id=["']([^"']+)["'][^>]*>([\s\S]*?)(?=<div\b[^>]*class=["'][^"']*\bupdate\b|<\/main>|<\/body>|$)/gi;
+  let match;
+  while ((match = updatePattern.exec(text)) !== null) {
+    const id = cleanText(match[1]);
+    const block = match[2] || "";
+    const version = cleanText(
+      block.match(/data-component-part=["']update-label["'][^>]*>([\s\S]*?)<\/div>/i)?.[1] || ""
+    );
+    const dateText = cleanText(
+      block.match(/data-component-part=["']update-description["'][^>]*>([\s\S]*?)<\/div>/i)?.[1] || ""
+    );
+    const publishedAt = parseHumanDateToIso(dateText) || parseIsoDate(dateText);
+    const body = cleanText(stripHtml(block));
+    const excerpt = cleanExcerpt(body.replace(version, "").replace(dateText, ""), version) || truncate(body, 220);
+    if (!id || !version || !publishedAt || !excerpt) {
+      continue;
+    }
+    entries.push({
+      url: normalizeUrl(`${resourceUrl}#${id}`, baseUrl),
+      title: `Claude Code ${version}`,
+      excerpt,
+      publishedAt,
+      format: "dated_card"
+    });
+  }
+  return uniqueEntriesByUrl(entries);
+}
+
 function extractPageAsArticleEntries({ resourceUrl, text, source }) {
   const title =
     extractMeta(text, "property", "og:title") ||
@@ -537,6 +617,22 @@ function matchesEntryTextPatterns(entry, includePatterns, excludePatterns) {
   return includePatterns.some((pattern) => testPattern(haystack, pattern));
 }
 
+function matchesEntryFreshness(entry, source) {
+  if (source.require_published_at && !entry.publishedAt) {
+    return false;
+  }
+
+  const maxAgeDays = Number(source.maximum_entry_age_days || 0);
+  if (!maxAgeDays || !entry.publishedAt) {
+    return true;
+  }
+  const timestamp = new Date(entry.publishedAt).getTime();
+  if (Number.isNaN(timestamp)) {
+    return false;
+  }
+  return Date.now() - timestamp <= maxAgeDays * 86_400_000;
+}
+
 function normalizeMatchableText(text) {
   let normalized = String(text || "").toLowerCase();
   for (const [pattern, replacement] of PRODUCT_TOKEN_NORMALIZERS) {
@@ -547,7 +643,7 @@ function normalizeMatchableText(text) {
 
 function parseHeadingDate(text) {
   const cleaned = cleanText(text).replace(/^date:\s*/i, "");
-  const full = parseMonthDayYear(cleaned) || parseIsoDate(cleaned);
+  const full = parseChineseDate(cleaned) || parseMonthDayYear(cleaned) || parseIsoDate(cleaned);
   return full;
 }
 
@@ -783,6 +879,10 @@ function parseHtmlAttributes(input) {
   return attrs;
 }
 
+function extractDataAnchorId(html) {
+  return cleanText(html.match(/data-anchor-id=["']([^"']+)["']/i)?.[1] || "");
+}
+
 function extractXmlTag(xml, tag) {
   const pattern = new RegExp(`<${escapeRegex(tag)}\\b[^>]*>([\\s\\S]*?)<\\/${escapeRegex(tag)}>`, "i");
   return cleanText(stripCdata(xml.match(pattern)?.[1] || ""));
@@ -825,7 +925,7 @@ function normalizePublishedAt(value, fallbackText = "") {
     return null;
   }
 
-  const humanDate = parseHumanDateToIso(text);
+  const humanDate = parseChineseDate(text) || parseHumanDateToIso(text);
   if (humanDate) {
     return humanDate;
   }
@@ -905,6 +1005,20 @@ function parseHumanDateToIso(text) {
   const day = Number.parseInt(match[2], 10);
   const year = Number.parseInt(match[3], 10);
   return new Date(Date.UTC(year, monthIndex, day)).toISOString();
+}
+
+function parseChineseDate(text) {
+  const match = cleanText(text).match(/(\d{4})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日/);
+  if (!match) {
+    return null;
+  }
+  const year = Number.parseInt(match[1], 10);
+  const month = Number.parseInt(match[2], 10);
+  const day = Number.parseInt(match[3], 10);
+  if (!year || !month || !day || month > 12 || day > 31) {
+    return null;
+  }
+  return new Date(Date.UTC(year, month - 1, day)).toISOString();
 }
 
 function parseMonthDayYear(text) {
@@ -1009,6 +1123,8 @@ function confidenceByFormat(format) {
       return 0.72;
     case "inline":
       return 0.8;
+    case "dated_card":
+      return 0.82;
     case "page":
       return 0.7;
     case "html":

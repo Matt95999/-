@@ -105,13 +105,14 @@ export async function scrapeCandidates(candidates, { envConfig, logger, remediat
         discovered_at: candidate.discovered_at || nowIso(),
         excerpt,
         full_text: fullText || (remediation.allowExcerptOnly ? null : ""),
-        signals: {
-          ...candidate.signals,
-          has_full_text: Boolean(fullText),
-          byline: parsed.byline,
-          interaction_signal: parsed.interactionSignal,
-          parse_quality: parseQuality
-        },
+          signals: {
+            ...candidate.signals,
+            has_full_text: Boolean(fullText),
+            byline: parsed.byline,
+            interaction_signal: parsed.interactionSignal,
+            parse_quality: parseQuality,
+            evidence_level: fullText ? "full_text" : "excerpt_only"
+          },
         confidence,
         content_hash: sha256(`${candidate.url}|${parsed.title || candidate.title}|${fullText || excerpt}`)
       });
@@ -141,7 +142,8 @@ export async function scrapeCandidates(candidates, { envConfig, logger, remediat
             ...candidate.signals,
             has_full_text: false,
             scrape_failed: true,
-            parse_quality: "excerpt_only"
+            parse_quality: "excerpt_only",
+            evidence_level: "excerpt_only_failed"
           }
         });
         if (sourceRun) {
@@ -396,6 +398,9 @@ function pickBestTitle(parsedTitle, candidateTitle) {
   if (isLowInformationTitle(parsed) && !isLowInformationTitle(candidate)) {
     return candidate;
   }
+  if (/changelog|change log|release notes/i.test(parsed) && candidate.length >= 8) {
+    return candidate;
+  }
 
   return parsed.length >= candidate.length ? parsed : candidate;
 }
@@ -407,7 +412,7 @@ function isLowInformationTitle(title) {
   }
 
   const stripped = normalized.replace(/[|:·\-]/g, " ").replace(/\s+/g, " ").trim();
-  return ["news", "blog", "archive", "latest news", "latest news mistral ai"].includes(stripped);
+  return ["news", "blog", "archive", "changelog", "change log", "release notes", "latest news", "latest news mistral ai"].includes(stripped);
 }
 
 function safeHostname(url) {
