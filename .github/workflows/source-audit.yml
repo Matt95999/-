@@ -34,6 +34,10 @@ jobs:
       - name: Run preflight checks
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          FEISHU_DELIVERY_PROVIDER: ${{ vars.FEISHU_DELIVERY_PROVIDER }}
+          FEISHU_ANYCROSS_WEBHOOK_URL: ${{ secrets.FEISHU_ANYCROSS_WEBHOOK_URL }}
+          FEISHU_WEBHOOK_TRIGGER_URL: ${{ secrets.FEISHU_WEBHOOK_TRIGGER_URL }}
+          FEISHU_WEBHOOK_TRIGGER_TOKEN: ${{ secrets.FEISHU_WEBHOOK_TRIGGER_TOKEN }}
           FEISHU_WEBHOOK_URL: ${{ secrets.FEISHU_WEBHOOK_URL }}
           PRIVATE_DATA_REPO_PAT: ${{ secrets.PRIVATE_DATA_REPO_PAT }}
           PRIVATE_DATA_REPO: ${{ secrets.PRIVATE_DATA_REPO }}
@@ -46,6 +50,10 @@ jobs:
       - name: Run source audit
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          FEISHU_DELIVERY_PROVIDER: ${{ vars.FEISHU_DELIVERY_PROVIDER }}
+          FEISHU_ANYCROSS_WEBHOOK_URL: ${{ secrets.FEISHU_ANYCROSS_WEBHOOK_URL }}
+          FEISHU_WEBHOOK_TRIGGER_URL: ${{ secrets.FEISHU_WEBHOOK_TRIGGER_URL }}
+          FEISHU_WEBHOOK_TRIGGER_TOKEN: ${{ secrets.FEISHU_WEBHOOK_TRIGGER_TOKEN }}
           FEISHU_WEBHOOK_URL: ${{ secrets.FEISHU_WEBHOOK_URL }}
           PRIVATE_DATA_REPO_PAT: ${{ secrets.PRIVATE_DATA_REPO_PAT }}
           PRIVATE_DATA_REPO: ${{ secrets.PRIVATE_DATA_REPO }}

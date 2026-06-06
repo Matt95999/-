@@ -88,6 +88,29 @@ test("runPreflightChecks accepts whitelist-first production mode without provide
   assert.equal(findCheck(result, "discovery_inputs").status, "pass");
 });
 
+test("runPreflightChecks accepts AnyCross delivery channel", async (t) => {
+  const tempRoot = await mkdtemp(path.join(os.tmpdir(), "ai-digest-preflight-anycross-"));
+  t.after(async () => {
+    await rm(tempRoot, { recursive: true, force: true });
+  });
+
+  await seedConfig(tempRoot);
+  const result = await runPreflightChecks({
+    rootDir: tempRoot,
+    mode: "daily_run",
+    env: {
+      FEISHU_DELIVERY_PROVIDER: "anycross",
+      FEISHU_ANYCROSS_WEBHOOK_URL: "https://example.com/anycross",
+      DISCOVERY_PROVIDER_SEARCH_TEMPLATES: "[]",
+      DISCOVERY_PROVIDER_REQUEST_HEADERS: "{}"
+    }
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(findCheck(result, "feishu_delivery_channel").status, "pass");
+  assert.match(findCheck(result, "feishu_delivery_channel").detail, /anycross configured/);
+});
+
 async function seedConfig(rootDir, overrides = {}) {
   const configDir = path.join(rootDir, "config");
   await mkdir(configDir, { recursive: true });

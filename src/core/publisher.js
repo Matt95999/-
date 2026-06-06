@@ -89,5 +89,9 @@ export function buildReportUrl({ publicBaseUrl, dateKey }) {
 
 function isRunArtifactFile(filePath) {
   const fileName = path.basename(filePath);
-  return fileName.endsWith(".json") && !fileName.endsWith("-feishu-preview.json");
+  return (
+    fileName.endsWith(".json") &&
+    !fileName.endsWith("-feishu-preview.json") &&
+    !fileName.endsWith("-top_ranked_candidates.json")
+  );
 }

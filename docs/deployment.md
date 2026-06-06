@@ -8,13 +8,16 @@
 ## Required secrets
 
 - `DEEPSEEK_API_KEY`
-- `FEISHU_WEBHOOK_URL`
+- `FEISHU_ANYCROSS_WEBHOOK_URL` (recommended)
+- `FEISHU_WEBHOOK_TRIGGER_URL` (fallback when using Feishu webhook trigger without AnyCross)
+- `FEISHU_WEBHOOK_URL` (legacy custom bot fallback)
 - `PRIVATE_DATA_REPO_PAT`
 - `PRIVATE_DATA_REPO`
 
 ## Required variables
 
 - `PUBLIC_BASE_URL`
+- `FEISHU_DELIVERY_PROVIDER` (recommended: `anycross`; supported: `auto`, `anycross`, `webhook_trigger`, `custom_bot`)
 - `DISCOVERY_PROVIDER_SEARCH_TEMPLATES`
 - `DISCOVERY_PROVIDER_REQUEST_HEADERS`
 - `PRIVATE_DATA_REPO_BRANCH` (optional, defaults to `main`)

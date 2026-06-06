@@ -8,7 +8,7 @@ import { parseArticlePage, scrapeCandidates } from "../src/providers/scraper.js"
 import { buildStoryClusters } from "../src/core/clustering.js";
 import { scoreStoryClusters } from "../src/core/scoring.js";
 import { summarizeDailyDigest } from "../src/core/summarizer.js";
-import { buildFeishuPayload } from "../src/core/feishu.js";
+import { buildFeishuPayload, buildWebhookTriggerPayload, resolveFeishuChannel } from "../src/core/feishu.js";
 import { buildCoverageContext, buildCrossProductConnections, groupClustersByProduct } from "../src/core/coverage.js";
 import { renderDigestMarkdown } from "../src/renderers/markdown.js";
 import { createAttemptRunContext, createRunContext, getAttemptArtifactId } from "../src/core/context.js";
@@ -86,6 +86,26 @@ test("pipeline builds a coherent digest from sample discovery results", async ()
   assert.equal(feishuPayload.msg_type, "post");
   assert.ok(
     feishuPayload.content.post.zh_cn.content[0][0].text.includes("头部产品覆盖面板")
+  );
+
+  const webhookPayload = buildWebhookTriggerPayload({
+    eventType: "ai_digest_daily",
+    title: digest.daily_brief_title,
+    text: feishuPayload.content.post.zh_cn.content[0][0].text,
+    reportUrl: "https://example.com/report",
+    digest
+  });
+  assert.equal(webhookPayload.event_type, "ai_digest_daily");
+  assert.equal(webhookPayload.source, "ai-wechat-digest");
+  assert.equal(webhookPayload.digest_payload.report_url, "https://example.com/report");
+  assert.ok(Array.isArray(webhookPayload.digest_payload.sections));
+  assert.ok(webhookPayload.text.includes("头部产品覆盖面板"));
+  assert.equal(
+    resolveFeishuChannel({
+      feishuDeliveryProvider: "anycross",
+      feishuAnycrossWebhookUrl: "https://example.com/anycross"
+    }).type,
+    "anycross"
   );
 });
 

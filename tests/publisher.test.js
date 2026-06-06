@@ -27,3 +27,16 @@ test("findLatestRunFile ignores feishu preview payloads", async () => {
   const latestRunFile = await findLatestRunFile({ rootDir });
   assert.equal(latestRunFile, runFile);
 });
+
+test("findLatestRunFile ignores ranking audit payloads", async () => {
+  const rootDir = await mkdtemp(path.join(os.tmpdir(), "ai-wechat-digest-"));
+  const runsDir = path.join(rootDir, "private-data", "runs");
+  const runFile = path.join(runsDir, "2026-04-12-deadbeef-a1.json");
+  const rankingFile = path.join(runsDir, "2026-04-12-deadbeef-a1-top_ranked_candidates.json");
+
+  await writeJson(runFile, { digest: { daily_brief_title: "ok" } });
+  await writeJson(rankingFile, [{ headline: "audit only" }]);
+
+  const latestRunFile = await findLatestRunFile({ rootDir });
+  assert.equal(latestRunFile, runFile);
+});

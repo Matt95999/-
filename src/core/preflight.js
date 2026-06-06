@@ -4,6 +4,7 @@ import { findLatestRunFile } from "./publisher.js";
 import { findLatestResumeTarget } from "./checkpoints.js";
 import { summarizeSourceMix } from "./source-registry.js";
 import { validateGeneratedSources } from "./source-audit.js";
+import { describeFeishuChannel } from "./feishu.js";
 
 const KNOWN_MODES = new Set(["daily_run", "retry_failed_run", "publish_only", "feishu_only", "manual_review", "source_audit", "source_refresh"]);
 
@@ -46,11 +47,14 @@ export async function runPreflightChecks({ rootDir, mode = "daily_run", env = pr
     envConfig.publicBaseUrl || "missing, publish output will use relative URLs"
   );
 
+  const feishuChannel = describeFeishuChannel(envConfig);
   pushCheck(
     checks,
-    "feishu_webhook",
-    envConfig.feishuWebhookUrl ? "pass" : "warn",
-    envConfig.feishuWebhookUrl ? "configured" : "missing, delivery will fall back to preview files"
+    "feishu_delivery_channel",
+    feishuChannel.configured ? "pass" : "warn",
+    feishuChannel.configured
+      ? feishuChannel.detail
+      : `${feishuChannel.detail}, delivery will fall back to preview files`
   );
 
   pushCheck(
