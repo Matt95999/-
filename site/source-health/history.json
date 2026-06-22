@@ -1,5 +1,86 @@
 [
   {
+    "generated_at": "2026-06-22T07:09:49.638Z",
+    "healthy_source_count": 16,
+    "disabled_source_count": 2,
+    "product_statuses": [
+      {
+        "product_id": "chatgpt",
+        "display_name": "ChatGPT",
+        "enabled_source_count": 1,
+        "status": "healthy"
+      },
+      {
+        "product_id": "openai_codex",
+        "display_name": "Codex",
+        "enabled_source_count": 2,
+        "status": "healthy"
+      },
+      {
+        "product_id": "claude",
+        "display_name": "Claude",
+        "enabled_source_count": 2,
+        "status": "healthy"
+      },
+      {
+        "product_id": "claude_code",
+        "display_name": "Claude Code",
+        "enabled_source_count": 2,
+        "status": "healthy"
+      },
+      {
+        "product_id": "gemini",
+        "display_name": "Gemini",
+        "enabled_source_count": 2,
+        "status": "healthy"
+      },
+      {
+        "product_id": "deepseek",
+        "display_name": "DeepSeek",
+        "enabled_source_count": 1,
+        "status": "healthy"
+      },
+      {
+        "product_id": "qwen",
+        "display_name": "Qwen",
+        "enabled_source_count": 2,
+        "status": "healthy"
+      },
+      {
+        "product_id": "mistral",
+        "display_name": "Mistral",
+        "enabled_source_count": 2,
+        "status": "healthy"
+      },
+      {
+        "product_id": "kimi",
+        "display_name": "Kimi",
+        "enabled_source_count": 2,
+        "status": "healthy"
+      },
+      {
+        "product_id": "glm",
+        "display_name": "GLM",
+        "enabled_source_count": 2,
+        "status": "healthy"
+      }
+    ],
+    "safety_gate": {
+      "paused": true,
+      "reasons": [
+        "generated_sources_change_volume"
+      ],
+      "disabled_source_count": 2,
+      "active_product_outages": [],
+      "changed_entry_count": 2,
+      "new_quarantined_count": 0
+    },
+    "schema_check": {
+      "ok": true,
+      "errors": []
+    }
+  },
+  {
     "generated_at": "2026-06-15T07:07:19.801Z",
     "healthy_source_count": 16,
     "disabled_source_count": 2,
