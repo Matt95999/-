@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-08-24T02:53:58.660Z",
-  "healthy_source_count": 16,
-  "disabled_source_count": 2,
+  "generated_at": "2026-08-31T07:49:25.304Z",
+  "healthy_source_count": 14,
+  "disabled_source_count": 4,
   "product_statuses": [
     {
       "product_id": "chatgpt",
@@ -30,7 +30,7 @@
     {
       "product_id": "gemini",
       "display_name": "Gemini",
-      "enabled_source_count": 2,
+      "enabled_source_count": 1,
       "status": "healthy"
     },
     {
@@ -60,7 +60,7 @@
     {
       "product_id": "glm",
       "display_name": "GLM",
-      "enabled_source_count": 2,
+      "enabled_source_count": 1,
       "status": "healthy"
     }
   ],
@@ -69,9 +69,9 @@
     "reasons": [
       "generated_sources_change_volume"
     ],
-    "disabled_source_count": 2,
+    "disabled_source_count": 4,
     "active_product_outages": [],
-    "changed_entry_count": 2,
+    "changed_entry_count": 4,
     "new_quarantined_count": 0
   },
   "schema_check": {
